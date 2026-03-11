@@ -5,7 +5,7 @@ export const personal = {
   role: 'Software Engineer – UI/UX',
   bio: [
     'I\'m Ahmad Baihaqie, a Kuala Lumpur–based Software Engineer (UI/UX) working in fintech and SaaS environments. I specialize in crafting clean, scalable, and user-focused interfaces using technologies such as Vue.js, Nuxt, Tailwind CSS, and API-driven architectures. My work focuses on simplifying complex financial workflows and delivering seamless digital experiences that bridge business goals with user needs.',
-    'Currently, I am also pursuing a Master of Science in Human Resource Development at Universiti Putra Malaysia, where my research focuses on AI adoption, digital transformation, and intergenerational dynamics in technology-driven organizations — allowing me to approach product development not only from a technical perspective but also from a human and organizational lens.',
+    'Currently, I am also pursuing a Master of Science in Human Resource Development at Universiti Putra Malaysia, where my research focuses on AI adoption, digital transformation, and intergenerational dynamics in technology-driven organizations which allowing me to approach product development not only from a technical perspective but also from a human and organizational lens.',
   ],
   summary:
     'A results-driven Software Engineer (UI/UX) in fintech, experienced in developing user-focused web applications with Vue.js, Tailwind CSS, and API integrations.',
