@@ -44,6 +44,7 @@ export interface Project {
   stack: string[]
   metrics?: { value: string; label: string }[]
   href?: string
+  github?: string
 }
 
 export const projects: Project[] = [
@@ -71,6 +72,7 @@ export const projects: Project[] = [
       'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
     stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
     href: '#',
+    github: 'https://github.com/byhaqie31/HouseOfParfum',
   },
   {
     id: 'graphic-design',

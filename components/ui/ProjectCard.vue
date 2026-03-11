@@ -7,19 +7,31 @@ defineProps<{ project: Project }>()
 
 <template>
   <article class="group card-hover reveal flex flex-col h-full">
-    <!-- Tag + link -->
+    <!-- Tag + links -->
     <div class="flex items-center justify-between mb-5">
       <span class="font-mono text-2xs text-accent uppercase tracking-wider">{{ project.tag }}</span>
-      <a
-        v-if="project.href"
-        :href="project.href"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn-icon opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Open project"
-      >
-        <ArrowUpRight :size="14" />
-      </a>
+      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <a
+          v-if="project.github"
+          :href="project.github"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-icon"
+          aria-label="View on GitHub"
+        >
+          <UiIconGithub class="w-3.5 h-3.5" />
+        </a>
+        <a
+          v-if="project.href && project.href !== '#'"
+          :href="project.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-icon"
+          aria-label="Open project"
+        >
+          <ArrowUpRight :size="14" />
+        </a>
+      </div>
     </div>
 
     <!-- Name -->
