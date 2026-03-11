@@ -20,6 +20,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Ahmad Baihaqie — Software Engineer',
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/images/ABIcon.svg' },
+      ],
       meta: [
         { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

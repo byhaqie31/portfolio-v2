@@ -136,28 +136,33 @@ onUnmounted(() => cancelAnimationFrame(raf))
 
       <!-- Right: profile picture -->
       <div class="animate-reveal shrink-0 flex items-center justify-center" style="animation-delay:0.2s">
-        <div class="relative w-56 h-56 md:w-72 md:h-72">
+        <div class="group relative w-56 h-56 md:w-72 md:h-72">
+          <!-- Ripple waves (visible on hover) -->
+          <div class="absolute inset-0 rounded-full border border-accent/20 scale-100 opacity-0 group-hover:scale-125 group-hover:opacity-0 transition-all duration-700 ease-out" style="transition-delay: 0ms;" />
+          <div class="absolute inset-0 rounded-full border border-accent/15 scale-100 opacity-0 group-hover:scale-150 group-hover:opacity-0 transition-all duration-700 ease-out" style="transition-delay: 150ms;" />
+          <div class="absolute inset-0 rounded-full border border-accent/10 scale-100 opacity-0 group-hover:scale-[1.75] group-hover:opacity-0 transition-all duration-700 ease-out" style="transition-delay: 300ms;" />
+
           <!-- Outer glow -->
           <div
-            class="absolute -inset-6 rounded-full pointer-events-none"
+            class="absolute -inset-6 rounded-full pointer-events-none transition-opacity duration-500 opacity-100 group-hover:opacity-60"
             style="background: radial-gradient(circle, rgba(200,169,126,0.18) 0%, transparent 70%); filter: blur(20px);"
           />
           <!-- Rotating dashed ring -->
           <div
-            class="absolute -inset-3 rounded-full border border-dashed border-accent/20 animate-spin"
+            class="absolute -inset-3 rounded-full border border-dashed border-accent/20 animate-spin group-hover:border-accent/40 transition-colors duration-300"
             style="animation-duration: 18s;"
           />
           <!-- Static outer ring -->
-          <div class="absolute -inset-1.5 rounded-full border border-accent/30" />
-          <!-- Inner frame with shadow -->
+          <div class="absolute -inset-1.5 rounded-full border border-accent/30 group-hover:border-accent/60 transition-colors duration-300" />
+          <!-- Inner frame with shadow + zoom -->
           <div
-            class="relative w-full h-full rounded-full overflow-hidden border-2 border-accent/50"
+            class="relative w-full h-full rounded-full overflow-hidden border-2 border-accent/50 group-hover:border-accent/80 transition-all duration-500"
             style="box-shadow: 0 0 0 4px rgba(200,169,126,0.08), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(200,169,126,0.12);"
           >
             <img
               src="/images/ProfilePicture.png"
               alt="Ahmad Baihaqie"
-              class="w-full h-full object-cover object-top"
+              class="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
             />
             <!-- Subtle vignette overlay -->
             <div
@@ -166,8 +171,8 @@ onUnmounted(() => cancelAnimationFrame(raf))
             />
           </div>
           <!-- Corner accent dots -->
-          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent/60" />
-          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent/60" />
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent/60 group-hover:bg-accent transition-colors duration-300" />
+          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent/60 group-hover:bg-accent transition-colors duration-300" />
         </div>
       </div>
     </div>

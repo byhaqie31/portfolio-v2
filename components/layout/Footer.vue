@@ -11,7 +11,7 @@ const year = new Date().getFullYear()
       <!-- Left -->
       <div>
         <p class="font-mono text-sm text-text-primary mb-1">
-          {{ personal.shortName.split(' ')[0].toLowerCase() }}<span class="text-accent">.</span>
+          ahmad<span class="text-accent">.baihaqie</span>
         </p>
         <p class="text-xs text-text-muted">
           © {{ year }} — Built with Nuxt & Tailwind CSS
