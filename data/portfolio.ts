@@ -4,7 +4,7 @@ export const personal = {
   tagline: 'Building products people actually use.',
   description:
     'I design and build fast, clean web applications. Focused on great user experience, clear code, and shipping things that matter.',
-  location: 'Indonesia',
+  location: 'Malaysia',
   email: 'hello@ahmadbaihaqie.dev',
   github: 'https://github.com/byhaqie31',
   linkedin: 'https://linkedin.com/in/ahmadbaihaqie',

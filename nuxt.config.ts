@@ -3,9 +3,19 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts'],
 
   css: ['~/assets/css/main.css'],
+
+  googleFonts: {
+    families: {
+      'Bricolage Grotesque': [300, 400, 500, 600, 700, 800],
+      'Instrument Serif': [400],
+      'Geist Mono': [400, 500],
+    },
+    display: 'swap',
+    preload: true,
+  },
 
   app: {
     head: {
@@ -13,14 +23,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      ],
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap',
-        },
+        { name: 'theme-color', content: '#080808' },
       ],
     },
   },

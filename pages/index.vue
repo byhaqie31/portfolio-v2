@@ -1,18 +1,22 @@
 <script setup lang="ts">
+import { personal } from '~/data/index'
+
 useSeoMeta({
-  title: 'Ahmad Baihaqie — Software Engineer',
-  description: 'Software engineer building fast, clean web applications.',
-  ogTitle: 'Ahmad Baihaqie — Software Engineer',
-  ogDescription: 'Software engineer building fast, clean web applications.',
+  title: `${personal.name} — ${personal.title}`,
+  description: personal.description,
+  ogTitle: `${personal.name} — ${personal.title}`,
+  ogDescription: personal.description,
 })
+
+definePageMeta({ layout: 'default' })
 </script>
 
 <template>
-  <div class="min-h-screen bg-surface">
-    <LayoutNavbar />
-    <main>
-      <SectionsHeroSection />
-      <SectionsProjectsSection />
-    </main>
+  <div>
+    <SectionsHeroSection />
+    <SectionsWorkSection />
+    <SectionsAboutSection />
+    <SectionsExperienceSection />
+    <SectionsContactSection />
   </div>
 </template>
