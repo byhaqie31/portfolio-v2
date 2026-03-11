@@ -7,6 +7,7 @@ export default {
     './pages/**/*.vue',
     './app.vue',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -16,30 +17,30 @@ export default {
       },
       colors: {
         bg: {
-          DEFAULT: '#080808',
-          secondary: '#0f0f0f',
-          tertiary: '#141414',
+          DEFAULT: 'rgb(var(--color-bg) / <alpha-value>)',
+          secondary: 'rgb(var(--color-bg-secondary) / <alpha-value>)',
+          tertiary: 'rgb(var(--color-bg-tertiary) / <alpha-value>)',
         },
         surface: {
-          DEFAULT: '#1a1a1a',
-          raised: '#1f1f1f',
-          overlay: '#252525',
+          DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
+          raised: 'rgb(var(--color-surface-raised) / <alpha-value>)',
+          overlay: 'rgb(var(--color-surface-overlay) / <alpha-value>)',
         },
         accent: {
-          DEFAULT: '#c8a97e',  // warm gold
-          muted: '#9a7d57',
-          subtle: '#3d2f1e',
+          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
+          muted: 'rgb(var(--color-accent-muted) / <alpha-value>)',
+          subtle: 'rgb(var(--color-accent-subtle) / <alpha-value>)',
         },
         border: {
-          DEFAULT: '#222222',
-          subtle: '#1a1a1a',
-          strong: '#333333',
+          DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
+          subtle: 'rgb(var(--color-border-subtle) / <alpha-value>)',
+          strong: 'rgb(var(--color-border-strong) / <alpha-value>)',
         },
         text: {
-          primary: '#f0ede8',   // warm white
-          secondary: '#9a9590',
-          muted: '#5a5652',
-          inverse: '#080808',
+          primary: 'rgb(var(--color-text-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--color-text-secondary) / <alpha-value>)',
+          muted: 'rgb(var(--color-text-muted) / <alpha-value>)',
+          inverse: 'rgb(var(--color-text-inverse) / <alpha-value>)',
         },
       },
       fontSize: {

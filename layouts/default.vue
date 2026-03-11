@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { useScrollProgress } from '~/composables/useScrollProgress'
 import { useReveal } from '~/composables/useReveal'
+import { useTheme } from '~/composables/useTheme'
 
 const { progress } = useScrollProgress()
 useReveal()
+
+const { init } = useTheme()
+onMounted(() => init())
 </script>
 
 <template>

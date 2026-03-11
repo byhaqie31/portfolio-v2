@@ -35,7 +35,7 @@ defineProps<{ project: Project }>()
     </div>
 
     <!-- Name -->
-    <h3 class="text-base font-semibold text-text-primary group-hover:text-white transition-colors mb-2 leading-snug">
+    <h3 class="text-base font-semibold text-text-primary group-hover:text-text-primary transition-colors mb-2 leading-snug">
       {{ project.name }}
     </h3>
 

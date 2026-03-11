@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { Menu, X, Command } from 'lucide-vue-next'
+import { Menu, X, Search, Sun, Moon } from 'lucide-vue-next'
 import { navLinks, personal } from '~/data/index'
 import { useCommandPalette } from '~/composables/useCommandPalette'
+import { useTheme } from '~/composables/useTheme'
 
 const { open, setupShortcut } = useCommandPalette()
 setupShortcut()
+
+const { isDark, toggle: toggleTheme } = useTheme()
 
 const mobileOpen = ref(false)
 const scrolled = ref(false)
@@ -26,7 +29,6 @@ onMounted(() => {
         }
       })
     },
-    // Section becomes active when it crosses 30% from the top
     { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
   )
 
@@ -48,7 +50,7 @@ function closeMenu() { mobileOpen.value = false }
   >
     <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink href="/" class="font-mono text-sm text-text-primary hover:text-white transition-colors">
+      <NuxtLink href="/" class="font-mono text-sm text-text-primary hover:text-accent transition-colors">
         qie<span class="text-accent">.dev</span>
       </NuxtLink>
 
@@ -63,7 +65,6 @@ function closeMenu() { mobileOpen.value = false }
               : 'text-text-secondary hover:text-text-primary'"
           >
             {{ link.label }}
-            <!-- Active underline dot -->
             <span
               class="absolute -bottom-0.5 left-0 right-0 h-px bg-accent transition-all duration-300"
               :class="activeSection === link.href.replace('#', '') ? 'opacity-100' : 'opacity-0'"
@@ -74,8 +75,14 @@ function closeMenu() { mobileOpen.value = false }
 
       <!-- Right actions -->
       <div class="hidden md:flex items-center gap-2">
-        <button class="btn-icon" title="Command palette (⌘K)" @click="open">
-          <Command :size="14" />
+        <!-- Theme toggle -->
+        <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+          <Sun v-if="isDark" :size="14" />
+          <Moon v-else :size="14" />
+        </button>
+        <!-- Search / Command palette -->
+        <button class="btn-icon" title="Search (⌘K)" @click="open">
+          <Search :size="14" />
         </button>
         <a :href="`mailto:${personal.email}`" class="btn-primary text-xs px-4 py-2">
           Contact
@@ -119,8 +126,12 @@ function closeMenu() { mobileOpen.value = false }
           {{ link.label }}
         </a>
         <div class="border-t border-border pt-4 flex flex-col gap-2">
+          <button class="btn-ghost text-sm justify-start" @click="() => { toggleTheme() }">
+            <Sun v-if="isDark" :size="14" /> <Moon v-else :size="14" />
+            {{ isDark ? 'Light mode' : 'Dark mode' }}
+          </button>
           <button class="btn-ghost text-sm justify-start" @click="() => { open(); closeMenu() }">
-            <Command :size="14" /> Command palette
+            <Search :size="14" /> Search
           </button>
           <a :href="`mailto:${personal.email}`" class="btn-primary text-sm" @click="closeMenu">
             Contact

@@ -28,7 +28,7 @@ import { experiences } from '~/data/index'
 
           <!-- Right -->
           <div class="flex-1">
-            <h3 class="text-sm font-semibold text-text-primary group-hover:text-white transition-colors mb-0.5">
+            <h3 class="text-sm font-semibold text-text-primary group-hover:text-text-primary transition-colors mb-0.5">
               {{ job.role }}
             </h3>
             <p class="text-sm text-text-secondary mb-1">{{ job.company }}</p>

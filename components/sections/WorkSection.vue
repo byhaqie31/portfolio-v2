@@ -35,7 +35,7 @@ const others = computed(() => projects.filter((p) => !p.featured))
             class="group flex items-center justify-between px-5 py-4 hover:bg-surface-raised transition-colors"
           >
             <div>
-              <span class="text-sm font-medium text-text-primary group-hover:text-white transition-colors">
+              <span class="text-sm font-medium text-text-primary group-hover:text-text-primary transition-colors">
                 {{ project.name }}
               </span>
               <div class="flex items-center gap-3 mt-0.5">
