@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Github, Linkedin, Mail } from 'lucide-vue-next'
+import { Mail } from 'lucide-vue-next'
 import { personal } from '~/data/index'
 
 const year = new Date().getFullYear()
@@ -11,7 +11,7 @@ const year = new Date().getFullYear()
       <!-- Left -->
       <div>
         <p class="font-mono text-sm text-text-primary mb-1">
-          {{ personal.name.split(' ')[0].toLowerCase() }}<span class="text-accent">.</span>
+          {{ personal.shortName.split(' ')[0].toLowerCase() }}<span class="text-accent">.</span>
         </p>
         <p class="text-xs text-text-muted">
           © {{ year }} — Built with Nuxt & Tailwind CSS
@@ -27,7 +27,7 @@ const year = new Date().getFullYear()
           class="btn-icon"
           aria-label="GitHub"
         >
-          <Github :size="15" />
+          <UiIconGithub :size="15" />
         </a>
         <a
           :href="personal.linkedin"
@@ -36,7 +36,7 @@ const year = new Date().getFullYear()
           class="btn-icon"
           aria-label="LinkedIn"
         >
-          <Linkedin :size="15" />
+          <UiIconLinkedin :size="15" />
         </a>
         <a
           :href="`mailto:${personal.email}`"

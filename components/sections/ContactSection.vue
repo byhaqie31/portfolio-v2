@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Mail, Github, Linkedin, ArrowRight } from 'lucide-vue-next'
+import { Mail, ArrowRight } from 'lucide-vue-next'
 import { personal } from '~/data/index'
 </script>
 
@@ -37,7 +37,7 @@ import { personal } from '~/data/index'
             rel="noopener noreferrer"
             class="btn-ghost inline-flex items-center gap-2 text-sm"
           >
-            <Github :size="14" />
+            <UiIconGithub :size="14" />
             GitHub
           </a>
           <a
@@ -46,7 +46,7 @@ import { personal } from '~/data/index'
             rel="noopener noreferrer"
             class="btn-ghost inline-flex items-center gap-2 text-sm"
           >
-            <Linkedin :size="14" />
+            <UiIconLinkedin :size="14" />
             LinkedIn
           </a>
         </div>

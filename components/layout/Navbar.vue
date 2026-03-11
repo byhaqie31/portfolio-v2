@@ -26,7 +26,7 @@ function closeMenu() { mobileOpen.value = false }
     <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
       <NuxtLink href="/" class="font-mono text-sm text-text-primary hover:text-white transition-colors">
-        {{ personal.name.split(' ')[0].toLowerCase() }}<span class="text-accent">.</span>
+        qie<span class="text-accent">.dev</span>
       </NuxtLink>
 
       <!-- Desktop links -->

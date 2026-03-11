@@ -1,56 +1,26 @@
-// ─── Interfaces ────────────────────────────────────────────────────────────────
-
-export interface Project {
-  title: string
-  description: string
-  stack: string[]
-  href?: string
-  github?: string
-  featured: boolean
-  year: number
-  status?: 'live' | 'wip' | 'archived'
-}
-
-export interface Experience {
-  company: string
-  role: string
-  period: string
-  description: string
-  stack: string[]
-  current?: boolean
-}
-
-export interface SkillGroup {
-  category: string
-  skills: string[]
-}
-
-export interface CommandItem {
-  id: string
-  label: string
-  description?: string
-  icon?: string
-  action: () => void
-  keywords?: string[]
-}
-
-// ─── Personal ──────────────────────────────────────────────────────────────────
-
+// ── PERSONAL INFO ────────────────────────────────────────────
 export const personal = {
-  name: 'Ahmad Baihaqie',
-  title: 'Software Engineer',
-  tagline: 'Building products people actually use.',
-  description:
-    'I design and build fast, clean web applications. Focused on great user experience, clear code, and shipping things that matter.',
-  location: 'Malaysia',
-  email: 'hello@ahmadbaihaqie.dev',
+  name: 'Ahmad Baihaqie Bin Mohd Yusri',
+  shortName: 'Ahmad Baihaqie',
+  role: 'Software Engineer – UI/UX',
+  summary:
+    'A results-driven Software Engineer (UI/UX) in fintech, experienced in developing user-focused web applications with Vue.js, Tailwind CSS, and API integrations. Skilled in creating seamless interfaces, improving payment workflows, and turning business needs into intuitive digital solutions that enhance overall user experience and system performance.',
+  location: 'Kuala Lumpur, W.P',
+  email: 'byhaqie1455@gmail.com',
+  mobile: '+60 17-710 9486',
+  website: 'https://baihaqie.com/',
   github: 'https://github.com/byhaqie31',
-  linkedin: 'https://linkedin.com/in/ahmadbaihaqie',
-  availability: true,
+  linkedin: 'https://linkedin.com/in/byhaqieyusri',
+  availableFor: 'Full-time / Contract',
+  focus: 'Fintech / SaaS',
+  languages: [
+    { lang: 'Malay', level: 'Native Proficiency' },
+    { lang: 'English', level: 'Professional Working Proficiency' },
+    { lang: 'Arabic', level: 'Elementary Proficiency' },
+  ],
 }
 
-// ─── Navigation ────────────────────────────────────────────────────────────────
-
+// ── NAVIGATION ───────────────────────────────────────────────
 export const navLinks = [
   { label: 'Work', href: '#work' },
   { label: 'About', href: '#about' },
@@ -58,100 +28,169 @@ export const navLinks = [
   { label: 'Contact', href: '#contact' },
 ]
 
-// ─── Projects ──────────────────────────────────────────────────────────────────
+// ── PROJECTS ─────────────────────────────────────────────────
+export interface Project {
+  id: string
+  tag: string
+  featured?: boolean
+  name: string
+  description: string
+  stack: string[]
+  metrics?: { value: string; label: string }[]
+  href?: string
+}
 
 export const projects: Project[] = [
   {
-    title: 'Project Alpha',
-    description:
-      'A full-stack SaaS platform for managing team workflows. Built with a focus on performance and real-time collaboration.',
-    stack: ['Nuxt', 'TypeScript', 'Supabase', 'Tailwind'],
-    href: '#',
-    github: '#',
+    id: 'razer-merchant-portal',
+    tag: '⚡ Featured',
     featured: true,
-    year: 2025,
-    status: 'live',
-  },
-  {
-    title: 'Project Beta',
+    name: 'Razer Merchant Services — Merchant & Admin Portal',
     description:
-      'Developer tool that automates repetitive tasks in CI/CD pipelines, saving hours per week.',
-    stack: ['Node.js', 'TypeScript', 'CLI'],
+      'Designed and developed high-quality user interfaces across the Merchant Portal, Admin Portal, and multiple fintech payment modules. Streamlined UI flows, refined error messages, improved form validations, and optimized data-driven interfaces — contributing to higher system adoption and reduced support escalations.',
+    stack: ['Vue.js', 'Tailwind CSS', 'JavaScript', 'REST API', 'Figma'],
+    metrics: [
+      { value: '↓', label: 'Support escalations' },
+      { value: '↑', label: 'System adoption' },
+      { value: '3+', label: 'Portals shipped' },
+    ],
     href: '#',
-    github: '#',
+  },
+  {
+    id: 'house-of-parfum',
+    tag: 'Full Stack',
     featured: true,
-    year: 2024,
-    status: 'live',
+    name: 'House of Parfum — Online Perfume Boutique',
+    description:
+      'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
+    stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
+    href: '#',
   },
   {
-    title: 'Project Gamma',
+    id: 'graphic-design',
+    tag: 'Design',
+    name: 'Brand & Print Design — Faztech Services',
     description:
-      'Open-source UI component library for Vue 3, focused on accessibility and dark-mode-first design.',
-    stack: ['Vue 3', 'TypeScript', 'Vite'],
-    github: '#',
-    featured: false,
-    year: 2024,
-    status: 'live',
-  },
-  {
-    title: 'Project Delta',
-    description:
-      'REST API boilerplate with auth, rate limiting, and structured logging out of the box.',
-    stack: ['Hono', 'TypeScript', 'PostgreSQL'],
-    github: '#',
-    featured: false,
-    year: 2023,
-    status: 'archived',
+      'Produced professional client-facing artworks including brochures, business cards, and flyers using Adobe tools — adhering to all client requirements across every deliverable.',
+    stack: ['Adobe Illustrator', 'Photoshop', 'After Effects', 'Premiere Pro'],
+    href: '#',
   },
 ]
 
-// ─── Experience ────────────────────────────────────────────────────────────────
+// ── EXPERIENCE ───────────────────────────────────────────────
+export interface Experience {
+  id: string
+  period: string
+  company: string
+  location: string
+  role: string
+  current?: boolean
+  description: string
+  bullets: string[]
+  tags: string[]
+}
 
-export const experience: Experience[] = [
+export const experiences: Experience[] = [
   {
-    company: 'Company Name',
-    role: 'Software Engineer',
-    period: '2024 — Present',
-    description:
-      'Building and maintaining core product features. Leading frontend architecture decisions and mentoring junior engineers.',
-    stack: ['TypeScript', 'Vue', 'Node.js', 'PostgreSQL'],
+    id: 'razer',
+    period: 'Dec 2025 – Present',
+    company: 'Razer Merchant Services',
+    location: 'Kuala Lumpur, W.P',
+    role: 'Software Engineer – UI/UX',
     current: true,
+    description:
+      'Building high-quality user interfaces for fintech payment products across Merchant Portal, Admin Portal, and multiple payment modules.',
+    bullets: [
+      'Designed and developed high-quality UIs using Vue.js, Tailwind CSS, and modern front-end architectures across the Merchant Portal, Admin Portal, and multiple fintech payment modules.',
+      'Collaborated with product owners, backend developers, QA testers, and business teams to identify pain points, refine requirements, and deploy incremental improvements.',
+      'Enhanced merchant experience by streamlining UI flows, refining error messages, improving form validations, and optimizing data-driven interfaces.',
+    ],
+    tags: ['Vue.js', 'Tailwind CSS', 'JavaScript', 'REST API', 'Figma', 'GitLab'],
   },
   {
-    company: 'Previous Company',
-    role: 'Frontend Developer',
-    period: '2022 — 2024',
+    id: 'faztech',
+    period: 'Jul 2020 – Oct 2020',
+    company: 'Faztech Services',
+    location: 'Tangkak, Johor',
+    role: 'Graphic Designer & Technician',
     description:
-      'Developed responsive web applications and internal tools. Improved page performance by 40% through bundle optimization.',
-    stack: ['React', 'TypeScript', 'GraphQL', 'Tailwind'],
-  },
-  {
-    company: 'Freelance',
-    role: 'Web Developer',
-    period: '2021 — 2022',
-    description:
-      'Built websites and web apps for small businesses across various industries.',
-    stack: ['Vue', 'PHP', 'MySQL', 'CSS'],
+      'Designed professional client artworks and collaborated with a team of 8 technicians to handle maintenance and support tasks.',
+    bullets: [
+      'Designed professional artworks using 6 Adobe software applications (Illustrator, After Effects) adhering to all client requirements for brochures, business cards, and flyers.',
+      'Collaborated with a team of 8 technicians handling program installation and OS maintenance with 0% callback from upper management.',
+      'Responded to recurring client issues (Anti-Virus & OS Installation) closing 8/10 cases per week following established BAU protocols.',
+    ],
+    tags: ['Adobe Illustrator', 'After Effects', 'Photoshop', 'Premiere Pro'],
   },
 ]
 
-// ─── Skills ────────────────────────────────────────────────────────────────────
+// ── EDUCATION ────────────────────────────────────────────────
+export interface Education {
+  id: string
+  period: string
+  institution: string
+  location: string
+  degree: string
+  cgpa: string
+}
+
+export const education: Education[] = [
+  {
+    id: 'um-degree',
+    period: 'Oct 2023',
+    institution: 'Universiti Malaya (UM)',
+    location: 'Kuala Lumpur, W.P',
+    degree: 'Bachelor of Islamic Studies and Information Technology',
+    cgpa: '3.77 / 4.00',
+  },
+  {
+    id: 'um-foundation',
+    period: 'May 2019',
+    institution: 'Universiti Malaya (UM)',
+    location: 'Kuala Lumpur, W.P',
+    degree: 'Foundation of Science and Islamic Studies',
+    cgpa: '3.44 / 4.00',
+  },
+]
+
+// ── SKILLS ───────────────────────────────────────────────────
+export interface SkillGroup {
+  label: string
+  items: string[]
+}
 
 export const skillGroups: SkillGroup[] = [
   {
-    category: 'Languages',
-    skills: ['TypeScript', 'JavaScript', 'HTML', 'CSS', 'SQL'],
+    label: 'UI / UX Design',
+    items: ['Figma', 'UI Design', 'UX Research', 'Prototyping', 'Wireframing', 'Design Systems'],
   },
   {
-    category: 'Frontend',
-    skills: ['Vue 3', 'Nuxt 3', 'React', 'Next.js', 'Tailwind CSS'],
+    label: 'Frontend',
+    items: ['Vue.js', 'Nuxt 3', 'Tailwind CSS', 'JavaScript', 'REST API Integration', 'HTML / CSS'],
   },
   {
-    category: 'Backend',
-    skills: ['Node.js', 'Hono', 'Express', 'REST APIs', 'PostgreSQL'],
+    label: 'Creative & Design Tools',
+    items: ['Adobe Illustrator', 'Photoshop', 'After Effects', 'Premiere Pro'],
   },
   {
-    category: 'Tools',
-    skills: ['Git', 'Docker', 'Vite', 'Figma', 'Linux'],
+    label: 'Tools & Workflow',
+    items: ['GitLab', 'Figma', 'Microsoft Office', 'Version Control', 'Agile / Scrum'],
+  },
+]
+
+// ── EXTRA ACTIVITIES ─────────────────────────────────────────
+export const activities = [
+  'UM — "Kesatuan Mahasiswa Akademi Pengajian Islam" (Committee Member)',
+  'UM — "Program Career Fest 2023, Akademi Pengajian Islam" (Treasurer)',
+  'UM — "Malam Penghargaan Dayasari, Kolej Kediaman Dayasari" (Head of Multimedia)',
+]
+
+// ── REFERENCES ───────────────────────────────────────────────
+export const references = [
+  {
+    name: 'Haziman Hashim',
+    title: 'Senior Manager, Software Engineer',
+    company: 'Razer Merchant Services',
+    email: 'haziman.hashim@fiuu.com',
   },
 ]
