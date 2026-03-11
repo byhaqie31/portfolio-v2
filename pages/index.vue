@@ -2,10 +2,10 @@
 import { personal } from '~/data/index'
 
 useSeoMeta({
-  title: `${personal.name} — ${personal.title}`,
-  description: personal.description,
-  ogTitle: `${personal.name} — ${personal.title}`,
-  ogDescription: personal.description,
+  title: `${personal.shortName} — ${personal.role}`,
+  description: personal.summary,
+  ogTitle: `${personal.shortName} — ${personal.role}`,
+  ogDescription: personal.summary,
 })
 
 definePageMeta({ layout: 'default' })
@@ -14,9 +14,11 @@ definePageMeta({ layout: 'default' })
 <template>
   <div>
     <SectionsHeroSection />
-    <SectionsWorkSection />
     <SectionsAboutSection />
     <SectionsExperienceSection />
+    <SectionsSkillsSection />
+    <SectionsWorkSection />
+    <SectionsReferencesSection />
     <SectionsContactSection />
   </div>
 </template>

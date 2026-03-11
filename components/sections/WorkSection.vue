@@ -7,7 +7,7 @@ const others = computed(() => projects.filter((p) => !p.featured))
 </script>
 
 <template>
-  <section id="work" class="section">
+  <section id="projects" class="section">
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading
         label="Selected Work"

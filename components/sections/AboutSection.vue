@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { personal, skillGroups, activities } from '~/data/index'
+import { MapPin } from 'lucide-vue-next'
+import { personal, education } from '~/data/index'
 </script>
 
 <template>
@@ -11,55 +12,34 @@ import { personal, skillGroups, activities } from '~/data/index'
           <UiSectionHeading label="About" title="A bit about me" />
 
           <div class="space-y-4 text-text-secondary leading-relaxed reveal">
-            <p>
-              I'm <span class="text-text-primary font-medium">{{ personal.shortName }}</span>, a software
-              engineer based in {{ personal.location }}, focused on
-              <span class="font-serif italic text-text-primary">{{ personal.focus }}</span>.
-            </p>
-            <p>{{ personal.summary }}</p>
-          </div>
-
-          <!-- Languages -->
-          <div class="mt-8 reveal reveal-delay-1">
-            <p class="font-mono text-2xs text-accent uppercase tracking-widest mb-3">Languages</p>
-            <div class="space-y-2">
-              <div
-                v-for="l in personal.languages"
-                :key="l.lang"
-                class="flex items-center justify-between text-sm"
-              >
-                <span class="text-text-primary">{{ l.lang }}</span>
-                <span class="text-text-muted font-mono text-xs">{{ l.level }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Activities -->
-          <div class="mt-8 reveal reveal-delay-2">
-            <p class="font-mono text-2xs text-accent uppercase tracking-widest mb-3">Extra-curricular</p>
-            <ul class="space-y-2">
-              <li
-                v-for="act in activities"
-                :key="act"
-                class="text-xs text-text-muted leading-relaxed pl-3 border-l border-border"
-              >
-                {{ act }}
-              </li>
-            </ul>
+            <p v-for="(paragraph, i) in personal.bio" :key="i">{{ paragraph }}</p>
           </div>
         </div>
 
-        <!-- Right: skills -->
+        <!-- Right: academic background -->
         <div class="reveal reveal-delay-2">
-          <p class="font-mono text-2xs text-accent uppercase tracking-widest mb-6">Skills & Tools</p>
-          <div class="space-y-6">
-            <div v-for="group in skillGroups" :key="group.label">
-              <p class="text-xs text-text-muted mb-2.5">{{ group.label }}</p>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="item in group.items" :key="item" class="skill-tag">
-                  {{ item }}
+          <UiSectionHeading label="Academic Background" title="Where I study" />
+          <div class="divide-y divide-border rounded-xl border border-border bg-surface overflow-hidden">
+            <div
+              v-for="edu in education"
+              :key="edu.id"
+              class="flex flex-col gap-3 px-5 py-5 hover:bg-surface-raised transition-colors"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="text-sm font-semibold text-text-primary leading-snug">{{ edu.degree }}</h3>
+                <span
+                  class="font-mono text-2xs px-2 py-0.5 rounded border shrink-0"
+                  :class="edu.cgpa === 'In Progress'
+                    ? 'border-green-400/20 bg-green-400/5 text-green-400'
+                    : 'border-accent/20 bg-accent/5 text-accent'"
+                >
+                  {{ edu.cgpa === 'In Progress' ? 'In Progress' : `CGPA ${edu.cgpa}` }}
                 </span>
               </div>
+              <p class="text-sm text-text-secondary">{{ edu.institution }}</p>
+              <p class="flex items-center gap-1 font-mono text-2xs text-text-muted">
+                <MapPin :size="10" />{{ edu.location }} · {{ edu.period }}
+              </p>
             </div>
           </div>
         </div>

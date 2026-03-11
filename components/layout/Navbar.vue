@@ -8,11 +8,34 @@ setupShortcut()
 
 const mobileOpen = ref(false)
 const scrolled = ref(false)
+const activeSection = ref('')
 
 onMounted(() => {
   window.addEventListener('scroll', () => {
     scrolled.value = window.scrollY > 24
   }, { passive: true })
+
+  // Track active section via IntersectionObserver
+  const sectionIds = navLinks.map((l) => l.href.replace('#', ''))
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          activeSection.value = entry.target.id
+        }
+      })
+    },
+    // Section becomes active when it crosses 30% from the top
+    { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
+  )
+
+  sectionIds.forEach((id) => {
+    const el = document.getElementById(id)
+    if (el) observer.observe(el)
+  })
+
+  onUnmounted(() => observer.disconnect())
 })
 
 function closeMenu() { mobileOpen.value = false }
@@ -34,9 +57,17 @@ function closeMenu() { mobileOpen.value = false }
         <li v-for="link in navLinks" :key="link.label">
           <a
             :href="link.href"
-            class="text-sm text-text-secondary hover:text-text-primary transition-colors"
+            class="relative text-sm transition-colors duration-200"
+            :class="activeSection === link.href.replace('#', '')
+              ? 'text-text-primary'
+              : 'text-text-secondary hover:text-text-primary'"
           >
             {{ link.label }}
+            <!-- Active underline dot -->
+            <span
+              class="absolute -bottom-0.5 left-0 right-0 h-px bg-accent transition-all duration-300"
+              :class="activeSection === link.href.replace('#', '') ? 'opacity-100' : 'opacity-0'"
+            />
           </a>
         </li>
       </ul>
@@ -79,7 +110,10 @@ function closeMenu() { mobileOpen.value = false }
           v-for="link in navLinks"
           :key="link.label"
           :href="link.href"
-          class="text-sm text-text-secondary hover:text-text-primary transition-colors py-1"
+          class="text-sm py-1 transition-colors"
+          :class="activeSection === link.href.replace('#', '')
+            ? 'text-text-primary font-medium'
+            : 'text-text-secondary'"
           @click="closeMenu"
         >
           {{ link.label }}

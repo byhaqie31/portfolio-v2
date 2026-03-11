@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { MapPin } from 'lucide-vue-next'
-import { experiences, education } from '~/data/index'
+import { experiences } from '~/data/index'
 </script>
 
 <template>
-  <section id="experience" class="section border-t border-border">
+  <section id="work" class="section border-t border-border">
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading label="Experience" title="Where I've worked" />
 
@@ -55,29 +55,6 @@ import { experiences, education } from '~/data/index'
         </div>
       </div>
 
-      <!-- Education -->
-      <UiSectionHeading label="Education" title="Academic background" />
-      <div class="divide-y divide-border rounded-xl border border-border bg-surface overflow-hidden">
-        <div
-          v-for="edu in education"
-          :key="edu.id"
-          class="reveal flex flex-col md:flex-row gap-6 px-6 py-6 hover:bg-surface-raised transition-colors"
-        >
-          <div class="md:w-44 shrink-0">
-            <p class="font-mono text-xs text-text-muted">{{ edu.period }}</p>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-sm font-semibold text-text-primary mb-0.5">{{ edu.degree }}</h3>
-            <p class="text-sm text-text-secondary mb-1">{{ edu.institution }}</p>
-            <p class="flex items-center gap-1 font-mono text-2xs text-text-muted mb-2">
-              <MapPin :size="10" />{{ edu.location }}
-            </p>
-            <span class="font-mono text-2xs px-2 py-0.5 rounded border border-accent/20 bg-accent/5 text-accent">
-              CGPA {{ edu.cgpa }}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 </template>

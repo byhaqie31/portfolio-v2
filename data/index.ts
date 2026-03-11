@@ -3,8 +3,12 @@ export const personal = {
   name: 'Ahmad Baihaqie Bin Mohd Yusri',
   shortName: 'Ahmad Baihaqie',
   role: 'Software Engineer – UI/UX',
+  bio: [
+    'I\'m Ahmad Baihaqie, a Kuala Lumpur–based Software Engineer (UI/UX) working in fintech and SaaS environments. I specialize in crafting clean, scalable, and user-focused interfaces using technologies such as Vue.js, Nuxt, Tailwind CSS, and API-driven architectures. My work focuses on simplifying complex financial workflows and delivering seamless digital experiences that bridge business goals with user needs.',
+    'Currently, I am also pursuing a Master of Science in Human Resource Development at Universiti Putra Malaysia, where my research focuses on AI adoption, digital transformation, and intergenerational dynamics in technology-driven organizations — allowing me to approach product development not only from a technical perspective but also from a human and organizational lens.',
+  ],
   summary:
-    'A results-driven Software Engineer (UI/UX) in fintech, experienced in developing user-focused web applications with Vue.js, Tailwind CSS, and API integrations. Skilled in creating seamless interfaces, improving payment workflows, and turning business needs into intuitive digital solutions that enhance overall user experience and system performance.',
+    'A results-driven Software Engineer (UI/UX) in fintech, experienced in developing user-focused web applications with Vue.js, Tailwind CSS, and API integrations.',
   location: 'Kuala Lumpur, W.P',
   email: 'byhaqie1455@gmail.com',
   mobile: '+60 17-710 9486',
@@ -22,9 +26,11 @@ export const personal = {
 
 // ── NAVIGATION ───────────────────────────────────────────────
 export const navLinks = [
-  { label: 'Work', href: '#work' },
   { label: 'About', href: '#about' },
+  { label: 'Work', href: '#work' },
   { label: 'Experience', href: '#experience' },
+  { label: 'Projects', href: '#projects' },
+  { label: 'References', href: '#references' },
   { label: 'Contact', href: '#contact' },
 ]
 
@@ -136,11 +142,19 @@ export interface Education {
 
 export const education: Education[] = [
   {
+    id: 'upm-masters',
+    period: 'In Progress',
+    institution: 'Universiti Putra Malaysia (UPM)',
+    location: 'Serdang, Selangor',
+    degree: 'Master of Science in Human Resource Development',
+    cgpa: 'In Progress',
+  },
+  {
     id: 'um-degree',
     period: 'Oct 2023',
     institution: 'Universiti Malaya (UM)',
     location: 'Kuala Lumpur, W.P',
-    degree: 'Bachelor of Islamic Studies and Information Technology',
+    degree: 'Bachelor of Islamic Studies and Information Technology (First Class Honours)',
     cgpa: '3.77 / 4.00',
   },
   {
@@ -148,7 +162,7 @@ export const education: Education[] = [
     period: 'May 2019',
     institution: 'Universiti Malaya (UM)',
     location: 'Kuala Lumpur, W.P',
-    degree: 'Foundation of Science and Islamic Studies',
+    degree: 'Foundation of Islamic Studies and Science',
     cgpa: '3.44 / 4.00',
   },
 ]
