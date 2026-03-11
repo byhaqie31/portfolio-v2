@@ -111,7 +111,7 @@ function closeMenu() { mobileOpen.value = false }
     >
       <div
         v-if="mobileOpen"
-        class="md:hidden border-t border-border bg-bg/95 backdrop-blur-md px-6 py-5 flex flex-col gap-4"
+        class="md:hidden border-t border-border bg-surface/95 backdrop-blur-md px-6 py-5 flex flex-col gap-4"
       >
         <a
           v-for="link in navLinks"
