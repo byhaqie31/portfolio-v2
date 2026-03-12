@@ -9,7 +9,7 @@ export const personal = {
   ],
   summary:
     'A results-driven Software Engineer (UI/UX) in fintech, experienced in developing user-focused web applications with Vue.js, Tailwind CSS, and API integrations.',
-  location: 'Kuala Lumpur, W.P',
+  location: 'Shah Alam, Selangor',
   email: 'byhaqie1455@gmail.com',
   mobile: '+60 17-710 9486',
   website: 'https://baihaqie.com/',
