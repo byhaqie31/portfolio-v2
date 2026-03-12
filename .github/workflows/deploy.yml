@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug secrets
-        run: |
-          echo "Host is set: ${{ secrets.SSH_HOST != '' }}"
-          echo "User is set: ${{ secrets.SSH_USER != '' }}"
-          echo "Key is set: ${{ secrets.SSH_PRIVATE_KEY != '' }}"
-
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -27,4 +21,24 @@ jobs:
             cd ~/portfolio-v2
             git pull origin main
             docker compose up -d --build
+
+            # Wait for MySQL to be healthy before pruning
+            echo "Waiting for MySQL to be healthy..."
+            for i in $(seq 1 30); do
+              if docker inspect portfolio-mysql --format='{{.State.Health.Status}}' 2>/dev/null | grep -q healthy; then
+                echo "MySQL is healthy"
+                break
+              fi
+              sleep 2
+            done
+
+            # Verify app is responding
+            sleep 3
+            if curl -sf http://localhost:3000 > /dev/null; then
+              echo "App is running"
+            else
+              echo "WARNING: App may not be responding"
+              docker logs portfolio --tail 20
+            fi
+
             docker image prune -f
