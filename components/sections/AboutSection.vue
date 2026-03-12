@@ -1,6 +1,34 @@
 <script setup lang="ts">
 import { MapPin } from 'lucide-vue-next'
-import { personal, education } from '~/data/index'
+import { personal as staticPersonal, education as staticEducation } from '~/data/index'
+
+const { data: personalData } = await useFetch<any>('/api/personal', {
+  key: 'personal',
+})
+
+const { data: educationData } = await useFetch<any[]>('/api/education', {
+  key: 'education',
+  default: () => staticEducation as any[],
+})
+
+const bio = computed(() => {
+  const d = personalData.value as any
+  if (d?.bio_1) return [d.bio_1, d.bio_2].filter(Boolean)
+  return staticPersonal.bio
+})
+
+const education = computed(() => {
+  const data = educationData.value as any[]
+  if (!data?.length) return staticEducation
+  return data.map((e: any) => ({
+    id: e.slug || e.id,
+    period: e.period,
+    institution: e.institution,
+    location: e.location,
+    degree: e.degree,
+    cgpa: e.cgpa,
+  }))
+})
 </script>
 
 <template>
@@ -13,7 +41,7 @@ import { personal, education } from '~/data/index'
           <UiSectionHeading label="About" title="A bit about me" />
 
           <div class="space-y-4 text-text-secondary leading-relaxed reveal">
-            <p v-for="(paragraph, i) in personal.bio" :key="i">{{ paragraph }}</p>
+            <p v-for="(paragraph, i) in bio" :key="i">{{ paragraph }}</p>
           </div>
         </div>
 

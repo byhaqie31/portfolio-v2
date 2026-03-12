@@ -1,9 +1,30 @@
 <script setup lang="ts">
 import { ArrowUpRight } from 'lucide-vue-next'
-import { projects } from '~/data/index'
+import { projects as staticProjects } from '~/data/index'
 
-const featured = computed(() => projects.filter((p) => p.featured))
-const others = computed(() => projects.filter((p) => !p.featured))
+const { data: projectsData } = await useFetch<any[]>('/api/projects', {
+  key: 'projects',
+  default: () => staticProjects as any[],
+})
+
+const projects = computed(() => {
+  const data = projectsData.value as any[]
+  if (!data?.length) return staticProjects
+  return data.map((p: any) => ({
+    id: p.slug || p.id,
+    tag: p.tag,
+    featured: !!p.featured,
+    name: p.name,
+    description: p.description,
+    stack: p.stack || [],
+    metrics: p.metrics,
+    href: p.href,
+    github: p.github_url || p.github,
+  }))
+})
+
+const featured = computed(() => projects.value.filter((p) => p.featured))
+const others = computed(() => projects.value.filter((p) => !p.featured))
 </script>
 
 <template>

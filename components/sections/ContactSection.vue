@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import { Mail, ArrowRight } from 'lucide-vue-next'
-import { personal } from '~/data/index'
+import { personal as staticPersonal } from '~/data/index'
+
+const { data: personalData } = await useFetch<any>('/api/personal', {
+  key: 'personal',
+})
+
+const personal = computed(() => {
+  const d = personalData.value as any
+  return {
+    email: d?.email || staticPersonal.email,
+    github: d?.github || staticPersonal.github,
+    linkedin: d?.linkedin || staticPersonal.linkedin,
+  }
+})
 </script>
 
 <template>

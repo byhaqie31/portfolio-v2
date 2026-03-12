@@ -1,10 +1,37 @@
 <script setup lang="ts">
 import { ArrowRight, Globe, MapPin } from 'lucide-vue-next'
-import { personal } from '~/data/index'
+import { personal as staticPersonal } from '~/data/index'
+
+const { data: personalData } = await useFetch<any>('/api/personal', {
+  key: 'personal',
+  default: () => ({
+    ...staticPersonal,
+    bio_1: staticPersonal.bio[0],
+    bio_2: staticPersonal.bio[1],
+    short_name: staticPersonal.shortName,
+    available_for: staticPersonal.availableFor,
+  } as any),
+})
+
+const personal = computed(() => {
+  const d = personalData.value as any
+  return {
+    name: d?.name || staticPersonal.name,
+    shortName: d?.short_name || staticPersonal.shortName,
+    role: d?.role || staticPersonal.role,
+    summary: d?.summary || staticPersonal.summary,
+    location: d?.location || staticPersonal.location,
+    email: d?.email || staticPersonal.email,
+    website: d?.website || staticPersonal.website,
+    github: d?.github || staticPersonal.github,
+    linkedin: d?.linkedin || staticPersonal.linkedin,
+    availableFor: d?.available_for || staticPersonal.availableFor,
+    focus: d?.focus || staticPersonal.focus,
+  }
+})
 
 // Typewriter for the role
 const displayed = ref('')
-const target = personal.role
 let i = 0
 
 // Cursor spotlight
@@ -24,6 +51,7 @@ function animateCursor() {
 }
 
 onMounted(() => {
+  const target = personal.value.role
   const timer = setInterval(() => {
     displayed.value += target[i]
     i++

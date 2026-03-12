@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import { MapPin } from 'lucide-vue-next'
-import { experiences } from '~/data/index'
+import { experiences as staticExperiences } from '~/data/index'
+
+const { data: experiencesData } = await useFetch<any[]>('/api/experiences', {
+  key: 'experiences',
+  default: () => staticExperiences as any[],
+})
+
+const experiences = computed(() => {
+  const data = experiencesData.value as any[]
+  if (!data?.length) return staticExperiences
+  return data.map((e: any) => ({
+    id: e.slug || e.id,
+    period: e.period,
+    company: e.company,
+    location: e.location,
+    role: e.role,
+    current: e.is_current || e.current,
+    description: e.description,
+    bullets: e.bullets || [],
+    tags: e.tags || [],
+  }))
+})
 </script>
 
 <template>
