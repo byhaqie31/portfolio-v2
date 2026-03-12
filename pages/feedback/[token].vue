@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'dashboard' })
 
 const route = useRoute()
 const token = route.params.token as string

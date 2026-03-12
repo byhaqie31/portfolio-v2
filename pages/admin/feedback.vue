@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'dashboard' })
 
 const adminKey = ref('')
 const authenticated = ref(false)
