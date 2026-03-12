@@ -9,6 +9,7 @@ const genRelationship = ref('')
 const generatedUrl = ref('')
 const generating = ref(false)
 const copied = ref(false)
+const copiedTokenId = ref<number | null>(null)
 
 const feedbacks = ref<any[]>([])
 const loading = ref(false)
@@ -71,6 +72,13 @@ async function copyUrl() {
   await navigator.clipboard.writeText(generatedUrl.value)
   copied.value = true
   setTimeout(() => (copied.value = false), 2000)
+}
+
+async function copyFeedbackUrl(fb: any) {
+  const url = `${window.location.origin}/feedback/${fb.token}`
+  await navigator.clipboard.writeText(url)
+  copiedTokenId.value = fb.id
+  setTimeout(() => (copiedTokenId.value = null), 2000)
 }
 
 async function togglePublic(id: number) {
@@ -203,6 +211,14 @@ function stars(n: number | null) {
                   {{ [fb.position, fb.company].filter(Boolean).join(' at ') }}
                 </p>
                 <p v-if="fb.email" class="text-text-muted text-xs mt-1 font-tech">{{ fb.email }}</p>
+              </div>
+              <div v-if="!fb.submitted_at" class="shrink-0">
+                <button
+                  @click="copyFeedbackUrl(fb)"
+                  class="btn-ghost text-xs"
+                >
+                  {{ copiedTokenId === fb.id ? 'Copied!' : 'Copy URL' }}
+                </button>
               </div>
               <div v-if="fb.submitted_at" class="flex items-center gap-2 shrink-0">
                 <span class="text-2xs font-tech" :class="fb.is_public ? 'text-accent' : 'text-text-muted'">

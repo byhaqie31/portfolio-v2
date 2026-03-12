@@ -96,6 +96,9 @@ async function submit() {
         <div class="text-4xl mb-4">🎉</div>
         <h2 class="text-xl font-display text-text-primary mb-2">Thank You!</h2>
         <p class="text-text-muted text-sm">Your feedback has been submitted successfully. It means a lot!</p>
+        <a href="https://baihaqie.com" target="_blank" class="btn-primary inline-block mt-6">
+          View Profile
+        </a>
       </div>
 
       <!-- Feedback Form -->
