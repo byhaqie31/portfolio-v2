@@ -42,7 +42,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
 
 <template>
   <section class="relative min-h-screen flex items-center px-6 pt-14 overflow-hidden" @mousemove="onMouseMove">
-    <!-- Cursor spotlight -->
+    <!-- Cursor spotlight — cyan glow -->
     <div
       class="absolute pointer-events-none rounded-full transition-opacity duration-300"
       :style="{
@@ -51,20 +51,27 @@ onUnmounted(() => cancelAnimationFrame(raf))
         left: `${smoothCursor.x}px`,
         top: `${smoothCursor.y}px`,
         transform: 'translate(-50%, -50%)',
-        background: 'radial-gradient(circle, rgba(200,169,126,0.07) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgb(var(--color-accent) / 0.08) 0%, transparent 65%)',
         filter: 'blur(8px)',
       }"
     />
 
-    <!-- Dot grid -->
+    <!-- Hex grid pattern -->
     <div
-      class="absolute inset-0 pointer-events-none"
-      style="background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px); background-size: 28px 28px;"
+      class="absolute inset-0 pointer-events-none opacity-[0.04]"
+      style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 28px 28px;"
     />
-    <!-- Gold glow -->
+
+    <!-- Cyan ambient glow -->
     <div
       class="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgba(200,169,126,0.05) 0%, transparent 70%); filter: blur(60px);"
+      style="background: radial-gradient(circle, rgb(var(--color-accent) / 0.06) 0%, transparent 70%); filter: blur(60px);"
+    />
+
+    <!-- Rose secondary glow -->
+    <div
+      class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none"
+      style="background: radial-gradient(circle, rgb(var(--color-accent-secondary) / 0.04) 0%, transparent 70%); filter: blur(60px);"
     />
 
     <div class="relative max-w-5xl mx-auto w-full py-24 md:py-36 flex flex-col md:flex-row items-center gap-12 md:gap-16">
@@ -72,28 +79,28 @@ onUnmounted(() => cancelAnimationFrame(raf))
       <div class="flex-1 min-w-0">
       <!-- Availability badge -->
       <div
-        class="animate-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/20 bg-accent/5 text-xs text-accent mb-10"
+        class="animate-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded border border-accent/20 bg-accent/5 font-mono text-xs text-accent mb-10 uppercase tracking-wider"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+        <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
         Available for {{ personal.availableFor }}
       </div>
 
-      <!-- Name -->
-      <p class="animate-reveal font-mono text-sm text-text-muted mb-3" style="animation-delay:0.05s">
-        {{ personal.name }}
+      <!-- Eyebrow label -->
+      <p class="animate-reveal font-mono text-2xs text-text-muted uppercase tracking-[0.35em] mb-3" style="animation-delay:0.05s">
+        // {{ personal.name }}
       </p>
 
-      <!-- Role — typewriter -->
+      <!-- Role — typewriter with Orbitron -->
       <h1
-        class="animate-reveal text-4xl sm:text-5xl md:text-[3.25rem] font-semibold tracking-tight leading-[1.1] text-text-primary mb-2"
+        class="animate-reveal font-display text-4xl sm:text-5xl md:text-[3.25rem] font-bold tracking-[0.02em] leading-[1.1] text-text-primary mb-2 neon-glow"
         style="animation-delay:0.1s"
       >
-        {{ displayed }}<span class="animate-blink text-accent ml-0.5">|</span>
+        {{ displayed }}<span class="animate-blink text-accent ml-0.5">_</span>
       </h1>
 
       <!-- Focus area -->
-      <p class="animate-reveal font-serif text-lg text-text-secondary italic mt-3 mb-8" style="animation-delay:0.15s">
-        Focused on {{ personal.focus }}
+      <p class="animate-reveal text-lg text-text-secondary mt-3 mb-8" style="animation-delay:0.15s">
+        Focused on <span class="text-accent font-medium">{{ personal.focus }}</span>
       </p>
 
       <!-- Summary -->
@@ -117,16 +124,16 @@ onUnmounted(() => cancelAnimationFrame(raf))
 
       <!-- Meta row -->
       <div class="animate-reveal flex flex-wrap items-center gap-5" style="animation-delay:0.3s">
-        <span class="flex items-center gap-1.5 text-xs text-text-muted">
+        <span class="flex items-center gap-1.5 font-mono text-2xs text-text-muted uppercase tracking-wider">
           <MapPin :size="12" />
           {{ personal.location }}
         </span>
-        <span class="w-px h-3 bg-border" />
+        <span class="w-px h-3 bg-accent/20" />
         <a
           :href="personal.website"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
+          class="flex items-center gap-1.5 font-mono text-2xs text-text-muted hover:text-accent transition-colors uppercase tracking-wider"
         >
           <Globe :size="12" />
           baihaqie.com
@@ -142,10 +149,10 @@ onUnmounted(() => cancelAnimationFrame(raf))
           <div class="absolute inset-0 rounded-full border border-accent/15 scale-100 opacity-0 group-hover:scale-150 group-hover:opacity-0 transition-all duration-700 ease-out" style="transition-delay: 150ms;" />
           <div class="absolute inset-0 rounded-full border border-accent/10 scale-100 opacity-0 group-hover:scale-[1.75] group-hover:opacity-0 transition-all duration-700 ease-out" style="transition-delay: 300ms;" />
 
-          <!-- Outer glow -->
+          <!-- Outer cyan glow -->
           <div
             class="absolute -inset-6 rounded-full pointer-events-none transition-opacity duration-500 opacity-100 group-hover:opacity-60"
-            style="background: radial-gradient(circle, rgba(200,169,126,0.18) 0%, transparent 70%); filter: blur(20px);"
+            style="background: radial-gradient(circle, rgb(var(--color-accent) / 0.2) 0%, transparent 70%); filter: blur(20px);"
           />
           <!-- Rotating dashed ring -->
           <div
@@ -157,14 +164,14 @@ onUnmounted(() => cancelAnimationFrame(raf))
           <!-- Inner frame with shadow + zoom -->
           <div
             class="relative w-full h-full rounded-full overflow-hidden border-2 border-accent/50 group-hover:border-accent/80 transition-all duration-500"
-            style="box-shadow: 0 0 0 4px rgba(200,169,126,0.08), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(200,169,126,0.12);"
+            style="box-shadow: 0 0 0 4px rgb(var(--color-accent) / 0.08), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgb(var(--color-accent) / 0.15);"
           >
             <img
               src="/images/ProfilePicture.png"
               alt="Ahmad Baihaqie"
               class="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
             />
-            <!-- Subtle vignette overlay -->
+            <!-- Vignette overlay -->
             <div
               class="absolute inset-0 rounded-full pointer-events-none"
               style="background: radial-gradient(circle at 50% 110%, rgba(0,0,0,0.35) 0%, transparent 65%);"
@@ -179,7 +186,10 @@ onUnmounted(() => cancelAnimationFrame(raf))
 
     <!-- Scroll cue -->
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
-      <div class="w-px h-10 bg-gradient-to-b from-border/0 to-border/60 mx-auto animate-pulse" />
+      <div
+        class="w-px h-10 mx-auto animate-pulse"
+        style="background: linear-gradient(to bottom, transparent, rgb(var(--color-accent) / 0.6));"
+      />
     </div>
   </section>
 </template>

@@ -4,12 +4,13 @@ import { experiences } from '~/data/index'
 </script>
 
 <template>
-  <section id="work" class="section border-t border-border">
+  <section id="work" class="section">
+    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading label="Experience" title="Where I've worked" />
 
       <!-- Work experience -->
-      <div class="divide-y divide-border rounded-xl border border-border bg-surface overflow-hidden mb-16">
+      <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden mb-16">
         <div
           v-for="job in experiences"
           :key="job.id"
@@ -17,10 +18,10 @@ import { experiences } from '~/data/index'
         >
           <!-- Left -->
           <div class="md:w-44 shrink-0">
-            <p class="font-mono text-xs text-text-muted">{{ job.period }}</p>
+            <p class="font-mono text-xs text-text-muted uppercase tracking-wider">{{ job.period }}</p>
             <span
               v-if="job.current"
-              class="inline-block mt-1 font-mono text-2xs px-2 py-0.5 rounded border border-green-400/20 bg-green-400/5 text-green-400"
+              class="inline-block mt-1 font-mono text-2xs px-2 py-0.5 rounded border border-accent-tertiary/20 bg-accent-tertiary/5 text-accent-tertiary uppercase tracking-wider"
             >
               Current
             </span>
@@ -28,11 +29,11 @@ import { experiences } from '~/data/index'
 
           <!-- Right -->
           <div class="flex-1">
-            <h3 class="text-sm font-semibold text-text-primary group-hover:text-text-primary transition-colors mb-0.5">
+            <h3 class="font-display text-sm font-bold uppercase tracking-[0.05em] text-text-primary group-hover:text-accent transition-colors mb-0.5">
               {{ job.role }}
             </h3>
             <p class="text-sm text-text-secondary mb-1">{{ job.company }}</p>
-            <p class="flex items-center gap-1 font-mono text-2xs text-text-muted mb-4">
+            <p class="flex items-center gap-1 font-mono text-2xs text-text-muted mb-4 uppercase tracking-wider">
               <MapPin :size="10" />{{ job.location }}
             </p>
 

@@ -18,7 +18,6 @@ onMounted(() => {
     scrolled.value = window.scrollY > 24
   }, { passive: true })
 
-  // Track active section via IntersectionObserver
   const sectionIds = navLinks.map((l) => l.href.replace('#', ''))
 
   const observer = new IntersectionObserver(
@@ -46,11 +45,13 @@ function closeMenu() { mobileOpen.value = false }
 <template>
   <header
     class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-    :class="scrolled ? 'bg-bg/80 backdrop-blur-md border-b border-border' : 'bg-transparent'"
+    :class="scrolled
+      ? 'bg-bg/80 backdrop-blur-md border-b border-accent/10'
+      : 'bg-transparent'"
   >
     <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink href="/" class="font-mono text-sm text-text-primary hover:text-accent transition-colors">
+      <NuxtLink href="/" class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary hover:text-accent transition-colors neon-glow">
         qie<span class="text-accent">.dev</span>
       </NuxtLink>
 
@@ -59,15 +60,20 @@ function closeMenu() { mobileOpen.value = false }
         <li v-for="link in navLinks" :key="link.label">
           <a
             :href="link.href"
-            class="relative text-sm transition-colors duration-200"
+            class="relative font-mono text-xs uppercase tracking-[0.1em] transition-colors duration-200"
             :class="activeSection === link.href.replace('#', '')
-              ? 'text-text-primary'
-              : 'text-text-secondary hover:text-text-primary'"
+              ? 'text-accent'
+              : 'text-text-muted hover:text-text-primary'"
           >
             {{ link.label }}
             <span
-              class="absolute -bottom-0.5 left-0 right-0 h-px bg-accent transition-all duration-300"
-              :class="activeSection === link.href.replace('#', '') ? 'opacity-100' : 'opacity-0'"
+              class="absolute -bottom-0.5 left-0 right-0 h-px transition-all duration-300"
+              :class="activeSection === link.href.replace('#', '')
+                ? 'opacity-100 bg-accent'
+                : 'opacity-0 bg-accent'"
+              :style="activeSection === link.href.replace('#', '')
+                ? 'box-shadow: 0 0 8px rgb(var(--color-accent) / 0.5)'
+                : ''"
             />
           </a>
         </li>
@@ -75,6 +81,11 @@ function closeMenu() { mobileOpen.value = false }
 
       <!-- Right actions -->
       <div class="hidden md:flex items-center gap-2">
+        <!-- Status indicator -->
+        <span class="flex items-center gap-1.5 mr-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
+          <span class="font-mono text-2xs text-text-muted tracking-wide uppercase">Online</span>
+        </span>
         <!-- Theme toggle -->
         <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
           <Sun v-if="isDark" :size="14" />
@@ -111,21 +122,21 @@ function closeMenu() { mobileOpen.value = false }
     >
       <div
         v-if="mobileOpen"
-        class="md:hidden border-t border-border bg-surface/95 backdrop-blur-md px-6 py-5 flex flex-col gap-4"
+        class="md:hidden border-t border-accent/10 bg-surface/95 backdrop-blur-md px-6 py-5 flex flex-col gap-4"
       >
         <a
           v-for="link in navLinks"
           :key="link.label"
           :href="link.href"
-          class="text-sm py-1 transition-colors"
+          class="font-mono text-xs uppercase tracking-[0.1em] py-1 transition-colors"
           :class="activeSection === link.href.replace('#', '')
-            ? 'text-text-primary font-medium'
+            ? 'text-accent font-medium'
             : 'text-text-secondary'"
           @click="closeMenu"
         >
           {{ link.label }}
         </a>
-        <div class="border-t border-border pt-4 flex flex-col gap-2">
+        <div class="border-t border-accent/10 pt-4 flex flex-col gap-2">
           <button class="btn-ghost text-sm justify-start" @click="() => { toggleTheme() }">
             <Sun v-if="isDark" :size="14" /> <Moon v-else :size="14" />
             {{ isDark ? 'Light mode' : 'Dark mode' }}

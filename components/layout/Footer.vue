@@ -6,15 +6,16 @@ const year = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="border-t border-border px-6 py-12">
+  <footer class="px-6 py-12">
+    <hr class="section-divider mb-12" />
     <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <!-- Left -->
       <div>
-        <p class="font-mono text-sm text-text-primary mb-1">
+        <p class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary mb-1">
           ahmad<span class="text-accent">.baihaqie</span>
         </p>
-        <p class="text-xs text-text-muted">
-          © {{ year }} — Built with Nuxt & Tailwind CSS
+        <p class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+          &copy; {{ year }} &mdash; Built with Nuxt & Tailwind CSS
         </p>
       </div>
 

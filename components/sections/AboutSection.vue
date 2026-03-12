@@ -4,7 +4,8 @@ import { personal, education } from '~/data/index'
 </script>
 
 <template>
-  <section id="about" class="section border-t border-border">
+  <section id="about" class="section">
+    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-5xl mx-auto">
       <div class="grid md:grid-cols-2 gap-16 items-start">
         <!-- Left: bio -->
@@ -18,8 +19,8 @@ import { personal, education } from '~/data/index'
 
         <!-- Right: academic background -->
         <div class="reveal reveal-delay-2">
-          <UiSectionHeading label="Academic Background" title="Where I study" />
-          <div class="divide-y divide-border rounded-xl border border-border bg-surface overflow-hidden">
+          <UiSectionHeading label="Academic" title="Where I study" />
+          <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
             <div
               v-for="edu in education"
               :key="edu.id"
@@ -28,16 +29,16 @@ import { personal, education } from '~/data/index'
               <div class="flex items-start justify-between gap-2">
                 <h3 class="text-sm font-semibold text-text-primary leading-snug">{{ edu.degree }}</h3>
                 <span
-                  class="font-mono text-2xs px-2 py-0.5 rounded border shrink-0"
+                  class="font-mono text-2xs px-2 py-0.5 rounded border shrink-0 uppercase tracking-wider"
                   :class="edu.cgpa === 'In Progress'
-                    ? 'border-green-400/20 bg-green-400/5 text-green-400'
+                    ? 'border-emerald-600/20 bg-emerald-600/5 text-emerald-600 dark:border-accent-tertiary/20 dark:bg-accent-tertiary/5 dark:text-accent-tertiary'
                     : 'border-accent/20 bg-accent/5 text-accent'"
                 >
                   {{ edu.cgpa === 'In Progress' ? 'In Progress' : `CGPA ${edu.cgpa}` }}
                 </span>
               </div>
               <p class="text-sm text-text-secondary">{{ edu.institution }}</p>
-              <p class="flex items-center gap-1 font-mono text-2xs text-text-muted">
+              <p class="flex items-center gap-1 font-mono text-2xs text-text-muted uppercase tracking-wider">
                 <MapPin :size="10" />{{ edu.location }} · {{ edu.period }}
               </p>
             </div>

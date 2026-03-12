@@ -3,10 +3,11 @@ import { references } from '~/data/index'
 </script>
 
 <template>
-  <section id="references" class="section border-t border-border">
+  <section id="references" class="section">
+    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading
-        label="References"
+        label="Transmissions"
         title="What people say"
         description="Feedback and references from those I've worked with."
       />
@@ -15,26 +16,29 @@ import { references } from '~/data/index'
         <div
           v-for="ref in references"
           :key="ref.name"
-          class="reveal card-hover"
+          class="reveal card-hover relative overflow-hidden"
         >
-          <!-- Quote placeholder — replace with actual testimonial text -->
+          <!-- Corner accent -->
+          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
+
+          <!-- Quote -->
           <div class="mb-5">
-            <p class="font-serif italic text-text-secondary leading-relaxed text-sm">
+            <p class="text-text-secondary leading-relaxed text-sm italic">
               "Reference quote or feedback from {{ ref.name }} will appear here."
             </p>
           </div>
 
-          <div class="pt-4 border-t border-border flex items-start gap-3">
+          <div class="pt-4 border-t border-accent/10 flex items-start gap-3">
             <!-- Avatar initial -->
-            <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+            <div class="w-8 h-8 rounded bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
               <span class="font-mono text-xs text-accent font-semibold">
                 {{ ref.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) }}
               </span>
             </div>
             <div>
               <p class="text-sm font-medium text-text-primary">{{ ref.name }}</p>
-              <p class="text-xs text-text-muted">{{ ref.title }}</p>
-              <p class="text-xs text-text-muted">{{ ref.company }}</p>
+              <p class="font-mono text-2xs text-text-muted uppercase tracking-wider">{{ ref.title }}</p>
+              <p class="font-mono text-2xs text-text-muted uppercase tracking-wider">{{ ref.company }}</p>
             </div>
           </div>
         </div>

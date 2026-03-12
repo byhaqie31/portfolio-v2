@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Bricolage Grotesque', 'system-ui', 'sans-serif'],
-        serif: ['Instrument Serif', 'Georgia', 'serif'],
-        mono: ['Geist Mono', 'monospace'],
+        sans: ['Syne', 'system-ui', 'sans-serif'],
+        display: ['Orbitron', 'system-ui', 'sans-serif'],
+        mono: ['DM Mono', 'monospace'],
       },
       colors: {
         bg: {
@@ -30,6 +30,8 @@ export default {
           DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
           muted: 'rgb(var(--color-accent-muted) / <alpha-value>)',
           subtle: 'rgb(var(--color-accent-subtle) / <alpha-value>)',
+          secondary: 'rgb(var(--color-accent-secondary) / <alpha-value>)',
+          tertiary: 'rgb(var(--color-accent-tertiary) / <alpha-value>)',
         },
         border: {
           DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
@@ -61,6 +63,8 @@ export default {
         'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'blink': 'blink 1.2s step-end infinite',
         'shimmer': 'shimmer 2s linear infinite',
+        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         reveal: {
@@ -86,6 +90,14 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.4', boxShadow: '0 0 20px rgb(var(--color-accent) / 0.2)' },
+          '50%': { opacity: '1', boxShadow: '0 0 40px rgb(var(--color-accent) / 0.4)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
       },
       transitionTimingFunction: {

@@ -9,9 +9,9 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      'Bricolage Grotesque': [300, 400, 500, 600, 700, 800],
-      'Instrument Serif': [400],
-      'Geist Mono': [400, 500],
+      'Orbitron': [400, 700, 900],
+      'DM Mono': [300, 400, 500],
+      'Syne': [400, 600, 800],
     },
     display: 'swap',
     preload: true,
@@ -26,7 +26,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#080808' },
+        { name: 'theme-color', content: '#020408' },
       ],
     },
   },

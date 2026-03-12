@@ -3,10 +3,11 @@ import { skillGroups } from '~/data/index'
 </script>
 
 <template>
-  <section id="experience" class="section border-t border-border">
+  <section id="experience" class="section">
+    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading
-        label="Experience"
+        label="Tech Stack"
         title="Skills & Tools"
         description="Technologies and tools I use day-to-day to design and ship products."
       />
@@ -15,9 +16,11 @@ import { skillGroups } from '~/data/index'
         <div
           v-for="group in skillGroups"
           :key="group.label"
-          class="reveal card"
+          class="reveal card relative overflow-hidden"
         >
-          <p class="font-mono text-2xs text-accent uppercase tracking-widest mb-4">{{ group.label }}</p>
+          <!-- Corner accent -->
+          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
+          <p class="font-mono text-2xs text-accent uppercase tracking-[0.25em] mb-4">{{ group.label }}</p>
           <div class="flex flex-wrap gap-2">
             <span v-for="item in group.items" :key="item" class="skill-tag">
               {{ item }}

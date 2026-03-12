@@ -82,16 +82,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
 
         <!-- Panel -->
         <div
-          class="relative w-full max-w-lg rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 overflow-hidden animate-slide-down"
+          class="relative w-full max-w-lg rounded border border-accent/20 bg-surface overflow-hidden animate-slide-down"
+          style="box-shadow: 0 0 40px rgb(var(--color-accent) / 0.1), 0 25px 50px rgba(0,0,0,0.5);"
         >
           <!-- Search input -->
-          <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
-            <Search :size="16" class="text-text-muted shrink-0" />
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-accent/10">
+            <Search :size="16" class="text-accent shrink-0" />
             <input
               v-model="query"
               type="text"
               placeholder="Type a command or search..."
-              class="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
+              class="flex-1 bg-transparent font-mono text-sm text-text-primary placeholder:text-text-muted outline-none"
               autofocus
             />
             <button class="btn-icon shrink-0" @click="close">
@@ -101,25 +102,27 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
 
           <!-- Results -->
           <div class="py-2 max-h-72 overflow-y-auto">
-            <p v-if="filtered.length === 0" class="px-4 py-6 text-sm text-text-muted text-center">
+            <p v-if="filtered.length === 0" class="px-4 py-6 font-mono text-sm text-text-muted text-center">
               No results found.
             </p>
             <button
               v-for="(cmd, i) in filtered"
               :key="cmd.id"
               class="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors"
-              :class="i === selected ? 'bg-surface-overlay text-text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'"
+              :class="i === selected
+                ? 'bg-accent/10 text-text-primary border-l-2 border-accent'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border-l-2 border-transparent'"
               @click="cmd.action"
               @mouseenter="selected = i"
             >
-              <span class="text-sm font-medium">{{ cmd.label }}</span>
-              <span class="text-xs text-text-muted truncate">{{ cmd.description }}</span>
+              <span class="font-mono text-sm font-medium">{{ cmd.label }}</span>
+              <span class="font-mono text-2xs text-text-muted truncate uppercase tracking-wider">{{ cmd.description }}</span>
               <ArrowRight v-if="i === selected" :size="14" class="shrink-0 text-accent" />
             </button>
           </div>
 
           <!-- Footer hint -->
-          <div class="px-4 py-2 border-t border-border flex items-center gap-4 text-text-muted">
+          <div class="px-4 py-2 border-t border-accent/10 flex items-center gap-4 text-text-muted">
             <span class="font-mono text-2xs">↑↓ navigate</span>
             <span class="font-mono text-2xs">↵ select</span>
             <span class="font-mono text-2xs">esc close</span>

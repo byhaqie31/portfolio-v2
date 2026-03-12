@@ -10,7 +10,7 @@ const others = computed(() => projects.filter((p) => !p.featured))
   <section id="projects" class="section">
     <div class="max-w-5xl mx-auto">
       <UiSectionHeading
-        label="Selected Work"
+        label="Project Registry"
         title="Things I've built"
         description="A selection of projects I've shipped — from fintech portals to full-stack web apps."
       />
@@ -27,19 +27,22 @@ const others = computed(() => projects.filter((p) => !p.featured))
 
       <!-- Other projects — compact list -->
       <div v-if="others.length" class="mt-8 reveal">
-        <p class="font-mono text-2xs text-text-muted uppercase tracking-widest mb-4">More projects</p>
-        <div class="divide-y divide-border rounded-xl border border-border bg-surface overflow-hidden">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="font-mono text-2xs text-text-muted uppercase tracking-[0.25em]">More projects</span>
+          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border) / 0.2), transparent);" />
+        </div>
+        <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
           <div
             v-for="project in others"
             :key="project.id"
             class="group flex items-center justify-between px-5 py-4 hover:bg-surface-raised transition-colors"
           >
             <div>
-              <span class="text-sm font-medium text-text-primary group-hover:text-text-primary transition-colors">
+              <span class="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
                 {{ project.name }}
               </span>
               <div class="flex items-center gap-3 mt-0.5">
-                <span class="font-mono text-2xs text-accent">{{ project.tag }}</span>
+                <span class="font-mono text-2xs text-accent uppercase tracking-wider">{{ project.tag }}</span>
                 <div class="flex gap-2">
                   <span v-for="s in project.stack.slice(0, 3)" :key="s" class="font-mono text-2xs text-text-muted">
                     {{ s }}

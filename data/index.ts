@@ -49,10 +49,30 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 'razer-merchant-portal',
+    id: 'axelnova-dashboard',
     tag: '⚡ Featured',
     featured: true,
-    name: 'Razer Merchant Services — Merchant & Admin Portal',
+    name: 'AxelNova Dashboard',
+    description:
+      'A cyberpunk-themed mission control dashboard featuring a rocket launch animation, project registry, and futuristic UI design. Built with vanilla HTML/CSS/JS with custom starfield canvas, scanline effects, and neon glow aesthetics.',
+    stack: ['HTML', 'CSS', 'JavaScript', 'SVG Animation'],
+    href: 'https://www.axelnova.tech',
+  },
+  {
+    id: 'house-of-parfum',
+    tag: '⚡ Featured',
+    featured: true,
+    name: 'House of Parfum — Online Perfume Boutique',
+    description:
+      'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
+    stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
+    href: '#',
+    github: 'https://github.com/byhaqie31/HouseOfParfum',
+  },
+  {
+    id: 'razer-merchant-portal',
+    tag: 'Enterprise',
+    name: 'Fiuu (formerly Razer Merchant Services) — Merchant & Admin Portal',
     description:
       'Designed and developed high-quality user interfaces across the Merchant Portal, Admin Portal, and multiple fintech payment modules. Streamlined UI flows, refined error messages, improved form validations, and optimized data-driven interfaces — contributing to higher system adoption and reduced support escalations.',
     stack: ['Vue.js', 'Tailwind CSS', 'JavaScript', 'REST API', 'Figma'],
@@ -61,18 +81,7 @@ export const projects: Project[] = [
       { value: '↑', label: 'System adoption' },
       { value: '3+', label: 'Portals shipped' },
     ],
-    href: '#',
-  },
-  {
-    id: 'house-of-parfum',
-    tag: 'Full Stack',
-    featured: true,
-    name: 'House of Parfum — Online Perfume Boutique',
-    description:
-      'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
-    stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
-    href: '#',
-    github: 'https://github.com/byhaqie31/HouseOfParfum',
+    href: 'https://fiuu.com',
   },
   {
     id: 'graphic-design',
@@ -102,8 +111,8 @@ export const experiences: Experience[] = [
   {
     id: 'razer',
     period: 'Dec 2025 – Present',
-    company: 'Razer Merchant Services',
-    location: 'Kuala Lumpur, W.P',
+    company: 'Fiuu (formerly Razer Merchant Services)',
+    location: 'Shah Alam, Selangor',
     role: 'Software Engineer – UI/UX',
     current: true,
     description:
