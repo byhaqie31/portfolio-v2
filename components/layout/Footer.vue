@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Mail } from 'lucide-vue-next'
 import { personal } from '~/data/index'
 
 const year = new Date().getFullYear()
@@ -44,7 +43,7 @@ const year = new Date().getFullYear()
           class="btn-icon"
           aria-label="Email"
         >
-          <Mail :size="15" />
+          <Icon name="fluent:mail-16-filled" size="15" />
         </a>
       </div>
     </div>

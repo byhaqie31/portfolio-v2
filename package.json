@@ -10,15 +10,16 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@iconify-json/fluent": "^1.2.40",
     "@nuxt/cli": "^3.34.0",
+    "@nuxt/icon": "^2.2.1",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@vueuse/core": "^14.2.1",
     "clsx": "^2.1.1",
-    "lucide-vue-next": "^0.577.0",
     "mysql2": "^3.19.1",
-    "nuxt": "^3.21.1",
+    "nuxt": "^4.4.2",
     "vue": "^3.5.30",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.0.3"
   }
 }

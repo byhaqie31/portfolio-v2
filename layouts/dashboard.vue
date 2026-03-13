@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Sun, Moon } from 'lucide-vue-next'
 import { useTheme } from '~/composables/useTheme'
 
 const { isDark, toggle: toggleTheme, init } = useTheme()
@@ -113,8 +112,8 @@ function initStarfield() {
         qie<span class="text-accent">.dev</span>
       </span>
       <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
-        <Sun v-if="isDark" :size="14" />
-        <Moon v-else :size="14" />
+        <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />
+        <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
       </button>
     </header>
 

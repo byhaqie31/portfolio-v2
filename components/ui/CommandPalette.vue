@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Search, X, ArrowRight } from 'lucide-vue-next'
 import { useCommandPalette } from '~/composables/useCommandPalette'
 import { navLinks, personal } from '~/data/index'
 
@@ -87,7 +86,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
         >
           <!-- Search input -->
           <div class="flex items-center gap-3 px-4 py-3 border-b border-accent/10">
-            <Search :size="16" class="text-accent shrink-0" />
+            <Icon name="fluent:search-16-filled" size="16" class="text-accent shrink-0" />
             <input
               v-model="query"
               type="text"
@@ -96,7 +95,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
               autofocus
             />
             <button class="btn-icon shrink-0" @click="close">
-              <X :size="14" />
+              <Icon name="fluent:dismiss-16-filled" size="14" />
             </button>
           </div>
 
@@ -117,7 +116,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
             >
               <span class="font-mono text-sm font-medium">{{ cmd.label }}</span>
               <span class="font-mono text-2xs text-text-muted truncate uppercase tracking-wider">{{ cmd.description }}</span>
-              <ArrowRight v-if="i === selected" :size="14" class="shrink-0 text-accent" />
+              <Icon v-if="i === selected" name="fluent:arrow-right-16-filled" size="14" class="shrink-0 text-accent" />
             </button>
           </div>
 

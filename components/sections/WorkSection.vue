@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ArrowUpRight } from 'lucide-vue-next'
 import { projects as staticProjects } from '~/data/index'
 
 const { data: projectsData } = await useFetch<any[]>('/api/projects', {
@@ -77,7 +76,7 @@ const others = computed(() => projects.value.filter((p) => !p.featured))
               target="_blank"
               class="btn-icon opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <ArrowUpRight :size="13" />
+              <Icon name="fluent:arrow-up-right-16-filled" size="13" />
             </a>
           </div>
         </div>

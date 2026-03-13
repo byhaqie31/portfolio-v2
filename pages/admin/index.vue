@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { LogOut } from 'lucide-vue-next'
 import { useAdmin } from '~/composables/useAdmin'
 
 definePageMeta({ layout: 'dashboard' })
@@ -61,7 +60,7 @@ onMounted(() => {
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-display text-text-primary">Portfolio Admin</h1>
         <button @click="handleLogout" class="btn-ghost inline-flex items-center gap-2 text-sm">
-          <LogOut :size="14" />
+          <Icon name="fluent:sign-out-20-filled" size="14" />
           Logout
         </button>
       </div>

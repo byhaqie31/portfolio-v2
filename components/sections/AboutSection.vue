@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MapPin } from 'lucide-vue-next'
 import { personal as staticPersonal, education as staticEducation } from '~/data/index'
 
 const { data: personalData } = await useFetch<any>('/api/personal', {
@@ -67,7 +66,7 @@ const education = computed(() => {
               </div>
               <p class="text-sm text-text-secondary">{{ edu.institution }}</p>
               <p class="flex items-center gap-1 font-mono text-2xs text-text-muted uppercase tracking-wider">
-                <MapPin :size="10" />{{ edu.location }} · {{ edu.period }}
+                <Icon name="fluent:location-16-filled" size="10" />{{ edu.location }} · {{ edu.period }}
               </p>
             </div>
           </div>

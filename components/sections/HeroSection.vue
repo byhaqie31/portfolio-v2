@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ArrowRight, Globe, MapPin } from 'lucide-vue-next'
 import { personal as staticPersonal } from '~/data/index'
 
 const { data: personalData } = await useFetch<any>('/api/personal', {
@@ -143,7 +142,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
       <div class="animate-reveal flex flex-wrap items-center gap-3 mb-12" style="animation-delay:0.25s">
         <a href="#projects" class="btn-primary group">
           View my work
-          <ArrowRight :size="14" class="group-hover:translate-x-0.5 transition-transform" />
+          <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
         </a>
         <a :href="`mailto:${personal.email}`" class="btn-ghost">
           Get in touch
@@ -153,7 +152,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
       <!-- Meta row -->
       <div class="animate-reveal flex flex-wrap items-center gap-5" style="animation-delay:0.3s">
         <span class="flex items-center gap-1.5 font-mono text-2xs text-text-muted uppercase tracking-wider">
-          <MapPin :size="12" />
+          <Icon name="fluent:location-16-filled" size="12" />
           {{ personal.location }}
         </span>
         <span class="w-px h-3 bg-accent/20" />
@@ -163,7 +162,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
           rel="noopener noreferrer"
           class="flex items-center gap-1.5 font-mono text-2xs text-text-muted hover:text-accent transition-colors uppercase tracking-wider"
         >
-          <Globe :size="12" />
+          <Icon name="fluent:globe-16-filled" size="12" />
           baihaqie.com
         </a>
       </div>

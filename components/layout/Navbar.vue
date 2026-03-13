@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Menu, X, Search, Sun, Moon } from 'lucide-vue-next'
 import { navLinks, personal } from '~/data/index'
 import { useCommandPalette } from '~/composables/useCommandPalette'
 import { useTheme } from '~/composables/useTheme'
@@ -88,12 +87,12 @@ function closeMenu() { mobileOpen.value = false }
         </span>
         <!-- Theme toggle -->
         <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
-          <Sun v-if="isDark" :size="14" />
-          <Moon v-else :size="14" />
+          <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />
+          <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
         </button>
         <!-- Search / Command palette -->
         <button class="btn-icon" title="Search (⌘K)" @click="open">
-          <Search :size="14" />
+          <Icon name="fluent:search-16-filled" size="14" />
         </button>
         <a :href="`mailto:${personal.email}`" class="btn-primary text-xs px-4 py-2">
           Contact
@@ -106,8 +105,8 @@ function closeMenu() { mobileOpen.value = false }
         @click="mobileOpen = !mobileOpen"
         :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
       >
-        <X v-if="mobileOpen" :size="16" />
-        <Menu v-else :size="16" />
+        <Icon v-if="mobileOpen" name="fluent:dismiss-16-filled" size="16" />
+        <Icon v-else name="fluent:navigation-16-filled" size="16" />
       </button>
     </nav>
 
@@ -138,11 +137,11 @@ function closeMenu() { mobileOpen.value = false }
         </a>
         <div class="border-t border-accent/10 pt-4 flex flex-col gap-2">
           <button class="btn-ghost text-sm justify-start" @click="() => { toggleTheme() }">
-            <Sun v-if="isDark" :size="14" /> <Moon v-else :size="14" />
+            <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" /> <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
             {{ isDark ? 'Light mode' : 'Dark mode' }}
           </button>
           <button class="btn-ghost text-sm justify-start" @click="() => { open(); closeMenu() }">
-            <Search :size="14" /> Search
+            <Icon name="fluent:search-16-filled" size="14" /> Search
           </button>
           <a :href="`mailto:${personal.email}`" class="btn-primary text-sm" @click="closeMenu">
             Contact

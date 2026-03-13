@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MapPin } from 'lucide-vue-next'
 import { experiences as staticExperiences } from '~/data/index'
 
 const { data: experiencesData } = await useFetch<any[]>('/api/experiences', {
@@ -55,7 +54,7 @@ const experiences = computed(() => {
             </h3>
             <p class="text-sm text-text-secondary mb-1">{{ job.company }}</p>
             <p class="flex items-center gap-1 font-mono text-2xs text-text-muted mb-4 uppercase tracking-wider">
-              <MapPin :size="10" />{{ job.location }}
+              <Icon name="fluent:location-16-filled" size="10" />{{ job.location }}
             </p>
 
             <!-- Bullets -->

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Mail, ArrowRight } from 'lucide-vue-next'
 import { personal as staticPersonal } from '~/data/index'
 
 const { data: personalData } = await useFetch<any>('/api/personal', {
@@ -43,9 +42,9 @@ const personal = computed(() => {
           :href="`mailto:${personal.email}`"
           class="btn-primary inline-flex group mb-8"
         >
-          <Mail :size="15" />
+          <Icon name="fluent:mail-16-filled" size="15" />
           {{ personal.email }}
-          <ArrowRight :size="14" class="ml-1 group-hover:translate-x-0.5 transition-transform" />
+          <Icon name="fluent:arrow-right-16-filled" size="14" class="ml-1 group-hover:translate-x-0.5 transition-transform" />
         </a>
 
         <!-- Secondary links -->
