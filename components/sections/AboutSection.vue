@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { personal as staticPersonal, education as staticEducation } from '~/data/index'
 
-const { data: personalData } = await useFetch<any>('/api/personal', {
-  key: 'personal',
-})
+const { data: personalData } = await usePersonal()
 
 const { data: educationData } = await useFetch<any[]>('/api/education', {
   key: 'education',

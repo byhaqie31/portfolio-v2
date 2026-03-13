@@ -71,7 +71,7 @@ function closeMenu() { mobileOpen.value = false }
                 ? 'opacity-100 bg-accent'
                 : 'opacity-0 bg-accent'"
               :style="activeSection === link.href.replace('#', '')
-                ? 'box-shadow: 0 0 8px rgb(var(--color-accent) / 0.5)'
+                ? 'box-shadow: 0 0 8px rgb(var(--color-accent-raw) / 0.5)'
                 : ''"
             />
           </a>

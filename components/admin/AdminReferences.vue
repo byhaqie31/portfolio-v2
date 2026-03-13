@@ -78,11 +78,11 @@ onMounted(fetchFeedbacks)
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Name *</label>
-            <input v-model="genName" type="text" placeholder="Person's name" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="genName" type="text" placeholder="Person's name" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Relationship</label>
-            <select v-model="genRelationship" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)">
+            <select v-model="genRelationship" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)">
               <option value="">Select...</option>
               <option value="colleague">Colleague</option>
               <option value="client">Client</option>
@@ -96,7 +96,7 @@ onMounted(fetchFeedbacks)
         </button>
       </form>
 
-      <div v-if="generatedUrl" class="mt-4 p-3 rounded bg-accent/5 border flex items-center gap-3" style="border-color: rgb(var(--color-accent) / 0.3)">
+      <div v-if="generatedUrl" class="mt-4 p-3 rounded bg-accent/5 border flex items-center gap-3" style="border-color: rgb(var(--color-accent-raw) / 0.3)">
         <code class="text-xs font-tech text-accent flex-1 break-all">{{ generatedUrl }}</code>
         <button @click="copyUrl" class="btn-ghost text-xs shrink-0">{{ copied ? 'Copied!' : 'Copy' }}</button>
       </div>
@@ -122,7 +122,7 @@ onMounted(fetchFeedbacks)
           v-for="fb in feedbacks"
           :key="fb.id"
           class="card border-l-2"
-          :style="`border-left-color: ${fb.submitted_at ? 'rgb(var(--color-accent-tertiary))' : 'rgb(255, 200, 50)'}`"
+          :style="`border-left-color: ${fb.submitted_at ? 'rgb(var(--color-accent-tertiary-raw))' : 'rgb(255, 200, 50)'}`"
         >
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">

@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-03-13',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts', '@nuxt/icon'],
+  modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui'],
 
   icon: {
     serverBundle: 'local',

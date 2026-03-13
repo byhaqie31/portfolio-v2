@@ -8,6 +8,7 @@ const saving = ref(false)
 const form = ref<any>({})
 const languages = ref<any[]>([])
 const newLang = ref({ lang: '', level: '' })
+const fluencyLevels = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Beginner']
 const toast = ref('')
 
 async function load() {
@@ -65,75 +66,75 @@ onMounted(load)
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Full Name</label>
-            <input v-model="form.name" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.name" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Short Name</label>
-            <input v-model="form.short_name" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.short_name" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Role</label>
-          <input v-model="form.role" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+          <input v-model="form.role" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
 
         <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Bio (paragraph 1)</label>
-          <textarea v-model="form.bio_1" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+          <textarea v-model="form.bio_1" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
 
         <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Bio (paragraph 2)</label>
-          <textarea v-model="form.bio_2" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+          <textarea v-model="form.bio_2" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
 
         <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Summary</label>
-          <textarea v-model="form.summary" rows="2" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+          <textarea v-model="form.summary" rows="2" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Location</label>
-            <input v-model="form.location" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.location" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Email</label>
-            <input v-model="form.email" type="email" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.email" type="email" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Mobile</label>
-            <input v-model="form.mobile" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.mobile" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Website</label>
-            <input v-model="form.website" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.website" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">GitHub URL</label>
-            <input v-model="form.github" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.github" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">LinkedIn URL</label>
-            <input v-model="form.linkedin" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.linkedin" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Available For</label>
-            <input v-model="form.available_for" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.available_for" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Focus</label>
-            <input v-model="form.focus" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+            <input v-model="form.focus" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
           </div>
         </div>
 
@@ -147,16 +148,22 @@ onMounted(load)
         <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-4">Languages</h3>
 
         <div class="space-y-2 mb-4">
-          <div v-for="lang in languages" :key="lang.id" class="flex items-center gap-3 px-3 py-2 rounded bg-bg-secondary" style="border: 1px solid rgb(var(--color-border) / 0.1)">
+          <div v-for="lang in languages" :key="lang.id" class="flex items-center gap-3 px-3 py-2 rounded bg-bg-secondary" style="border: 1px solid rgb(var(--color-border-raw) / 0.1)">
             <span class="text-sm text-text-primary flex-1">{{ lang.lang }}</span>
             <span class="text-xs font-tech text-text-muted">{{ lang.level }}</span>
-            <button @click="deleteLang(lang.id)" class="text-xs text-red-400 hover:text-red-300 font-tech">Remove</button>
+            <button @click="deleteLang(lang.id)" class="text-red-400 hover:text-red-300 transition-colors"><Icon name="fluent:delete-16-filled" size="16" /></button>
           </div>
         </div>
 
         <div class="flex gap-2">
-          <input v-model="newLang.lang" placeholder="Language" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
-          <input v-model="newLang.level" placeholder="Level" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+          <input v-model="newLang.lang" placeholder="Language" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
+          <div class="relative flex-1">
+            <select v-model="newLang.level" class="w-full rounded border bg-bg-secondary text-text-primary pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors appearance-none cursor-pointer" style="border-color: rgb(var(--color-border-raw) / 0.2)">
+              <option value="" disabled>Fluency</option>
+              <option v-for="level in fluencyLevels" :key="level" :value="level">{{ level }}</option>
+            </select>
+            <Icon name="fluent:chevron-down-16-filled" size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          </div>
           <button @click="addLang" class="btn-ghost text-xs">Add</button>
         </div>
       </div>

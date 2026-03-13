@@ -124,7 +124,7 @@ async function submit() {
               required
               placeholder="John Doe"
               class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-              style="border-color: rgb(var(--color-border) / 0.2)"
+              style="border-color: rgb(var(--color-border-raw) / 0.2)"
             />
           </div>
 
@@ -141,7 +141,7 @@ async function submit() {
                 required
                 placeholder="Software Engineer"
                 class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border) / 0.2)"
+                style="border-color: rgb(var(--color-border-raw) / 0.2)"
               />
             </div>
             <div>
@@ -155,7 +155,7 @@ async function submit() {
                 required
                 placeholder="Acme Inc."
                 class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border) / 0.2)"
+                style="border-color: rgb(var(--color-border-raw) / 0.2)"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ async function submit() {
               required
               placeholder="Share your thoughts..."
               class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors resize-none"
-              style="border-color: rgb(var(--color-border) / 0.2)"
+              style="border-color: rgb(var(--color-border-raw) / 0.2)"
             />
             <p class="text-right text-xs font-tech mt-1" :class="charCount > 1900 ? 'text-accent-secondary' : 'text-text-muted'">
               {{ charCount }} / 2000
@@ -210,7 +210,7 @@ async function submit() {
               required
               placeholder="your@email.com"
               class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-              style="border-color: rgb(var(--color-border) / 0.2)"
+              style="border-color: rgb(var(--color-border-raw) / 0.2)"
             />
           </div>
 

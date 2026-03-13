@@ -49,7 +49,7 @@ const others = computed(() => projects.value.filter((p) => !p.featured))
       <div v-if="others.length" class="mt-8 reveal">
         <div class="flex items-center gap-3 mb-4">
           <span class="font-mono text-2xs text-text-muted uppercase tracking-[0.25em]">More projects</span>
-          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border) / 0.2), transparent);" />
+          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border-raw) / 0.2), transparent);" />
         </div>
         <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
           <div

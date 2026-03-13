@@ -95,7 +95,7 @@ onMounted(load)
     <Teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showModal = false">
         <div class="absolute inset-0 bg-black/60" @click="showModal = false" />
-        <div class="relative bg-bg-secondary rounded-lg border w-full max-w-lg p-6" style="border-color: rgb(var(--color-border) / 0.2)">
+        <div class="relative bg-bg-secondary rounded-lg border w-full max-w-lg p-6" style="border-color: rgb(var(--color-border-raw) / 0.2)">
           <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-4">
             {{ editing ? 'Edit Activity' : 'Add Activity' }}
           </h3>
@@ -103,17 +103,17 @@ onMounted(load)
           <form @submit.prevent="save" class="space-y-4">
             <div>
               <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Content</label>
-              <textarea v-model="form.content" rows="3" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+              <textarea v-model="form.content" rows="3" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Sort Order</label>
-                <input v-model.number="form.sort_order" type="number" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border) / 0.2)" />
+                <input v-model.number="form.sort_order" type="number" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
               </div>
               <div class="flex items-end pb-2">
                 <label class="flex items-center gap-2 text-xs font-tech text-text-secondary cursor-pointer">
-                  <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent))]" /> Visible
+                  <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))]" /> Visible
                 </label>
               </div>
             </div>

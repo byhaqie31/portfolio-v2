@@ -82,7 +82,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
         <!-- Panel -->
         <div
           class="relative w-full max-w-lg rounded border border-accent/20 bg-surface overflow-hidden animate-slide-down"
-          style="box-shadow: 0 0 40px rgb(var(--color-accent) / 0.1), 0 25px 50px rgba(0,0,0,0.5);"
+          style="box-shadow: 0 0 40px rgb(var(--color-accent-raw) / 0.1), 0 25px 50px rgba(0,0,0,0.5);"
         >
           <!-- Search input -->
           <div class="flex items-center gap-3 px-4 py-3 border-b border-accent/10">

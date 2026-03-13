@@ -47,7 +47,7 @@ onMounted(() => {
             type="password"
             placeholder="Enter admin key"
             class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-            style="border-color: rgb(var(--color-border) / 0.2)"
+            style="border-color: rgb(var(--color-border-raw) / 0.2)"
           />
           <button type="submit" class="btn-primary w-full">Authenticate</button>
         </form>
