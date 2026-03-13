@@ -113,7 +113,7 @@ function stars(n: number | null) {
             type="password"
             placeholder="Enter admin key"
             class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-            style="border-color: rgb(var(--color-border) / 0.2)"
+            style="border-color: rgb(var(--color-border-raw) / 0.2)"
           />
           <button type="submit" class="btn-primary w-full">Authenticate</button>
         </form>
@@ -137,7 +137,7 @@ function stars(n: number | null) {
                 placeholder="Person's name"
                 required
                 class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border) / 0.2)"
+                style="border-color: rgb(var(--color-border-raw) / 0.2)"
               />
             </div>
             <div>
@@ -145,7 +145,7 @@ function stars(n: number | null) {
               <select
                 v-model="genRelationship"
                 class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border) / 0.2)"
+                style="border-color: rgb(var(--color-border-raw) / 0.2)"
               >
                 <option value="">Select...</option>
                 <option value="colleague">Colleague</option>
@@ -161,7 +161,7 @@ function stars(n: number | null) {
         </form>
 
         <!-- Generated URL -->
-        <div v-if="generatedUrl" class="mt-4 p-3 rounded bg-accent/5 border flex items-center gap-3" style="border-color: rgb(var(--color-accent) / 0.3)">
+        <div v-if="generatedUrl" class="mt-4 p-3 rounded bg-accent/5 border flex items-center gap-3" style="border-color: rgb(var(--color-accent-raw) / 0.3)">
           <code class="text-xs font-tech text-accent flex-1 break-all">{{ generatedUrl }}</code>
           <button @click="copyUrl" class="btn-ghost text-xs shrink-0">
             {{ copied ? 'Copied!' : 'Copy' }}
@@ -190,7 +190,7 @@ function stars(n: number | null) {
             :key="fb.id"
             class="card"
             :class="fb.submitted_at ? 'border-l-2' : 'border-l-2'"
-            :style="`border-left-color: ${fb.submitted_at ? 'rgb(var(--color-accent-tertiary))' : 'rgb(255, 200, 50)'}`"
+            :style="`border-left-color: ${fb.submitted_at ? 'rgb(var(--color-accent-tertiary-raw))' : 'rgb(255, 200, 50)'}`"
           >
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1 min-w-0">

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Sun, Moon } from 'lucide-vue-next'
 import { useTheme } from '~/composables/useTheme'
 
 const { isDark, toggle: toggleTheme, init } = useTheme()
@@ -100,7 +99,7 @@ function initStarfield() {
     />
 
     <!-- Noise texture overlay -->
-    <svg class="fixed inset-0 w-full h-full pointer-events-none z-[98] opacity-[0.03]">
+    <svg class="fixed inset-0 w-full h-full pointer-events-none z-98 opacity-[0.03]">
       <filter id="noise">
         <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" />
       </filter>
@@ -108,27 +107,31 @@ function initStarfield() {
     </svg>
 
     <!-- Top bar with theme toggle -->
-    <header class="relative z-[1] flex items-center justify-between px-6 h-14">
+    <header class="relative z-1 flex items-center justify-between px-6 h-14">
       <span class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary">
         qie<span class="text-accent">.dev</span>
       </span>
-      <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
-        <Sun v-if="isDark" :size="14" />
-        <Moon v-else :size="14" />
+      <button class="btn-ghost text-xs" @click="toggleTheme">
+        <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />
+        <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
+        {{ isDark ? 'Light' : 'Dark' }}
       </button>
     </header>
 
     <!-- Main content -->
-    <main class="relative z-[1] flex-1">
+    <main class="relative z-1 flex-1">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="relative z-[1] py-6 text-center">
+    <footer class="relative z-1 py-6 text-center">
       <p class="text-text-muted text-xs font-tech tracking-wider">
         &copy; {{ new Date().getFullYear() }} Axelnova &middot;
         <a href="https://baihaqie.com" target="_blank" class="text-accent hover:text-accent/80 transition-colors">baihaqie.com</a>
       </p>
     </footer>
+
+    <UToaster />
+    <UiAdminConfirm />
   </div>
 </template>

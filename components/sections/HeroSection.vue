@@ -1,10 +1,27 @@
 <script setup lang="ts">
-import { ArrowRight, Globe, MapPin } from 'lucide-vue-next'
-import { personal } from '~/data/index'
+import { personal as staticPersonal } from '~/data/index'
+
+const { data: personalData } = await usePersonal()
+
+const personal = computed(() => {
+  const d = personalData.value as any
+  return {
+    name: d?.name || staticPersonal.name,
+    shortName: d?.short_name || staticPersonal.shortName,
+    role: d?.role || staticPersonal.role,
+    summary: d?.summary || staticPersonal.summary,
+    location: d?.location || staticPersonal.location,
+    email: d?.email || staticPersonal.email,
+    website: d?.website || staticPersonal.website,
+    github: d?.github || staticPersonal.github,
+    linkedin: d?.linkedin || staticPersonal.linkedin,
+    availableFor: d?.available_for || staticPersonal.availableFor,
+    focus: d?.focus || staticPersonal.focus,
+  }
+})
 
 // Typewriter for the role
 const displayed = ref('')
-const target = personal.role
 let i = 0
 
 // Cursor spotlight
@@ -24,6 +41,7 @@ function animateCursor() {
 }
 
 onMounted(() => {
+  const target = personal.value.role
   const timer = setInterval(() => {
     displayed.value += target[i]
     i++
@@ -51,7 +69,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
         left: `${smoothCursor.x}px`,
         top: `${smoothCursor.y}px`,
         transform: 'translate(-50%, -50%)',
-        background: 'radial-gradient(circle, rgb(var(--color-accent) / 0.08) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgb(var(--color-accent-raw) / 0.08) 0%, transparent 65%)',
         filter: 'blur(8px)',
       }"
     />
@@ -64,14 +82,14 @@ onUnmounted(() => cancelAnimationFrame(raf))
 
     <!-- Cyan ambient glow -->
     <div
-      class="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgb(var(--color-accent) / 0.06) 0%, transparent 70%); filter: blur(60px);"
+      class="absolute top-1/3 left-1/4 w-150 h-150 rounded-full pointer-events-none"
+      style="background: radial-gradient(circle, rgb(var(--color-accent-raw) / 0.06) 0%, transparent 70%); filter: blur(60px);"
     />
 
     <!-- Rose secondary glow -->
     <div
-      class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgb(var(--color-accent-secondary) / 0.04) 0%, transparent 70%); filter: blur(60px);"
+      class="absolute bottom-1/4 right-1/4 w-100 h-100 rounded-full pointer-events-none"
+      style="background: radial-gradient(circle, rgb(var(--color-accent-secondary-raw) / 0.04) 0%, transparent 70%); filter: blur(60px);"
     />
 
     <div class="relative max-w-5xl mx-auto w-full py-24 md:py-36 flex flex-col md:flex-row items-center gap-12 md:gap-16">
@@ -115,7 +133,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
       <div class="animate-reveal flex flex-wrap items-center gap-3 mb-12" style="animation-delay:0.25s">
         <a href="#projects" class="btn-primary group">
           View my work
-          <ArrowRight :size="14" class="group-hover:translate-x-0.5 transition-transform" />
+          <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
         </a>
         <a :href="`mailto:${personal.email}`" class="btn-ghost">
           Get in touch
@@ -125,7 +143,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
       <!-- Meta row -->
       <div class="animate-reveal flex flex-wrap items-center gap-5" style="animation-delay:0.3s">
         <span class="flex items-center gap-1.5 font-mono text-2xs text-text-muted uppercase tracking-wider">
-          <MapPin :size="12" />
+          <Icon name="fluent:location-16-filled" size="12" />
           {{ personal.location }}
         </span>
         <span class="w-px h-3 bg-accent/20" />
@@ -135,7 +153,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
           rel="noopener noreferrer"
           class="flex items-center gap-1.5 font-mono text-2xs text-text-muted hover:text-accent transition-colors uppercase tracking-wider"
         >
-          <Globe :size="12" />
+          <Icon name="fluent:globe-16-filled" size="12" />
           baihaqie.com
         </a>
       </div>
@@ -152,7 +170,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
           <!-- Outer cyan glow -->
           <div
             class="absolute -inset-6 rounded-full pointer-events-none transition-opacity duration-500 opacity-100 group-hover:opacity-60"
-            style="background: radial-gradient(circle, rgb(var(--color-accent) / 0.2) 0%, transparent 70%); filter: blur(20px);"
+            style="background: radial-gradient(circle, rgb(var(--color-accent-raw) / 0.2) 0%, transparent 70%); filter: blur(20px);"
           />
           <!-- Rotating dashed ring -->
           <div
@@ -164,7 +182,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
           <!-- Inner frame with shadow + zoom -->
           <div
             class="relative w-full h-full rounded-full overflow-hidden border-2 border-accent/50 group-hover:border-accent/80 transition-all duration-500"
-            style="box-shadow: 0 0 0 4px rgb(var(--color-accent) / 0.08), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgb(var(--color-accent) / 0.15);"
+            style="box-shadow: 0 0 0 4px rgb(var(--color-accent-raw) / 0.08), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgb(var(--color-accent-raw) / 0.15);"
           >
             <img
               src="/images/ProfilePicture.png"
@@ -188,7 +206,7 @@ onUnmounted(() => cancelAnimationFrame(raf))
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
       <div
         class="w-px h-10 mx-auto animate-pulse"
-        style="background: linear-gradient(to bottom, transparent, rgb(var(--color-accent) / 0.6));"
+        style="background: linear-gradient(to bottom, transparent, rgb(var(--color-accent-raw) / 0.6));"
       />
     </div>
   </section>

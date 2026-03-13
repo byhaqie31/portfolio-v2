@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { skillGroups } from '~/data/index'
+import { skillGroups as staticSkillGroups } from '~/data/index'
+
+const { data: skillsData } = await useFetch<any[]>('/api/skills', {
+  key: 'skills',
+  default: () => staticSkillGroups as any[],
+})
+
+const skillGroups = computed(() => {
+  const data = skillsData.value as any[]
+  if (!data?.length) return staticSkillGroups
+  return data.map((g: any) => ({
+    label: g.label,
+    items: g.items || [],
+  }))
+})
 </script>
 
 <template>

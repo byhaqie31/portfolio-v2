@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ArrowUpRight } from 'lucide-vue-next'
 import type { Project } from '~/data/index'
 
 defineProps<{ project: Project }>()
@@ -32,7 +31,7 @@ defineProps<{ project: Project }>()
           class="btn-icon"
           aria-label="Open project"
         >
-          <ArrowUpRight :size="14" />
+          <Icon name="fluent:arrow-up-right-16-filled" size="14" />
         </a>
       </div>
     </div>

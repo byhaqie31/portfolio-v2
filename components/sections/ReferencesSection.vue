@@ -71,10 +71,7 @@ function prev() {
           <!-- Bottom: Name + Position / Company on one line -->
           <div class="pt-4 border-t border-accent/10 flex items-center gap-3">
             <div class="w-8 h-8 rounded bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+              <Icon name="fluent:person-16-filled" size="16" class="text-accent" />
             </div>
             <div class="flex items-baseline gap-2 flex-wrap">
               <p class="text-sm font-medium text-text-primary">{{ fb.respondent_name || fb.name }}</p>

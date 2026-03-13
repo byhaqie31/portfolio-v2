@@ -1,9 +1,29 @@
 <script setup lang="ts">
-import { ArrowUpRight } from 'lucide-vue-next'
-import { projects } from '~/data/index'
+import { projects as staticProjects } from '~/data/index'
 
-const featured = computed(() => projects.filter((p) => p.featured))
-const others = computed(() => projects.filter((p) => !p.featured))
+const { data: projectsData } = await useFetch<any[]>('/api/projects', {
+  key: 'projects',
+  default: () => staticProjects as any[],
+})
+
+const projects = computed(() => {
+  const data = projectsData.value as any[]
+  if (!data?.length) return staticProjects
+  return data.map((p: any) => ({
+    id: p.slug || p.id,
+    tag: p.tag,
+    featured: !!p.featured,
+    name: p.name,
+    description: p.description,
+    stack: p.stack || [],
+    metrics: p.metrics,
+    href: p.href,
+    github: p.github_url || p.github,
+  }))
+})
+
+const featured = computed(() => projects.value.filter((p) => p.featured))
+const others = computed(() => projects.value.filter((p) => !p.featured))
 </script>
 
 <template>
@@ -29,7 +49,7 @@ const others = computed(() => projects.filter((p) => !p.featured))
       <div v-if="others.length" class="mt-8 reveal">
         <div class="flex items-center gap-3 mb-4">
           <span class="font-mono text-2xs text-text-muted uppercase tracking-[0.25em]">More projects</span>
-          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border) / 0.2), transparent);" />
+          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border-raw) / 0.2), transparent);" />
         </div>
         <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
           <div
@@ -56,7 +76,7 @@ const others = computed(() => projects.filter((p) => !p.featured))
               target="_blank"
               class="btn-icon opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <ArrowUpRight :size="13" />
+              <Icon name="fluent:arrow-up-right-16-filled" size="13" />
             </a>
           </div>
         </div>
