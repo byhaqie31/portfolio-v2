@@ -3,9 +3,12 @@ import { useAdmin } from '~/composables/useAdmin'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { adminKey, isAuthenticated, login, logout, restoreSession } = useAdmin()
+const { isAuthenticated, login, logout, restoreSession } = useAdmin()
+const toast = useToast()
 
 const keyInput = ref('')
+const loggingIn = ref(false)
+const loginError = ref('')
 const activeTab = ref('personal')
 
 const tabs = [
@@ -18,10 +21,19 @@ const tabs = [
   { id: 'references', label: 'References' },
 ]
 
-function handleLogin() {
+async function handleLogin() {
   if (!keyInput.value.trim()) return
-  login(keyInput.value)
-  keyInput.value = ''
+  loginError.value = ''
+  loggingIn.value = true
+  try {
+    await $fetch('/api/auth/verify', { headers: { 'x-admin-key': keyInput.value } })
+    login(keyInput.value)
+    keyInput.value = ''
+    toast.add({ title: 'Authenticated successfully', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
+  } catch {
+    loginError.value = 'Wrong password'
+  }
+  loggingIn.value = false
 }
 
 function handleLogout() {
@@ -42,14 +54,18 @@ onMounted(() => {
       <div class="card w-full max-w-sm">
         <h1 class="text-xl font-display text-text-primary text-center mb-6">Admin Access</h1>
         <form @submit.prevent="handleLogin" class="space-y-4">
-          <input
-            v-model="keyInput"
-            type="password"
-            placeholder="Enter admin key"
-            class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-            style="border-color: rgb(var(--color-border-raw) / 0.2)"
-          />
-          <button type="submit" class="btn-primary w-full">Authenticate</button>
+          <div>
+            <input
+              v-model="keyInput"
+              type="password"
+              placeholder="Enter admin key"
+              class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none transition-colors"
+              :class="loginError ? 'border-red-500/60' : ''"
+              :style="loginError ? '' : 'border-color: rgb(var(--color-border-raw) / 0.2)'"
+            />
+            <p v-if="loginError" class="text-red-400 text-xs font-tech mt-2">{{ loginError }}</p>
+          </div>
+          <button type="submit" :disabled="loggingIn" class="btn-primary w-full">{{ loggingIn ? 'Authenticating...' : 'Authenticate' }}</button>
         </form>
       </div>
     </div>

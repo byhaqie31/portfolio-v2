@@ -111,9 +111,10 @@ function initStarfield() {
       <span class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary">
         qie<span class="text-accent">.dev</span>
       </span>
-      <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+      <button class="btn-ghost text-xs" @click="toggleTheme">
         <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />
         <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
+        {{ isDark ? 'Light' : 'Dark' }}
       </button>
     </header>
 
