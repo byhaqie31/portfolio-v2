@@ -29,7 +29,7 @@ function openAdd() {
 
 function openEdit(item: any) {
   editing.value = item
-  form.value = { ...item }
+  form.value = { ...item, is_visible: !!item.is_visible }
   showModal.value = true
 }
 
