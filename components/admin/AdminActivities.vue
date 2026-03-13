@@ -84,9 +84,9 @@ onMounted(load)
           <span class="text-2xs font-tech px-2 py-0.5 rounded" :class="item.is_visible ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-500'">
             {{ item.is_visible ? 'Visible' : 'Hidden' }}
           </span>
-          <button @click="toggleVisible(item.id)" class="btn-ghost text-xs">{{ item.is_visible ? 'Hide' : 'Show' }}</button>
-          <button @click="openEdit(item)" class="btn-ghost text-xs">Edit</button>
-          <button @click="remove(item.id)" class="text-xs text-red-400 hover:text-red-300 font-tech">Delete</button>
+          <button @click="toggleVisible(item.id)" class="btn-ghost text-xs uppercase w-16">{{ item.is_visible ? 'Hide' : 'Show' }}</button>
+          <button @click="openEdit(item)" class="btn-ghost text-xs uppercase w-16">Edit</button>
+          <button @click="remove(item.id)" class="btn-ghost text-xs w-16 border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400/50">Delete</button>
         </div>
       </div>
     </div>

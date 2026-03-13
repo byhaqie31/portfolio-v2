@@ -85,8 +85,8 @@ onMounted(load)
             <span class="text-xs text-text-muted font-tech ml-2">Order: {{ g.sort_order }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="openEdit(g)" class="btn-ghost text-xs">Edit</button>
-            <button @click="remove(g.id)" class="text-xs text-red-400 hover:text-red-300 font-tech">Delete</button>
+            <button @click="openEdit(g)" class="btn-ghost text-xs uppercase w-16">Edit</button>
+            <button @click="remove(g.id)" class="btn-ghost text-xs w-16 border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400/50">Delete</button>
           </div>
         </div>
         <div class="flex flex-wrap gap-1">
