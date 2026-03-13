@@ -17,7 +17,6 @@ const tabs = [
   { id: 'skills', label: 'Skills' },
   { id: 'activities', label: 'Activities' },
   { id: 'references', label: 'References' },
-  { id: 'feedback', label: 'Feedback' },
 ]
 
 function handleLogin() {
@@ -98,7 +97,6 @@ onMounted(() => {
           <AdminSkills v-else-if="activeTab === 'skills'" />
           <AdminActivities v-else-if="activeTab === 'activities'" />
           <AdminReferences v-else-if="activeTab === 'references'" />
-          <AdminFeedback v-else-if="activeTab === 'feedback'" />
         </main>
       </div>
     </div>

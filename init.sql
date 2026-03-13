@@ -167,18 +167,6 @@ CREATE TABLE IF NOT EXISTS activities (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── REFERENCES LIST ──────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS references_list (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    title VARCHAR(150) NOT NULL,
-    company VARCHAR(150) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    is_visible TINYINT(1) DEFAULT 1,
-    sort_order TINYINT UNSIGNED DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 -- ══════════════════════════════════════════════════════════════
 -- SEED DATA
@@ -273,6 +261,3 @@ INSERT INTO activities (content, sort_order) VALUES
     ('UM — "Program Career Fest 2023, Akademi Pengajian Islam" (Treasurer)', 2),
     ('UM — "Malam Penghargaan Dayasari, Kolej Kediaman Dayasari" (Head of Multimedia)', 3);
 
--- References
-INSERT INTO references_list (name, title, company, email, sort_order) VALUES
-    ('Haziman Hashim', 'Senior Manager, Software Engineer', 'Razer Merchant Services', 'haziman.hashim@fiuu.com', 1);
