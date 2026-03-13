@@ -2,12 +2,13 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
+const toast = useToast()
+const { confirm: showConfirm } = useConfirm()
 
 const loading = ref(true)
 const projects = ref<any[]>([])
 const showModal = ref(false)
 const editing = ref<any>(null)
-const toast = ref('')
 
 const defaultForm = () => ({
   slug: '', tag: '', featured: false, name: '', description: '', href: '', github_url: '', sort_order: 0, is_visible: true,
@@ -64,15 +65,16 @@ async function save() {
       await apiFetch('/api/projects', { method: 'POST', body: form.value })
     }
     showModal.value = false
-    toast.value = 'Saved!'
-    setTimeout(() => toast.value = '', 2000)
+    toast.add({ title: 'Project saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.value = 'Error saving' }
+  } catch { toast.add({ title: 'Error saving project', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
 }
 
 async function remove(id: number) {
-  if (!confirm('Delete this project?')) return
+  const confirmed = await showConfirm({ title: 'Delete Project', message: 'Are you sure you want to delete this project? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
+  if (!confirmed) return
   await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
+  toast.add({ title: 'Project deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
 }
 
@@ -87,8 +89,6 @@ onMounted(load)
 
 <template>
   <div>
-    <div v-if="toast" class="mb-4 px-4 py-2 rounded bg-accent/10 text-accent text-sm font-tech">{{ toast }}</div>
-
     <div class="flex items-center justify-between mb-4">
       <button @click="openAdd" class="btn-primary text-sm">+ Add Project</button>
       <button @click="load" class="btn-ghost text-xs">Refresh</button>

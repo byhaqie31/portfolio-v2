@@ -73,7 +73,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[200] flex items-start justify-center pt-[20vh] px-4"
+        class="fixed inset-0 z-200 flex items-start justify-center pt-[20vh] px-4"
         @click.self="close"
       >
         <!-- Backdrop -->

@@ -2,12 +2,13 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
+const toast = useToast()
+const { confirm: showConfirm } = useConfirm()
 
 const loading = ref(true)
 const items = ref<any[]>([])
 const showModal = ref(false)
 const editing = ref<any>(null)
-const toast = ref('')
 
 const defaultForm = () => ({ slug: '', period: '', institution: '', location: '', degree: '', cgpa: '', sort_order: 0, is_visible: true })
 const form = ref(defaultForm())
@@ -40,15 +41,16 @@ async function save() {
       await apiFetch('/api/education', { method: 'POST', body: form.value })
     }
     showModal.value = false
-    toast.value = 'Saved!'
-    setTimeout(() => toast.value = '', 2000)
+    toast.add({ title: 'Education saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.value = 'Error saving' }
+  } catch { toast.add({ title: 'Error saving education', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
 }
 
 async function remove(id: number) {
-  if (!confirm('Delete this education entry?')) return
+  const confirmed = await showConfirm({ title: 'Delete Education', message: 'Are you sure you want to delete this education entry? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
+  if (!confirmed) return
   await apiFetch(`/api/education/${id}`, { method: 'DELETE' })
+  toast.add({ title: 'Education deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
 }
 
@@ -63,8 +65,6 @@ onMounted(load)
 
 <template>
   <div>
-    <div v-if="toast" class="mb-4 px-4 py-2 rounded bg-accent/10 text-accent text-sm font-tech">{{ toast }}</div>
-
     <div class="flex items-center justify-between mb-4">
       <button @click="openAdd" class="btn-primary text-sm">+ Add Education</button>
       <button @click="load" class="btn-ghost text-xs">Refresh</button>

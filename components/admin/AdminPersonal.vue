@@ -2,6 +2,8 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
+const toast = useToast()
+const { confirm: showConfirm } = useConfirm()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -9,7 +11,6 @@ const form = ref<any>({})
 const languages = ref<any[]>([])
 const newLang = ref({ lang: '', level: '' })
 const fluencyLevels = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Beginner']
-const toast = ref('')
 
 async function load() {
   loading.value = true
@@ -26,9 +27,8 @@ async function save() {
   saving.value = true
   try {
     await apiFetch('/api/personal', { method: 'PUT', body: form.value })
-    toast.value = 'Saved!'
-    setTimeout(() => toast.value = '', 2000)
-  } catch { toast.value = 'Error saving' }
+    toast.add({ title: 'Personal info saved!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
+  } catch { toast.add({ title: 'Error saving personal info', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
   saving.value = false
 }
 
@@ -42,8 +42,10 @@ async function addLang() {
 }
 
 async function deleteLang(id: number) {
-  if (!confirm('Delete this language?')) return
+  const confirmed = await showConfirm({ title: 'Delete Language', message: 'Are you sure you want to delete this language?', confirmLabel: 'Delete', variant: 'danger' })
+  if (!confirmed) return
   await apiFetch(`/api/languages/${id}`, { method: 'DELETE' })
+  toast.add({ title: 'Language deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
 }
 
@@ -52,8 +54,6 @@ onMounted(load)
 
 <template>
   <div>
-    <div v-if="toast" class="mb-4 px-4 py-2 rounded bg-accent/10 text-accent text-sm font-tech">{{ toast }}</div>
-
     <div v-if="loading" class="text-center py-8">
       <div class="inline-block w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
     </div>
