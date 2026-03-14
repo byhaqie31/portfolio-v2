@@ -3,7 +3,7 @@ interface ConfirmState {
   message: string
   confirmLabel?: string
   cancelLabel?: string
-  variant?: 'danger' | 'default'
+  variant?: 'danger' | 'default' | 'success'
 }
 
 const visible = ref(false)
@@ -19,11 +19,17 @@ export function useConfirm() {
     })
   }
 
+  function success(options: { title: string; message: string }) {
+    state.value = { ...options, variant: 'success' }
+    visible.value = true
+    resolvePromise = null
+  }
+
   function resolve(value: boolean) {
     visible.value = false
     resolvePromise?.(value)
     resolvePromise = null
   }
 
-  return { visible: readonly(visible), state: readonly(state), confirm, resolve }
+  return { visible: readonly(visible), state: readonly(state), confirm, success, resolve }
 }

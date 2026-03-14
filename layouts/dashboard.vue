@@ -131,7 +131,6 @@ function initStarfield() {
       </p>
     </footer>
 
-    <UToaster />
     <UiAdminConfirm />
   </div>
 </template>

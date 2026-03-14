@@ -2,8 +2,7 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const items = ref<any[]>([])
@@ -40,18 +39,19 @@ async function save() {
     } else {
       await apiFetch('/api/education', { method: 'POST', body: form.value })
     }
+    const isEdit = !!editing.value
     showModal.value = false
-    toast.add({ title: 'Education saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.add({ title: 'Error saving education', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    showSuccess({ title: 'Saved', message: isEdit ? 'Education updated successfully!' : 'Education created successfully!' })
+  } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Education', message: 'Are you sure you want to delete this education entry? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/education/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Education deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
+  showSuccess({ title: 'Deleted', message: 'Education deleted successfully!' })
 }
 
 async function toggleVisible(id: number) {
@@ -144,9 +144,9 @@ onMounted(load)
               <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))]" /> Visible
             </label>
 
-            <div class="flex gap-3 pt-2">
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
+            <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
+              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
             </div>
           </form>
         </div>

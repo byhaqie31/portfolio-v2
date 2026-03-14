@@ -2,8 +2,7 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const items = ref<any[]>([])
@@ -40,18 +39,19 @@ async function save() {
     } else {
       await apiFetch('/api/activities', { method: 'POST', body: form.value })
     }
+    const isEdit = !!editing.value
     showModal.value = false
-    toast.add({ title: 'Activity saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.add({ title: 'Error saving activity', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    showSuccess({ title: 'Saved', message: isEdit ? 'Activity updated successfully!' : 'Activity created successfully!' })
+  } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Activity', message: 'Are you sure you want to delete this activity? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/activities/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Activity deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
+  showSuccess({ title: 'Deleted', message: 'Activity deleted successfully!' })
 }
 
 async function toggleVisible(id: number) {
@@ -118,9 +118,9 @@ onMounted(load)
               </div>
             </div>
 
-            <div class="flex gap-3 pt-2">
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
+            <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
+              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
             </div>
           </form>
         </div>

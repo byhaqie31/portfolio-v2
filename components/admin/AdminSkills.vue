@@ -2,8 +2,7 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const groups = ref<any[]>([])
@@ -13,6 +12,7 @@ const editing = ref<any>(null)
 const defaultForm = () => ({ label: '', sort_order: 0, items: [] as string[] })
 const form = ref(defaultForm())
 const newItem = ref('')
+const itemAdded = ref(false)
 
 async function load() {
   loading.value = true
@@ -38,6 +38,8 @@ function addItem() {
   if (!newItem.value.trim()) return
   form.value.items.push(newItem.value.trim())
   newItem.value = ''
+  itemAdded.value = true
+  setTimeout(() => (itemAdded.value = false), 1500)
 }
 
 function removeItem(i: number) { form.value.items.splice(i, 1) }
@@ -49,18 +51,19 @@ async function save() {
     } else {
       await apiFetch('/api/skills/groups', { method: 'POST', body: form.value })
     }
+    const isEdit = !!editing.value
     showModal.value = false
-    toast.add({ title: 'Skill group saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.add({ title: 'Error saving skill group', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    showSuccess({ title: 'Saved', message: isEdit ? 'Skill group updated successfully!' : 'Skill group created successfully!' })
+  } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Skill Group', message: 'Are you sure you want to delete this skill group and all its items? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/skills/groups/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Skill group deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
+  showSuccess({ title: 'Deleted', message: 'Skill group deleted successfully!' })
 }
 
 onMounted(load)
@@ -126,13 +129,13 @@ onMounted(load)
               </div>
               <div class="flex gap-2">
                 <input v-model="newItem" placeholder="Add skill..." @keydown.enter.prevent="addItem" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <button type="button" @click="addItem" class="btn-ghost text-xs">Add</button>
+                <button type="button" @click="addItem" class="btn-ghost text-xs" :class="itemAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ itemAdded ? '✓ Added' : 'Add' }}</button>
               </div>
             </div>
 
-            <div class="flex gap-3 pt-2">
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
+            <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
+              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
             </div>
           </form>
         </div>

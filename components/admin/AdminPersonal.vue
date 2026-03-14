@@ -2,15 +2,16 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const saving = ref(false)
+const saveStatus = ref<'idle' | 'success' | 'error'>('idle')
 const form = ref<any>({})
 const languages = ref<any[]>([])
 const newLang = ref({ lang: '', level: '' })
 const fluencyLevels = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Beginner']
+const langAdded = ref(false)
 
 async function load() {
   loading.value = true
@@ -25,11 +26,15 @@ async function load() {
 
 async function save() {
   saving.value = true
+  saveStatus.value = 'idle'
   try {
     await apiFetch('/api/personal', { method: 'PUT', body: form.value })
-    toast.add({ title: 'Personal info saved!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
-  } catch { toast.add({ title: 'Error saving personal info', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    saveStatus.value = 'success'
+  } catch {
+    saveStatus.value = 'error'
+  }
   saving.value = false
+  setTimeout(() => (saveStatus.value = 'idle'), 2500)
 }
 
 async function addLang() {
@@ -37,7 +42,11 @@ async function addLang() {
   try {
     await apiFetch('/api/languages', { method: 'POST', body: { ...newLang.value, sort_order: languages.value.length + 1 } })
     newLang.value = { lang: '', level: '' }
-    await load()
+    // Refresh languages without resetting loading (avoids scroll jump)
+    const data = await apiFetch('/api/personal')
+    languages.value = data.languages || []
+    langAdded.value = true
+    setTimeout(() => (langAdded.value = false), 2000)
   } catch { /* ignore */ }
 }
 
@@ -45,8 +54,9 @@ async function deleteLang(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Language', message: 'Are you sure you want to delete this language?', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/languages/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Language deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
-  await load()
+  showSuccess({ title: 'Deleted', message: 'Language deleted successfully' })
+  const data = await apiFetch('/api/personal')
+  languages.value = data.languages || []
 }
 
 onMounted(load)
@@ -138,9 +148,19 @@ onMounted(load)
           </div>
         </div>
 
-        <button type="submit" :disabled="saving" class="btn-primary">
-          {{ saving ? 'Saving...' : 'Save Changes' }}
-        </button>
+        <div class="flex items-center justify-end gap-3">
+          <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-x-2" enter-to-class="opacity-100 translate-x-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+            <span v-if="saveStatus === 'success'" class="inline-flex items-center gap-1.5 text-sm font-tech text-green-400">
+              <Icon name="fluent:checkmark-circle-24-filled" size="16" /> Saved Successfully!
+            </span>
+            <span v-else-if="saveStatus === 'error'" class="inline-flex items-center gap-1.5 text-sm font-tech text-red-400">
+              <Icon name="fluent:error-circle-24-filled" size="16" /> Error saving
+            </span>
+          </Transition>
+          <button type="submit" :disabled="saving" class="btn-primary">
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
       </form>
 
       <!-- Languages -->
@@ -164,7 +184,7 @@ onMounted(load)
             </select>
             <Icon name="fluent:chevron-down-16-filled" size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           </div>
-          <button @click="addLang" class="btn-ghost text-xs">Add</button>
+          <button @click="addLang" class="btn-ghost text-xs" :class="langAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ langAdded ? '✓ Added' : 'Add' }}</button>
         </div>
       </div>
     </div>

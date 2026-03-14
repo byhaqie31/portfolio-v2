@@ -6,9 +6,10 @@ const { apiFetch } = useAdmin()
 // Generate link state
 const genName = ref('')
 const genRelationship = ref('')
-const generatedUrl = ref('')
 const generating = ref(false)
-const copied = ref(false)
+const showLinkModal = ref(false)
+const linkUrl = ref('')
+const linkCopied = ref(false)
 const copiedTokenId = ref<number | null>(null)
 
 // Feedbacks list state
@@ -26,13 +27,14 @@ async function fetchFeedbacks() {
 async function generateLink() {
   if (!genName.value.trim()) return
   generating.value = true
-  generatedUrl.value = ''
   try {
     const data = await apiFetch<{ url: string }>('/api/feedback/generate', {
       method: 'POST',
       body: { name: genName.value, relationship: genRelationship.value || null },
     })
-    generatedUrl.value = data.url
+    linkUrl.value = data.url
+    linkCopied.value = false
+    showLinkModal.value = true
     genName.value = ''
     genRelationship.value = ''
     fetchFeedbacks()
@@ -41,9 +43,8 @@ async function generateLink() {
 }
 
 async function copyUrl() {
-  await navigator.clipboard.writeText(generatedUrl.value)
-  copied.value = true
-  setTimeout(() => (copied.value = false), 2000)
+  await navigator.clipboard.writeText(linkUrl.value)
+  linkCopied.value = true
 }
 
 async function copyFeedbackUrl(fb: any) {
@@ -82,24 +83,25 @@ onMounted(fetchFeedbacks)
           </div>
           <div>
             <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Relationship</label>
-            <select v-model="genRelationship" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)">
-              <option value="">Select...</option>
-              <option value="colleague">Colleague</option>
-              <option value="client">Client</option>
-              <option value="friend">Friend</option>
-              <option value="other">Other</option>
-            </select>
+            <div class="relative">
+              <select v-model="genRelationship" class="w-full rounded border bg-bg-secondary text-text-primary pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors appearance-none cursor-pointer" style="border-color: rgb(var(--color-border-raw) / 0.2)">
+                <option value="">Select...</option>
+                <option value="colleague">Colleague</option>
+                <option value="client">Client</option>
+                <option value="friend">Friend</option>
+                <option value="other">Other</option>
+              </select>
+              <Icon name="fluent:chevron-down-16-filled" size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
           </div>
         </div>
-        <button type="submit" :disabled="generating" class="btn-primary disabled:opacity-40">
-          {{ generating ? 'Generating...' : 'Generate Link' }}
-        </button>
+        <div class="flex justify-end">
+          <button type="submit" :disabled="generating" class="btn-primary disabled:opacity-40">
+            {{ generating ? 'Generating...' : 'Generate Link' }}
+          </button>
+        </div>
       </form>
 
-      <div v-if="generatedUrl" class="mt-4 p-3 rounded bg-accent/5 border flex items-center gap-3" style="border-color: rgb(var(--color-accent-raw) / 0.3)">
-        <code class="text-xs font-tech text-accent flex-1 break-all">{{ generatedUrl }}</code>
-        <button @click="copyUrl" class="btn-ghost text-xs shrink-0">{{ copied ? 'Copied!' : 'Copy' }}</button>
-      </div>
     </div>
 
     <!-- References List -->
@@ -168,5 +170,30 @@ onMounted(fetchFeedbacks)
         </div>
       </div>
     </div>
+
+    <!-- Generated Link Modal -->
+    <Teleport to="body">
+      <div v-if="showLinkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60" @click="showLinkModal = false" />
+        <div class="relative bg-bg-secondary rounded-lg border w-full max-w-sm p-6" style="border-color: rgb(var(--color-border-raw) / 0.2)">
+          <div class="flex items-start gap-4">
+            <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-green-500/10">
+              <Icon name="fluent:checkmark-circle-24-filled" class="w-5 h-5 text-green-400" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-1">Link Generated</h3>
+              <p class="text-sm text-text-secondary font-tech mb-3">Copy the feedback link below:</p>
+              <div class="p-2 rounded bg-accent/5 border" style="border-color: rgb(var(--color-accent-raw) / 0.3)">
+                <code class="text-xs font-tech text-accent break-all">{{ linkUrl }}</code>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center gap-3 mt-6">
+            <button @click="copyUrl" class="btn-ghost text-xs" :class="linkCopied ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ linkCopied ? '✓ Copied' : 'Copy' }}</button>
+            <button @click="showLinkModal = false" class="btn-ghost text-xs">Close</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

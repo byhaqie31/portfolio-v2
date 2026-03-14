@@ -12,7 +12,7 @@ const { visible, state, resolve } = useConfirm()
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div v-if="visible" class="fixed inset-0 z-100 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60" @click="resolve(false)" />
         <Transition
           enter-active-class="transition duration-200 ease-out"
@@ -30,12 +30,12 @@ const { visible, state, resolve } = useConfirm()
             <div class="flex items-start gap-4">
               <div
                 class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                :class="state.variant === 'danger' ? 'bg-red-500/10' : 'bg-accent/10'"
+                :class="state.variant === 'success' ? 'bg-green-500/10' : state.variant === 'danger' ? 'bg-red-500/10' : 'bg-accent/10'"
               >
                 <Icon
-                  :name="state.variant === 'danger' ? 'fluent:warning-24-regular' : 'fluent:question-circle-24-regular'"
+                  :name="state.variant === 'success' ? 'fluent:checkmark-circle-24-filled' : state.variant === 'danger' ? 'fluent:warning-24-regular' : 'fluent:question-circle-24-regular'"
                   class="w-5 h-5"
-                  :class="state.variant === 'danger' ? 'text-red-400' : 'text-accent'"
+                  :class="state.variant === 'success' ? 'text-green-400' : state.variant === 'danger' ? 'text-red-400' : 'text-accent'"
                 />
               </div>
               <div class="flex-1 min-w-0">
@@ -46,7 +46,15 @@ const { visible, state, resolve } = useConfirm()
               </div>
             </div>
 
-            <div class="flex justify-end gap-3 mt-6">
+            <!-- Success: OK button only -->
+            <div v-if="state.variant === 'success'" class="flex justify-center mt-6">
+              <button @click="resolve(false)" class="btn-ghost text-xs border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 hover:text-green-300 hover:border-green-400/50">
+                OK
+              </button>
+            </div>
+
+            <!-- Confirm/Danger: Cancel + Confirm buttons -->
+            <div v-else class="flex justify-center gap-3 mt-6">
               <button @click="resolve(false)" class="btn-ghost text-xs">
                 {{ state.cancelLabel || 'Cancel' }}
               </button>

@@ -2,8 +2,7 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const experiences = ref<any[]>([])
@@ -17,6 +16,8 @@ const defaultForm = () => ({
 const form = ref(defaultForm())
 const newBullet = ref('')
 const newTag = ref('')
+const bulletAdded = ref(false)
+const tagAdded = ref(false)
 
 async function load() {
   loading.value = true
@@ -45,6 +46,8 @@ function addBullet() {
   if (!newBullet.value.trim()) return
   form.value.bullets.push(newBullet.value.trim())
   newBullet.value = ''
+  bulletAdded.value = true
+  setTimeout(() => (bulletAdded.value = false), 1500)
 }
 
 function removeBullet(i: number) { form.value.bullets.splice(i, 1) }
@@ -53,6 +56,8 @@ function addTag() {
   if (!newTag.value.trim()) return
   form.value.tags.push(newTag.value.trim())
   newTag.value = ''
+  tagAdded.value = true
+  setTimeout(() => (tagAdded.value = false), 1500)
 }
 
 function removeTag(i: number) { form.value.tags.splice(i, 1) }
@@ -64,18 +69,19 @@ async function save() {
     } else {
       await apiFetch('/api/experiences', { method: 'POST', body: form.value })
     }
+    const isEdit = !!editing.value
     showModal.value = false
-    toast.add({ title: 'Experience saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.add({ title: 'Error saving experience', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    showSuccess({ title: 'Saved', message: isEdit ? 'Experience updated successfully!' : 'Experience created successfully!' })
+  } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Experience', message: 'Are you sure you want to delete this experience? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/experiences/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Experience deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
+  showSuccess({ title: 'Deleted', message: 'Experience deleted successfully!' })
 }
 
 async function toggleVisible(id: number) {
@@ -177,7 +183,7 @@ onMounted(load)
                   </div>
                   <div class="flex gap-2">
                     <input v-model="newTag" placeholder="Add tag..." @keydown.enter.prevent="addTag" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                    <button type="button" @click="addTag" class="btn-ghost text-xs">Add</button>
+                    <button type="button" @click="addTag" class="btn-ghost text-xs" :class="tagAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ tagAdded ? '✓ Added' : 'Add' }}</button>
                   </div>
                 </div>
               </div>
@@ -195,7 +201,7 @@ onMounted(load)
                   </div>
                   <div v-if="form.bullets.length < 5" class="flex gap-2">
                     <textarea v-model="newBullet" rows="2" placeholder="Add bullet point..." class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                    <button type="button" @click="addBullet" class="btn-ghost text-xs self-end">Add</button>
+                    <button type="button" @click="addBullet" class="btn-ghost text-xs self-end" :class="bulletAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ bulletAdded ? '✓ Added' : 'Add' }}</button>
                   </div>
                 </div>
 
@@ -218,9 +224,9 @@ onMounted(load)
               </div>
             </div>
 
-            <div class="flex gap-3 pt-4 mt-4 border-t" style="border-color: rgb(var(--color-border-raw) / 0.1)">
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
+            <div class="flex justify-end gap-3 pt-4 mt-4 border-t" style="border-color: rgb(var(--color-border-raw) / 0.1)">
               <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
+              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
             </div>
           </form>
         </div>

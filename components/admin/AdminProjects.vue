@@ -2,8 +2,7 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 const { apiFetch } = useAdmin()
-const toast = useToast()
-const { confirm: showConfirm } = useConfirm()
+const { confirm: showConfirm, success: showSuccess } = useConfirm()
 
 const loading = ref(true)
 const projects = ref<any[]>([])
@@ -17,6 +16,8 @@ const defaultForm = () => ({
 const form = ref(defaultForm())
 const newStackItem = ref('')
 const newMetric = ref({ value: '', label: '' })
+const stackAdded = ref(false)
+const metricAdded = ref(false)
 
 async function load() {
   loading.value = true
@@ -36,7 +37,7 @@ async function openEdit(p: any) {
   editing.value = p
   try {
     const data = await apiFetch(`/api/projects/${p.id}`)
-    form.value = { ...data, stack: data.stack || [], metrics: data.metrics || [] }
+    form.value = { ...data, featured: !!data.featured, is_visible: !!data.is_visible, stack: data.stack || [], metrics: data.metrics || [] }
     showModal.value = true
   } catch { /* ignore */ }
 }
@@ -45,6 +46,8 @@ function addStack() {
   if (!newStackItem.value.trim()) return
   form.value.stack.push(newStackItem.value.trim())
   newStackItem.value = ''
+  stackAdded.value = true
+  setTimeout(() => (stackAdded.value = false), 1500)
 }
 
 function removeStack(i: number) { form.value.stack.splice(i, 1) }
@@ -53,6 +56,8 @@ function addMetric() {
   if (!newMetric.value.value || !newMetric.value.label) return
   form.value.metrics.push({ ...newMetric.value })
   newMetric.value = { value: '', label: '' }
+  metricAdded.value = true
+  setTimeout(() => (metricAdded.value = false), 1500)
 }
 
 function removeMetric(i: number) { form.value.metrics.splice(i, 1) }
@@ -64,18 +69,19 @@ async function save() {
     } else {
       await apiFetch('/api/projects', { method: 'POST', body: form.value })
     }
+    const isEdit = !!editing.value
     showModal.value = false
-    toast.add({ title: 'Project saved successfully!', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
     await load()
-  } catch { toast.add({ title: 'Error saving project', icon: 'fluent:error-circle-24-regular', color: 'error' }) }
+    showSuccess({ title: 'Saved', message: isEdit ? 'Project updated successfully!' : 'Project created successfully!' })
+  } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
   const confirmed = await showConfirm({ title: 'Delete Project', message: 'Are you sure you want to delete this project? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
-  toast.add({ title: 'Project deleted', icon: 'fluent:checkmark-circle-24-regular', color: 'success' })
   await load()
+  showSuccess({ title: 'Deleted', message: 'Project deleted successfully!' })
 }
 
 async function toggleVisible(id: number) {
@@ -191,7 +197,7 @@ onMounted(load)
               </div>
               <div class="flex gap-2">
                 <input v-model="newStackItem" placeholder="Add tech..." @keydown.enter.prevent="addStack" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <button type="button" @click="addStack" class="btn-ghost text-xs">Add</button>
+                <button type="button" @click="addStack" class="btn-ghost text-xs" :class="stackAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ stackAdded ? '✓ Added' : 'Add' }}</button>
               </div>
             </div>
 
@@ -208,13 +214,13 @@ onMounted(load)
               <div class="flex gap-2">
                 <input v-model="newMetric.value" placeholder="Value" class="w-20 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
                 <input v-model="newMetric.label" placeholder="Label" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <button type="button" @click="addMetric" class="btn-ghost text-xs">Add</button>
+                <button type="button" @click="addMetric" class="btn-ghost text-xs" :class="metricAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ metricAdded ? '✓ Added' : 'Add' }}</button>
               </div>
             </div>
 
-            <div class="flex gap-3 pt-2">
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
+            <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
+              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
             </div>
           </form>
         </div>
