@@ -13,6 +13,8 @@ const newLang = ref({ lang: '', level: '' })
 const fluencyLevels = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Beginner']
 const langAdded = ref(false)
 
+useFormPreview('personal', form)
+
 async function load() {
   loading.value = true
   try {
@@ -90,6 +92,11 @@ onMounted(load)
         </div>
 
         <div>
+          <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Summary</label>
+          <textarea v-model="form.summary" rows="2" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
+        </div>
+
+        <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Bio (paragraph 1)</label>
           <textarea v-model="form.bio_1" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
@@ -97,11 +104,6 @@ onMounted(load)
         <div>
           <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Bio (paragraph 2)</label>
           <textarea v-model="form.bio_2" rows="4" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Summary</label>
-          <textarea v-model="form.summary" rows="2" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

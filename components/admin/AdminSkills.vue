@@ -11,6 +11,8 @@ const editing = ref<any>(null)
 
 const defaultForm = () => ({ label: '', sort_order: 0, items: [] as string[] })
 const form = ref(defaultForm())
+
+useListPreview('skills', groups, { form, editing, open: showModal })
 const newItem = ref('')
 const itemAdded = ref(false)
 

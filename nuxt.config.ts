@@ -5,6 +5,14 @@ export default defineNuxtConfig({
 
   modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui'],
 
+  // The admin preview route renders client-only — its data layer reads
+  // from a localStorage-backed preview store that doesn't exist on the
+  // server. SSRing it would prefetch the real API and lock the iframe
+  // onto published data instead of the in-progress edits.
+  routeRules: {
+    '/admin/preview': { ssr: false },
+  },
+
   icon: {
     serverBundle: 'local',
   },
