@@ -2,6 +2,7 @@
 -- Portfolio DB — init.sql
 -- ══════════════════════════════════════════════════════════════
 
+SET NAMES utf8mb4;
 SET sql_mode = '';
 
 -- ── FEEDBACKS (existing) ─────────────────────────────────────
