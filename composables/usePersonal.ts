@@ -1,7 +1,7 @@
 import { personal as staticPersonal } from '~/data/index'
 
 export function usePersonal() {
-  return useFetch<any>('/api/personal', {
+  return usePreviewableFetch<any>('personal', '/api/personal', {
     key: 'personal',
     default: () => ({
       ...staticPersonal,

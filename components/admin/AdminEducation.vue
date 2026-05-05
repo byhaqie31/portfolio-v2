@@ -12,6 +12,8 @@ const editing = ref<any>(null)
 const defaultForm = () => ({ slug: '', period: '', institution: '', location: '', degree: '', cgpa: '', sort_order: 0, is_visible: true })
 const form = ref(defaultForm())
 
+useListPreview('education', items, { form, editing, open: showModal, visibleField: 'is_visible' })
+
 async function load() {
   loading.value = true
   try {

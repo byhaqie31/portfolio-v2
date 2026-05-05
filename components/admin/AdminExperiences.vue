@@ -14,6 +14,9 @@ const defaultForm = () => ({
   bullets: [] as string[], tags: [] as string[],
 })
 const form = ref(defaultForm())
+
+useListPreview('experiences', experiences, { form, editing, open: showModal, visibleField: 'is_visible' })
+
 const newBullet = ref('')
 const newTag = ref('')
 const bulletAdded = ref(false)

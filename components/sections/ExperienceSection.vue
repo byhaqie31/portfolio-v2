@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { experiences as staticExperiences } from '~/data/index'
 
-const { data: experiencesData } = await useFetch<any[]>('/api/experiences', {
+const { data: experiencesData } = await usePreviewableFetch<any[]>('experiences', '/api/experiences', {
   key: 'experiences',
   default: () => staticExperiences as any[],
 })

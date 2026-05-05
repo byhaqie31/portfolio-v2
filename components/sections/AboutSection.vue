@@ -3,7 +3,7 @@ import { personal as staticPersonal, education as staticEducation } from '~/data
 
 const { data: personalData } = await usePersonal()
 
-const { data: educationData } = await useFetch<any[]>('/api/education', {
+const { data: educationData } = await usePreviewableFetch<any[]>('education', '/api/education', {
   key: 'education',
   default: () => staticEducation as any[],
 })

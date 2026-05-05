@@ -16,6 +16,8 @@ const copiedTokenId = ref<number | null>(null)
 const feedbacks = ref<any[]>([])
 const loading = ref(false)
 
+useListPreview('references', feedbacks, { visibleField: 'is_public' })
+
 async function fetchFeedbacks() {
   loading.value = true
   try {

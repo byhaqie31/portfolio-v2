@@ -59,7 +59,7 @@ function closeMenu() { mobileOpen.value = false }
         <li v-for="link in navLinks" :key="link.label">
           <a
             :href="link.href"
-            class="relative font-mono text-xs uppercase tracking-[0.1em] transition-colors duration-200"
+            class="relative font-mono text-xs uppercase tracking-widest transition-colors duration-200"
             :class="activeSection === link.href.replace('#', '')
               ? 'text-accent'
               : 'text-text-muted hover:text-text-primary'"
@@ -127,7 +127,7 @@ function closeMenu() { mobileOpen.value = false }
           v-for="link in navLinks"
           :key="link.label"
           :href="link.href"
-          class="font-mono text-xs uppercase tracking-[0.1em] py-1 transition-colors"
+          class="font-mono text-xs uppercase tracking-widest py-1 transition-colors"
           :class="activeSection === link.href.replace('#', '')
             ? 'text-accent font-medium'
             : 'text-text-secondary'"

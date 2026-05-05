@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { projects as staticProjects } from '~/data/index'
 
-const { data: projectsData } = await useFetch<any[]>('/api/projects', {
+const { data: projectsData } = await usePreviewableFetch<any[]>('projects', '/api/projects', {
   key: 'projects',
   default: () => staticProjects as any[],
 })

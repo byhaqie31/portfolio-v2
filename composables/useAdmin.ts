@@ -25,13 +25,23 @@ export function useAdmin() {
   }
 
   async function apiFetch<T = any>(url: string, options: any = {}): Promise<T> {
-    return $fetch<T>(url, {
+    const result = await $fetch<T>(url, {
       ...options,
       headers: {
         ...options.headers,
         'x-admin-key': adminKey.value,
       },
     })
+
+    // After any successful mutation, drop preview overlays and tell the
+    // iframe to re-fetch — so the embedded preview reflects the new DB state.
+    const method = (options.method || 'GET').toString().toUpperCase()
+    if (method !== 'GET' && import.meta.client) {
+      const { commit } = usePreview()
+      commit()
+    }
+
+    return result
   }
 
   return { adminKey, isAuthenticated, login, logout, restoreSession, apiFetch }

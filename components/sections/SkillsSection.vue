@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { skillGroups as staticSkillGroups } from '~/data/index'
 
-const { data: skillsData } = await useFetch<any[]>('/api/skills', {
+const { data: skillsData } = await usePreviewableFetch<any[]>('skills', '/api/skills', {
   key: 'skills',
   default: () => staticSkillGroups as any[],
 })

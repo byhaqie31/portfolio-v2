@@ -14,6 +14,9 @@ const defaultForm = () => ({
   stack: [] as string[], metrics: [] as { value: string; label: string }[],
 })
 const form = ref(defaultForm())
+
+useListPreview('projects', projects, { form, editing, open: showModal, visibleField: 'is_visible' })
+
 const newStackItem = ref('')
 const newMetric = ref({ value: '', label: '' })
 const stackAdded = ref(false)

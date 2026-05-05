@@ -20,9 +20,34 @@ const personal = computed(() => {
   }
 })
 
-// Typewriter for the role
+// Typewriter for the role — restarts whenever the role itself changes,
+// so the preview iframe reflects edits live.
 const displayed = ref('')
-let i = 0
+let typingTimer: ReturnType<typeof setInterval> | null = null
+
+function startTypewriter(target: string) {
+  if (typingTimer) {
+    clearInterval(typingTimer)
+    typingTimer = null
+  }
+  displayed.value = ''
+  let i = 0
+  typingTimer = setInterval(() => {
+    if (i >= target.length) {
+      if (typingTimer) clearInterval(typingTimer)
+      typingTimer = null
+      return
+    }
+    displayed.value += target[i]
+    i++
+  }, 50)
+}
+
+watch(
+  () => personal.value.role,
+  (role) => startTypewriter(role || ''),
+  { immediate: true },
+)
 
 // Cursor spotlight
 const cursor = reactive({ x: 0, y: 0 })
@@ -41,13 +66,6 @@ function animateCursor() {
 }
 
 onMounted(() => {
-  const target = personal.value.role
-  const timer = setInterval(() => {
-    displayed.value += target[i]
-    i++
-    if (i >= target.length) clearInterval(timer)
-  }, 50)
-
   smoothCursor.x = window.innerWidth / 2
   smoothCursor.y = window.innerHeight / 2
   cursor.x = smoothCursor.x
@@ -55,7 +73,10 @@ onMounted(() => {
   animateCursor()
 })
 
-onUnmounted(() => cancelAnimationFrame(raf))
+onUnmounted(() => {
+  cancelAnimationFrame(raf)
+  if (typingTimer) clearInterval(typingTimer)
+})
 </script>
 
 <template>

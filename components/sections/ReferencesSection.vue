@@ -10,7 +10,7 @@ interface PublicFeedback {
   submitted_at: string
 }
 
-const { data: publicFeedbacks } = await useFetch<PublicFeedback[]>('/api/feedback/public', {
+const { data: publicFeedbacks } = await usePreviewableFetch<PublicFeedback[]>('references', '/api/feedback/public', {
   key: 'public-feedbacks',
   server: true,
   lazy: false,
@@ -49,7 +49,7 @@ function prev() {
         description="Feedback and references from those I've worked with."
       />
 
-      <div class="flex flex-col gap-4 min-h-[600px]">
+      <div class="flex flex-col gap-4 min-h-150">
         <div
           v-for="fb in paginatedFeedbacks"
           :key="'fb-' + fb.submitted_at"
