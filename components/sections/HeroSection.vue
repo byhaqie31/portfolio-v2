@@ -30,6 +30,10 @@ function startTypewriter(target: string) {
     clearInterval(typingTimer)
     typingTimer = null
   }
+  if (import.meta.server) {
+    displayed.value = target
+    return
+  }
   displayed.value = ''
   let i = 0
   typingTimer = setInterval(() => {
