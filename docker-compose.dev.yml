@@ -6,7 +6,7 @@ services:
     container_name: portfolio-dev
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - NODE_ENV=development
       - DB_HOST=mysql
@@ -21,43 +21,9 @@ services:
       - /app/node_modules
       - /app/.nuxt
       - /app/.output
-    depends_on:
-      mysql:
-        condition: service_healthy
+    networks:
+      - axelnova-shared
 
-  mysql:
-    image: mysql:8.0
-    container_name: portfolio-mysql
-    restart: unless-stopped
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=portfolio_db
-      - MYSQL_USER=portfolio_user
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-    ports:
-      - "127.0.0.1:3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: portfolio-phpmyadmin
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    environment:
-      - PMA_HOST=mysql
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-volumes:
-  mysql_data:
+networks:
+  axelnova-shared:
+    external: true
