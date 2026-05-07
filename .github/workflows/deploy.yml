@@ -22,11 +22,11 @@ jobs:
             git pull origin main
             docker compose up -d --build
 
-            # Wait for MySQL to be healthy before pruning
-            echo "Waiting for MySQL to be healthy..."
+            # Verify the shared MySQL is healthy (lives in ~/infra, not this stack)
+            echo "Waiting for shared MySQL to be healthy..."
             for i in $(seq 1 30); do
-              if docker inspect portfolio-mysql --format='{{.State.Health.Status}}' 2>/dev/null | grep -q healthy; then
-                echo "MySQL is healthy"
+              if docker inspect axelnova-mysql --format='{{.State.Health.Status}}' 2>/dev/null | grep -q healthy; then
+                echo "Shared MySQL is healthy"
                 break
               fi
               sleep 2
