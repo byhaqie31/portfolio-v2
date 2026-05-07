@@ -14,43 +14,14 @@ services:
       - DB_NAME=portfolio_db
       - ADMIN_SECRET=${ADMIN_SECRET}
       - BASE_URL=${BASE_URL}
-    depends_on:
-      mysql:
-        condition: service_healthy
+    networks:
+      - axelnova-shared
 
-  mysql:
-    image: mysql:8.0
-    container_name: portfolio-mysql
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=portfolio_db
-      - MYSQL_USER=portfolio_user
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-    ports:
-      - "127.0.0.1:3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: portfolio-phpmyadmin
-    restart: always
-    ports:
-      - "8080:80"
-    environment:
-      - PMA_HOST=mysql
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-volumes:
-  mysql_data:
+# MySQL + phpMyAdmin moved to the shared axelnova-infra stack.
+# DB_HOST=mysql still works because the shared MySQL service is also named `mysql`
+# on the axelnova-shared network — DNS resolution is identical.
+# See: https://github.com/byhaqie31/axelnova-infra
+networks:
+  axelnova-shared:
+    name: axelnova-shared
+    external: true
