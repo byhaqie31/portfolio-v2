@@ -3,7 +3,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-03-13',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui'],
+  modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
+
+  site: {
+    url: 'https://baihaqie.com',
+    name: 'Ahmad Baihaqie — Software Engineer',
+  },
+
+  sitemap: {
+    exclude: ['/admin/**', '/feedback/**'],
+  },
 
   // The admin preview route renders client-only — its data layer reads
   // from a localStorage-backed preview store that doesn't exist on the
@@ -32,13 +41,18 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Ahmad Baihaqie — Software Engineer',
+      htmlAttrs: { lang: 'en' },
       link: [
-        { rel: 'icon', type: 'image/png', href: '/images/ABIcon.svg' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/images/ABIcon.svg' },
       ],
       meta: [
         { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#020408' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Ahmad Baihaqie' },
+        { property: 'og:locale', content: 'en_US' },
+        { name: 'twitter:card', content: 'summary_large_image' },
       ],
     },
   },
