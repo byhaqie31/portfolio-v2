@@ -3,6 +3,8 @@ import { useAdmin } from '~/composables/useAdmin'
 
 definePageMeta({ layout: 'dashboard' })
 
+useSeoMeta({ robots: 'noindex, nofollow' })
+
 const { isAuthenticated, login, logout, restoreSession } = useAdmin()
 const { init: initPreview } = usePreview()
 const toast = useToast()

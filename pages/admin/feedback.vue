@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'dashboard' })
 
+useSeoMeta({ robots: 'noindex, nofollow' })
+
 const adminKey = ref('')
 const authenticated = ref(false)
 
