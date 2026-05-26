@@ -23,11 +23,9 @@ const personal = computed(() => {
 
 <template>
   <section class="relative min-h-screen flex items-center px-6 pt-14">
-    <div class="relative max-w-5xl mx-auto w-full py-24 md:py-36 flex flex-col md:flex-row items-center gap-12 md:gap-16">
+    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center gap-14 md:gap-20">
       <div class="flex-1 min-w-0">
-        <div
-          class="animate-reveal inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/5 text-xs text-accent mb-10"
-        >
+        <div class="animate-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
           Available for {{ personal.availableFor }}
         </div>
@@ -37,14 +35,14 @@ const personal = computed(() => {
         </p>
 
         <h1
-          class="animate-reveal text-[clamp(2.5rem,5.5vw,4.25rem)] font-semibold tracking-tight leading-[1.05] text-text-primary mb-4"
+          class="animate-reveal text-[clamp(2.75rem,6vw,4.75rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5"
           style="animation-delay:0.1s"
         >
-          {{ personal.role }}
+          {{ personal.role }}.
         </h1>
 
-        <p class="animate-reveal text-lg md:text-xl text-text-secondary mb-8" style="animation-delay:0.15s">
-          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>
+        <p class="animate-reveal text-xl md:text-2xl text-text-secondary leading-snug mb-8 max-w-xl" style="animation-delay:0.15s">
+          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>.
         </p>
 
         <p
@@ -54,39 +52,43 @@ const personal = computed(() => {
           {{ personal.summary }}
         </p>
 
-        <div class="animate-reveal flex flex-wrap items-center gap-3 mb-12" style="animation-delay:0.25s">
+        <div class="animate-reveal flex flex-wrap items-center gap-6 mb-14" style="animation-delay:0.25s">
           <a href="#projects" class="btn-primary group">
             View my work
             <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
           </a>
-          <a :href="`mailto:${personal.email}`" class="btn-ghost">
+          <a
+            :href="`mailto:${personal.email}`"
+            class="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1"
+          >
             Get in touch
+            <Icon name="fluent:arrow-right-16-filled" size="13" class="opacity-60" />
           </a>
         </div>
 
-        <div class="animate-reveal flex flex-wrap items-center gap-5 text-sm text-text-muted" style="animation-delay:0.3s">
+        <div class="animate-reveal flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted" style="animation-delay:0.3s">
           <span class="flex items-center gap-1.5">
             <Icon name="fluent:location-16-filled" size="14" />
             {{ personal.location }}
           </span>
-          <span class="w-px h-3 bg-border" />
+          <span class="w-px h-3 bg-border hidden sm:inline-block" />
           <a
-            :href="personal.website"
+            href="https://axelnovaventures.com"
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center gap-1.5 hover:text-text-primary transition-colors"
           >
             <Icon name="fluent:globe-16-filled" size="14" />
-            baihaqie.com
+            axelnovaventures.com
           </a>
         </div>
       </div>
 
-      <div class="animate-reveal shrink-0" style="animation-delay:0.2s">
-        <div class="group relative w-56 h-56 md:w-72 md:h-72">
+      <div class="animate-reveal shrink-0" style="animation-delay:0.15s">
+        <div class="group relative w-64 h-64 md:w-96 md:h-96">
           <div
-            class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-            style="box-shadow: 0 20px 60px rgba(0,0,0,0.10);"
+            class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
+            style="box-shadow: 0 30px 80px -20px rgba(0,0,0,0.12), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
           >
             <img
               src="/images/ProfilePicture.png"
