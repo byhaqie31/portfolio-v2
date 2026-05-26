@@ -1,4 +1,4 @@
-const isDark = ref(true)
+const isDark = ref(false)
 
 export function useTheme() {
   function apply(dark: boolean) {
@@ -16,7 +16,7 @@ export function useTheme() {
   function init() {
     if (import.meta.client) {
       const saved = localStorage.getItem('theme')
-      apply(saved ? saved === 'dark' : true) // default: dark
+      apply(saved ? saved === 'dark' : false) // default: light (Apple-faithful)
     }
   }
 

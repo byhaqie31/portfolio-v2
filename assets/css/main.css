@@ -68,51 +68,52 @@
   }
 }
 
-/* ── THEME TOKENS — AXELNOVA CYBERPUNK ── */
+/* ── THEME TOKENS — APPLE-FAITHFUL RESTRAINED ──
+ * Light-first. Warm/cool-neutral tinted near-white default with Apple SF Blue accent.
+ * Raw triplets are RGB so `rgb(var(--color-*-raw) / <alpha>)` keeps opacity composable.
+ * Source palette derived from OKLCH (chroma ≤ 0.008 on neutrals, accent 0.15–0.18 @ hue 250). */
 :root {
-  /* Light mode — cool steel/frost cyberpunk */
-  --color-bg-raw:             232 237 242;
-  --color-bg-secondary-raw:   222 228 235;
-  --color-bg-tertiary-raw:    212 220 230;
-  --color-surface-raw:        240 244 248;
-  --color-surface-raised-raw: 232 237 242;
-  --color-surface-overlay-raw:220 226 234;
-  --color-accent-raw:         0 200 255;
-  --color-accent-muted-raw:   0 160 210;
-  --color-accent-subtle-raw:  210 240 250;
-  --color-accent-secondary-raw: 255 77 109;
-  --color-accent-tertiary-raw: 57 255 122;
-  --color-border-raw:         195 208 222;
-  --color-border-subtle-raw:  210 220 232;
-  --color-border-strong-raw:  160 180 200;
-  --color-text-primary-raw:   10 20 35;
-  --color-text-secondary-raw: 60 75 95;
-  --color-text-muted-raw:     110 125 145;
-  --color-text-inverse-raw:   232 237 242;
-  --color-glow:               0 200 255;
+  /* Light mode (default) — slightly cool near-white, Apple #fbfbfd lineage */
+  --color-bg-raw:             251 251 252;
+  --color-bg-secondary-raw:   244 245 247;
+  --color-bg-tertiary-raw:    236 238 241;
+  --color-surface-raw:        253 253 254;
+  --color-surface-raised-raw: 246 247 249;
+  --color-surface-overlay-raw:239 240 243;
+  --color-accent-raw:         0 102 204;        /* Apple SF Blue #0066cc */
+  --color-accent-muted-raw:   0 82 170;
+  --color-accent-subtle-raw:  224 234 247;
+  --color-accent-secondary-raw: 230 90 110;     /* warm rose, kept for admin/badge use */
+  --color-accent-tertiary-raw: 50 175 95;       /* status green — Available / Online */
+  --color-border-raw:         224 226 230;
+  --color-border-subtle-raw:  234 236 239;
+  --color-border-strong-raw:  204 207 212;
+  --color-text-primary-raw:   29 29 31;         /* Apple #1d1d1f */
+  --color-text-secondary-raw: 100 105 112;
+  --color-text-muted-raw:     138 142 148;
+  --color-text-inverse-raw:   251 251 252;      /* always near-white on accent button */
 }
 
 .dark {
-  /* Dark mode — deep space cyberpunk (Axelnova) */
-  --color-bg-raw:             2 4 8;
-  --color-bg-secondary-raw:   8 15 24;
-  --color-bg-tertiary-raw:    14 22 34;
-  --color-surface-raw:        8 15 24;
-  --color-surface-raised-raw: 14 22 34;
-  --color-surface-overlay-raw:20 30 45;
-  --color-accent-raw:         0 200 255;
-  --color-accent-muted-raw:   0 160 210;
-  --color-accent-subtle-raw:  0 40 60;
-  --color-accent-secondary-raw: 255 77 109;
-  --color-accent-tertiary-raw: 57 255 122;
-  --color-border-raw:         0 200 255;
-  --color-border-subtle-raw:  0 50 70;
-  --color-border-strong-raw:  0 200 255;
-  --color-text-primary-raw:   208 232 245;
-  --color-text-secondary-raw: 140 170 195;
-  --color-text-muted-raw:     80 110 140;
-  --color-text-inverse-raw:   2 4 8;
-  --color-glow:               0 200 255;
+  /* Dark mode — warm inky near-black, Apple-system lineage. Never pure #000. */
+  --color-bg-raw:             20 22 26;
+  --color-bg-secondary-raw:   28 30 35;
+  --color-bg-tertiary-raw:    38 40 46;
+  --color-surface-raw:        28 30 35;
+  --color-surface-raised-raw: 38 40 46;
+  --color-surface-overlay-raw:50 53 60;
+  --color-accent-raw:         41 151 255;       /* Apple SF Blue (dark) #2997ff */
+  --color-accent-muted-raw:   30 120 200;
+  --color-accent-subtle-raw:  30 50 80;
+  --color-accent-secondary-raw: 240 110 125;
+  --color-accent-tertiary-raw: 80 200 130;
+  --color-border-raw:         60 64 72;
+  --color-border-subtle-raw:  36 40 46;
+  --color-border-strong-raw:  95 100 110;
+  --color-text-primary-raw:   244 245 247;      /* Apple #f5f5f7 */
+  --color-text-secondary-raw: 170 173 180;
+  --color-text-muted-raw:     122 126 132;
+  --color-text-inverse-raw:   251 251 252;      /* white on blue button, both modes */
 }
 
 @layer base {
