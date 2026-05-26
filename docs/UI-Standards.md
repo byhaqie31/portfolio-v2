@@ -13,13 +13,13 @@ When adding a new section, page, or component, conform to this document. If a ru
 | Framework | **Nuxt 4** (`^4.4.2`) | App router via `pages/`, layouts via `layouts/`, server via `server/api/` (Nitro). |
 | View | **Vue 3.5** (`<script setup lang="ts">`) | Composition API only. No Options API. |
 | UI kit | **@nuxt/ui v3** | Used selectively. Always prefer the project's own design tokens & component classes (`.btn`, `.card`, etc.) over raw `UButton`/`UCard` so the cyberpunk look stays consistent. |
-| Styling | **Tailwind CSS v4** (via Nuxt UI) | Single entry: [assets/css/main.css](assets/css/main.css). Theme tokens live in `@theme {}`. No `tailwind.config.ts` — this project is fully on the v4 CSS-first config. |
+| Styling | **Tailwind CSS v4** (via Nuxt UI) | Single entry: [../assets/css/main.css](../assets/css/main.css). Theme tokens live in `@theme {}`. No `tailwind.config.ts` — this project is fully on the v4 CSS-first config. |
 | Icons | **@nuxt/icon** with **`@iconify-json/fluent`** | Use `<Icon name="fluent:..." size="14" />`. Keep sizes 12/14/16 — bigger icons break visual rhythm with the mono labels. `serverBundle: 'local'` is set; do not disable it (offline + faster cold start). |
 | Fonts | **@nuxtjs/google-fonts** | Three families, fixed roles — see §3. `display: 'swap'`, `preload: true`. |
 | Composables | **@vueuse/core** | Use `@vueuse/core` first before writing a new composable. |
 | Class merging | **clsx** | For conditional classes in `<script>`. In templates prefer `:class` arrays / object syntax. |
-| Server / API | **Nitro** (`server/api/**`) + **mysql2/promise** | Single shared pool in [server/utils/db.ts](server/utils/db.ts). |
-| Database | **MySQL 8** | Schema in [migrations/0001_create_all_tables.sql](migrations/0001_create_all_tables.sql) — InnoDB, `utf8mb4_unicode_ci`, snake_case columns. |
+| Server / API | **Nitro** (`server/api/**`) + **mysql2/promise** | Single shared pool in [../server/utils/db.ts](../server/utils/db.ts). |
+| Database | **MySQL 8** | Schema in [../migrations/0001_create_all_tables.sql](../migrations/0001_create_all_tables.sql) — InnoDB, `utf8mb4_unicode_ci`, snake_case columns. |
 | Container | **Docker** (`Dockerfile`, `Dockerfile.dev`, `docker-compose*.yml`) | dev + prod compose files at the root. |
 
 **Don't add to the stack without a reason.** Specifically: no Pinia (composables are enough at this size), no axios (use `$fetch` / `useFetch`), no separate icon set (Fluent only), no other CSS framework.
@@ -54,7 +54,7 @@ Two modes, both defined as raw RGB triplets in `:root` and `.dark`. The `--color
 
 ### 2.2 Mode toggle
 
-- Default is **dark**. The `dark` class is set on `<html>` by [composables/useTheme.ts](composables/useTheme.ts), persisted in `localStorage` under the key `theme`.
+- Default is **dark**. The `dark` class is set on `<html>` by [../composables/useTheme.ts](../composables/useTheme.ts), persisted in `localStorage` under the key `theme`.
 - Every layout must call `useTheme().init()` in `onMounted`. Skipping this causes a mode flash on reload.
 - Never read `isDark` server-side — the value is only correct after hydration.
 
@@ -167,7 +167,7 @@ All three are mono, uppercase, `tracking-[0.05em]`. Never override `font-family`
 
 ### 5.4 Section heading
 
-Every public section starts with `<UiSectionHeading :label="..." :title="..." :description="..." />` — see [components/ui/SectionHeading.vue](components/ui/SectionHeading.vue). It enforces the eyebrow + gradient divider + display title pattern. Do not roll a custom heading.
+Every public section starts with `<UiSectionHeading :label="..." :title="..." :description="..." />` — see [../components/ui/SectionHeading.vue](../components/ui/SectionHeading.vue). It enforces the eyebrow + gradient divider + display title pattern. Do not roll a custom heading.
 
 ### 5.5 Icons
 
