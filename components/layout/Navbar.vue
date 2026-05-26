@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onClickOutside } from '@vueuse/core'
 import { navLinks, personal } from '~/data/index'
 import { useCommandPalette } from '~/composables/useCommandPalette'
 import { useTheme } from '~/composables/useTheme'
@@ -11,6 +12,13 @@ const { isDark, toggle: toggleTheme } = useTheme()
 const mobileOpen = ref(false)
 const scrolled = ref(false)
 const activeSection = ref('')
+
+const mobilePanel = ref<HTMLElement | null>(null)
+const mobileToggle = ref<HTMLElement | null>(null)
+
+onClickOutside(mobilePanel, () => {
+  if (mobileOpen.value) mobileOpen.value = false
+}, { ignore: [mobileToggle] })
 
 onMounted(() => {
   window.addEventListener('scroll', () => {
@@ -45,10 +53,10 @@ function closeMenu() { mobileOpen.value = false }
   <header
     class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
     :class="scrolled
-      ? 'bg-bg/80 backdrop-blur-md border-b border-accent/10'
+      ? 'bg-bg/80 backdrop-blur-md border-b border-border-subtle'
       : 'bg-transparent'"
   >
-    <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+    <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
       <NuxtLink href="/" class="text-base font-semibold tracking-tight text-text-primary hover:text-accent transition-colors">
         qie<span class="text-accent">.dev</span>
@@ -98,9 +106,11 @@ function closeMenu() { mobileOpen.value = false }
 
       <!-- Mobile toggle -->
       <button
+        ref="mobileToggle"
         class="md:hidden btn-icon"
         @click="mobileOpen = !mobileOpen"
         :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+        :aria-expanded="mobileOpen"
       >
         <Icon v-if="mobileOpen" name="fluent:dismiss-16-filled" size="16" />
         <Icon v-else name="fluent:navigation-16-filled" size="16" />
@@ -118,13 +128,14 @@ function closeMenu() { mobileOpen.value = false }
     >
       <div
         v-if="mobileOpen"
-        class="md:hidden border-t border-accent/10 bg-surface/95 backdrop-blur-md px-6 py-5 flex flex-col gap-4"
+        ref="mobilePanel"
+        class="md:hidden border-t border-border-subtle bg-surface/95 backdrop-blur-md px-6 py-6 flex flex-col gap-1"
       >
         <a
           v-for="link in navLinks"
           :key="link.label"
           :href="link.href"
-          class="text-base py-1 transition-colors"
+          class="text-base py-2.5 transition-colors"
           :class="activeSection === link.href.replace('#', '')
             ? 'text-text-primary font-medium'
             : 'text-text-secondary'"
@@ -132,15 +143,30 @@ function closeMenu() { mobileOpen.value = false }
         >
           {{ link.label }}
         </a>
-        <div class="border-t border-accent/10 pt-4 flex flex-col gap-2">
-          <button class="btn-ghost text-sm justify-start" @click="() => { toggleTheme() }">
-            <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" /> <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
-            {{ isDark ? 'Light mode' : 'Dark mode' }}
+        <!-- Utility row: theme + search as icon buttons, contact as primary -->
+        <div class="mt-5 pt-5 border-t border-border-subtle flex items-center gap-3">
+          <button
+            class="btn-icon"
+            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            @click="toggleTheme"
+          >
+            <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />
+            <Icon v-else name="fluent:weather-moon-16-filled" size="14" />
           </button>
-          <button class="btn-ghost text-sm justify-start" @click="() => { open(); closeMenu() }">
-            <Icon name="fluent:search-16-filled" size="14" /> Search
+          <button
+            class="btn-icon"
+            title="Search"
+            aria-label="Search"
+            @click="() => { open(); closeMenu() }"
+          >
+            <Icon name="fluent:search-16-filled" size="14" />
           </button>
-          <a :href="`mailto:${personal.email}`" class="btn-primary text-sm" @click="closeMenu">
+          <a
+            :href="`mailto:${personal.email}`"
+            class="btn-primary text-sm ml-auto"
+            @click="closeMenu"
+          >
             Contact
           </a>
         </div>

@@ -19,14 +19,14 @@ const skillGroups = computed(() => {
 <template>
   <section id="experience" class="section">
     <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <UiSectionHeading
         label="Tech Stack"
         title="Skills & Tools"
         description="Technologies and tools I use day-to-day to design and ship products."
       />
 
-      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
           v-for="group in skillGroups"
           :key="group.label"

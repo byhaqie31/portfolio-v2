@@ -31,7 +31,7 @@ const education = computed(() => {
 <template>
   <section id="about" class="section">
     <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <div class="grid md:grid-cols-2 gap-16 items-start">
         <!-- Left: bio -->
         <div>

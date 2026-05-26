@@ -26,7 +26,7 @@ const experiences = computed(() => {
 <template>
   <section id="work" class="section">
     <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <UiSectionHeading label="Experience" title="Where I've worked" />
 
       <!-- Work experience -->

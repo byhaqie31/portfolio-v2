@@ -7,7 +7,7 @@ const year = new Date().getFullYear()
 <template>
   <footer class="px-6 py-12">
     <hr class="section-divider mb-12" />
-    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <!-- Left -->
       <div>
         <p class="text-base font-semibold text-text-primary mb-1">

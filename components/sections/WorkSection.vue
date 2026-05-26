@@ -28,7 +28,7 @@ const others = computed(() => projects.value.filter((p) => !p.featured))
 
 <template>
   <section id="projects" class="section">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <UiSectionHeading
         label="Project Registry"
         title="Things I've built"

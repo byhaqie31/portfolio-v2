@@ -136,9 +136,25 @@
   }
 
   /* `.reveal` is a marker class for GSAP — initial opacity:0 prevents FOUC
-   * before useReveal's ScrollTrigger animates it in. */
-  .reveal {
-    opacity: 0;
+   * before useReveal's ScrollTrigger animates it in. JS-disabled readers
+   * still see content because the rule is gated behind scripting:enabled. */
+  @media (scripting: enabled) {
+    .reveal {
+      opacity: 0;
+    }
+  }
+}
+
+/* Respect reduced-motion preference for any CSS animations/transitions that
+ * aren't routed through GSAP (Tailwind's animate-pulse, hover transforms). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

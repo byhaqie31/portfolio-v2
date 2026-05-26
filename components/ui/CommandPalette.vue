@@ -77,54 +77,68 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
         @click.self="close"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="close" />
+        <div class="absolute inset-0 bg-bg/60 backdrop-blur-sm" @click="close" />
 
         <!-- Panel -->
         <div
-          class="relative w-full max-w-lg rounded border border-accent/20 bg-surface overflow-hidden animate-slide-down"
-          style="box-shadow: 0 0 40px rgb(var(--color-accent-raw) / 0.1), 0 25px 50px rgba(0,0,0,0.5);"
+          class="relative w-full max-w-lg rounded-2xl border border-border bg-surface overflow-hidden animate-slide-down"
+          style="box-shadow: 0 20px 60px -10px rgba(0,0,0,0.18), 0 0 0 1px rgb(var(--color-border-raw) / 0.4);"
         >
           <!-- Search input -->
-          <div class="flex items-center gap-3 px-4 py-3 border-b border-accent/10">
-            <Icon name="fluent:search-16-filled" size="16" class="text-accent shrink-0" />
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-border-subtle">
+            <Icon name="fluent:search-16-filled" size="16" class="text-text-muted shrink-0" />
             <input
               v-model="query"
               type="text"
-              placeholder="Type a command or search..."
-              class="flex-1 bg-transparent font-mono text-sm text-text-primary placeholder:text-text-muted outline-none"
+              placeholder="Type a command or search…"
+              class="flex-1 bg-transparent text-base text-text-primary placeholder:text-text-muted outline-none"
               autofocus
             />
-            <button class="btn-icon shrink-0" @click="close">
+            <button class="btn-icon shrink-0" aria-label="Close search" @click="close">
               <Icon name="fluent:dismiss-16-filled" size="14" />
             </button>
           </div>
 
           <!-- Results -->
           <div class="py-2 max-h-72 overflow-y-auto">
-            <p v-if="filtered.length === 0" class="px-4 py-6 font-mono text-sm text-text-muted text-center">
+            <p v-if="filtered.length === 0" class="px-4 py-6 text-sm text-text-muted text-center">
               No results found.
             </p>
             <button
               v-for="(cmd, i) in filtered"
               :key="cmd.id"
-              class="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors"
+              class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors"
               :class="i === selected
-                ? 'bg-accent/10 text-text-primary border-l-2 border-accent'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border-l-2 border-transparent'"
+                ? 'bg-accent/8 text-text-primary'
+                : 'text-text-secondary hover:bg-surface-raised hover:text-text-primary'"
               @click="cmd.action"
               @mouseenter="selected = i"
             >
-              <span class="font-mono text-sm font-medium">{{ cmd.label }}</span>
-              <span class="font-mono text-2xs text-text-muted truncate uppercase tracking-wider">{{ cmd.description }}</span>
-              <Icon v-if="i === selected" name="fluent:arrow-right-16-filled" size="14" class="shrink-0 text-accent" />
+              <span class="text-sm font-medium">{{ cmd.label }}</span>
+              <span class="text-xs text-text-muted truncate">{{ cmd.description }}</span>
+              <Icon
+                name="fluent:arrow-right-16-filled"
+                size="14"
+                class="shrink-0 transition-opacity"
+                :class="i === selected ? 'text-accent opacity-100' : 'opacity-0'"
+              />
             </button>
           </div>
 
           <!-- Footer hint -->
-          <div class="px-4 py-2 border-t border-accent/10 flex items-center gap-4 text-text-muted">
-            <span class="font-mono text-2xs">↑↓ navigate</span>
-            <span class="font-mono text-2xs">↵ select</span>
-            <span class="font-mono text-2xs">esc close</span>
+          <div class="px-4 py-2.5 border-t border-border-subtle flex items-center gap-3 text-xs text-text-muted">
+            <span class="inline-flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 rounded-md border border-border-subtle bg-bg-secondary text-[0.65rem]">↑↓</kbd>
+              navigate
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 rounded-md border border-border-subtle bg-bg-secondary text-[0.65rem]">↵</kbd>
+              select
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 rounded-md border border-border-subtle bg-bg-secondary text-[0.65rem]">esc</kbd>
+              close
+            </span>
           </div>
         </div>
       </div>

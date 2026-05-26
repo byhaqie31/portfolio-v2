@@ -54,7 +54,7 @@ onUnmounted(() => mm?.revert())
 
 <template>
   <section ref="heroRoot" class="relative min-h-screen flex items-center px-6 pt-14">
-    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center gap-14 md:gap-20">
+    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center gap-12 md:gap-12 lg:gap-20">
       <div class="flex-1 min-w-0">
         <div class="hero-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
@@ -84,7 +84,7 @@ onUnmounted(() => mm?.revert())
           </a>
           <a
             :href="`mailto:${personal.email}`"
-            class="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1"
+            class="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1 py-2"
           >
             Get in touch
             <Icon name="fluent:arrow-right-16-filled" size="13" class="opacity-60" />
@@ -110,7 +110,7 @@ onUnmounted(() => mm?.revert())
       </div>
 
       <div class="shrink-0">
-        <div class="hero-photo group relative w-64 h-64 md:w-96 md:h-96">
+        <div class="hero-photo group relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-96 lg:h-96">
           <div
             class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
             style="box-shadow: 0 30px 80px -20px rgba(0,0,0,0.12), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
@@ -128,8 +128,12 @@ onUnmounted(() => mm?.revert())
 </template>
 
 <style scoped>
-.hero-reveal,
-.hero-photo {
-  opacity: 0;
+/* FOUC guard for the GSAP entrance — only applies when JS is enabled,
+ * so JS-disabled readers still see the hero content rendered by SSR. */
+@media (scripting: enabled) {
+  .hero-reveal,
+  .hero-photo {
+    opacity: 0;
+  }
 }
 </style>
