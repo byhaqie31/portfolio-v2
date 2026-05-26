@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { gsap } from 'gsap'
 import { personal as staticPersonal } from '~/data/index'
 
 const { data: personalData } = await usePersonal()
@@ -19,40 +20,64 @@ const personal = computed(() => {
     focus: d?.focus || staticPersonal.focus,
   }
 })
+
+const heroRoot = ref<HTMLElement | null>(null)
+
+let mm: ReturnType<typeof gsap.matchMedia> | null = null
+
+onMounted(() => {
+  if (!heroRoot.value) return
+
+  mm = gsap.matchMedia()
+
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
+    const ctx = gsap.context(() => {
+      gsap.set('.hero-reveal', { opacity: 0, y: 24 })
+      gsap.set('.hero-photo', { opacity: 0, scale: 0.96 })
+
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
+      tl.to('.hero-photo', { opacity: 1, scale: 1, duration: 1.6 }, 0)
+        .to('.hero-reveal', { opacity: 1, y: 0, duration: 1.1, stagger: 0.08 }, 0.15)
+    }, heroRoot.value!)
+
+    return () => ctx.revert()
+  })
+
+  mm.add('(prefers-reduced-motion: reduce)', () => {
+    gsap.set('.hero-reveal', { opacity: 1, y: 0 })
+    gsap.set('.hero-photo', { opacity: 1, scale: 1 })
+  })
+})
+
+onUnmounted(() => mm?.revert())
 </script>
 
 <template>
-  <section class="relative min-h-screen flex items-center px-6 pt-14">
+  <section ref="heroRoot" class="relative min-h-screen flex items-center px-6 pt-14">
     <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center gap-14 md:gap-20">
       <div class="flex-1 min-w-0">
-        <div class="animate-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
+        <div class="hero-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
           Available for {{ personal.availableFor }}
         </div>
 
-        <p class="animate-reveal text-sm text-text-muted font-medium mb-3" style="animation-delay:0.05s">
+        <p class="hero-reveal text-sm text-text-muted font-medium mb-3">
           {{ personal.name }}
         </p>
 
-        <h1
-          class="animate-reveal text-[clamp(2.75rem,6vw,4.75rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5"
-          style="animation-delay:0.1s"
-        >
+        <h1 class="hero-reveal text-[clamp(2.75rem,6vw,4.75rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5">
           {{ personal.role }}.
         </h1>
 
-        <p class="animate-reveal text-xl md:text-2xl text-text-secondary leading-snug mb-8 max-w-xl" style="animation-delay:0.15s">
+        <p class="hero-reveal text-xl md:text-2xl text-text-secondary leading-snug mb-8 max-w-xl">
           Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>.
         </p>
 
-        <p
-          class="animate-reveal max-w-xl text-base text-text-secondary leading-relaxed mb-10"
-          style="animation-delay:0.2s"
-        >
+        <p class="hero-reveal max-w-xl text-base text-text-secondary leading-relaxed mb-10">
           {{ personal.summary }}
         </p>
 
-        <div class="animate-reveal flex flex-wrap items-center gap-6 mb-14" style="animation-delay:0.25s">
+        <div class="hero-reveal flex flex-wrap items-center gap-6 mb-14">
           <a href="#projects" class="btn-primary group">
             View my work
             <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
@@ -66,7 +91,7 @@ const personal = computed(() => {
           </a>
         </div>
 
-        <div class="animate-reveal flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted" style="animation-delay:0.3s">
+        <div class="hero-reveal flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted">
           <span class="flex items-center gap-1.5">
             <Icon name="fluent:location-16-filled" size="14" />
             {{ personal.location }}
@@ -84,8 +109,8 @@ const personal = computed(() => {
         </div>
       </div>
 
-      <div class="animate-reveal shrink-0" style="animation-delay:0.15s">
-        <div class="group relative w-64 h-64 md:w-96 md:h-96">
+      <div class="shrink-0">
+        <div class="hero-photo group relative w-64 h-64 md:w-96 md:h-96">
           <div
             class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
             style="box-shadow: 0 30px 80px -20px rgba(0,0,0,0.12), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
@@ -101,3 +126,10 @@ const personal = computed(() => {
     </div>
   </section>
 </template>
+
+<style scoped>
+.hero-reveal,
+.hero-photo {
+  opacity: 0;
+}
+</style>

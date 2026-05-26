@@ -5,6 +5,12 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
 
+  vite: {
+    optimizeDeps: {
+      include: ['gsap', 'gsap/ScrollTrigger'],
+    },
+  },
+
   site: {
     url: 'https://baihaqie.com',
     name: 'Ahmad Baihaqie — Software Engineer',

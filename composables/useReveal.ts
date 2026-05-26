@@ -1,28 +1,49 @@
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+if (import.meta.client) {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
 /**
- * useReveal — adds .is-visible to elements with .reveal class when they enter the viewport.
- * Usage: call useReveal() in any component's onMounted (or just use it in a layout/page).
+ * useReveal — GSAP + ScrollTrigger driven entrance for `.reveal` elements.
+ * Elements should start at opacity:0 in CSS to prevent FOUC; GSAP animates them in
+ * when they cross 85% of the viewport. Respects prefers-reduced-motion via matchMedia.
  */
 export function useReveal() {
-  const observer = ref<IntersectionObserver | null>(null)
+  let mm: ReturnType<typeof gsap.matchMedia> | null = null
 
-  function init() {
-    observer.value = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.value?.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    )
+  onMounted(() => {
+    mm = gsap.matchMedia()
 
-    document.querySelectorAll('.reveal').forEach((el) => {
-      observer.value?.observe(el)
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const elements = gsap.utils.toArray<HTMLElement>('.reveal')
+      elements.forEach((el) => {
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: 16 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1.1,
+            ease: 'expo.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              once: true,
+            },
+          },
+        )
+      })
     })
-  }
 
-  onMounted(() => init())
-  onUnmounted(() => observer.value?.disconnect())
+    mm.add('(prefers-reduced-motion: reduce)', () => {
+      gsap.set('.reveal', { opacity: 1, y: 0 })
+    })
+  })
+
+  onUnmounted(() => {
+    mm?.revert()
+    ScrollTrigger.getAll().forEach((t) => t.kill())
+  })
 }

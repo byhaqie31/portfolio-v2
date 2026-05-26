@@ -40,33 +40,15 @@
   --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
 
-  --animate-reveal: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-fade-in: fadeIn 0.4s ease forwards;
+  /* Public-site motion is now GSAP-owned (see composables/useReveal.ts).
+   * Only animations consumed by admin/internal components remain here. */
   --animate-slide-down: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-shimmer: shimmer 2s linear infinite;
 
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
-  @keyframes reveal {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
   @keyframes slideDown {
     0% { opacity: 0; transform: translateY(-8px); }
     100% { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes slideUp {
-    0% { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
   }
 }
 
@@ -153,24 +135,11 @@
     border-radius: 9999px;
   }
 
-  /* Reveal animations */
+  /* `.reveal` is a marker class for GSAP — initial opacity:0 prevents FOUC
+   * before useReveal's ScrollTrigger animates it in. */
   .reveal {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
-
-  .reveal.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-  .reveal-delay-4 { transition-delay: 0.4s; }
-  .reveal-delay-5 { transition-delay: 0.5s; }
 }
 
 @layer components {
