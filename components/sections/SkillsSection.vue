@@ -30,10 +30,8 @@ const skillGroups = computed(() => {
         <div
           v-for="group in skillGroups"
           :key="group.label"
-          class="reveal card relative overflow-hidden"
+          class="reveal card"
         >
-          <!-- Corner accent -->
-          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
           <p class="font-mono text-2xs text-accent uppercase tracking-[0.25em] mb-4">{{ group.label }}</p>
           <div class="flex flex-wrap gap-2">
             <span v-for="item in group.items" :key="item" class="skill-tag">

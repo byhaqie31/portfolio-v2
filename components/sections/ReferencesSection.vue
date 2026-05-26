@@ -53,17 +53,8 @@ function prev() {
         <div
           v-for="fb in paginatedFeedbacks"
           :key="'fb-' + fb.submitted_at"
-          class="card-hover relative overflow-hidden is-visible"
+          class="card-hover is-visible"
         >
-          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
-
-          <!-- Top: Rating + Quote -->
-          <div class="flex items-start justify-between gap-4 mb-4">
-            <div v-if="fb.rating" class="text-accent text-sm tracking-wide shrink-0">
-              {{ '★'.repeat(fb.rating) }}{{ '☆'.repeat(5 - fb.rating) }}
-            </div>
-          </div>
-
           <p class="text-text-secondary leading-relaxed text-sm italic mb-5">
             "{{ fb.message }}"
           </p>

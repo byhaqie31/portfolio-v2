@@ -27,7 +27,7 @@ const personal = computed(() => {
 
         <h2 class="font-display text-2xl md:text-3xl font-bold tracking-[0.05em] uppercase text-text-primary mb-4">
           Let's build something
-          <span class="text-accent neon-glow">together.</span>
+          <span class="text-accent">together.</span>
         </h2>
 
         <p class="text-text-secondary leading-relaxed mb-10">

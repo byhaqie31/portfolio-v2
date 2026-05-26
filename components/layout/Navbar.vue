@@ -50,7 +50,7 @@ function closeMenu() { mobileOpen.value = false }
   >
     <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink href="/" class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary hover:text-accent transition-colors neon-glow">
+      <NuxtLink href="/" class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary hover:text-accent transition-colors">
         qie<span class="text-accent">.dev</span>
       </NuxtLink>
 
@@ -66,13 +66,10 @@ function closeMenu() { mobileOpen.value = false }
           >
             {{ link.label }}
             <span
-              class="absolute -bottom-0.5 left-0 right-0 h-px transition-all duration-300"
+              class="absolute -bottom-0.5 left-0 right-0 h-px bg-accent transition-opacity duration-300"
               :class="activeSection === link.href.replace('#', '')
-                ? 'opacity-100 bg-accent'
-                : 'opacity-0 bg-accent'"
-              :style="activeSection === link.href.replace('#', '')
-                ? 'box-shadow: 0 0 8px rgb(var(--color-accent-raw) / 0.5)'
-                : ''"
+                ? 'opacity-100'
+                : 'opacity-0'"
             />
           </a>
         </li>
