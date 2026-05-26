@@ -26,7 +26,6 @@ let loader: GLTFLoader | null = null
 let model: THREE.Group | null = null
 let scene: THREE.Scene | null = null
 let motionTl: gsap.core.Timeline | null = null
-let entranceTw: gsap.core.Tween | null = null
 
 function getLoader(): GLTFLoader {
   if (loader) return loader
@@ -125,29 +124,16 @@ export function useFlightAircraft() {
     if (!model) return
 
     motionTl?.kill()
-    entranceTw?.kill()
 
     model.rotation.set(0, Math.PI / 2, 0)
     model.position.set(0, 2, -45)
 
-    // Fade the aircraft in by tweening every material's opacity (the
-    // normalizeModel pass set transparent:true on all of them). Collect
-    // the material array once and animate it directly.
-    const mats: THREE.Material[] = []
-    model.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const m = (child as THREE.Mesh).material
-        if (Array.isArray(m)) mats.push(...m)
-        else if (m) mats.push(m)
-      }
-    })
-    mats.forEach((m) => (m.opacity = 0))
-    entranceTw = gsap.to(mats, { opacity: 1, duration: 1.4, ease: 'expo.out' })
+    // No entrance fade — the iris reveal in useFlightScroll handles
+    // making the aircraft visible. Materials stay at full opacity here
+    // (scroll will tween them 0 → 1 if it's wired to do so).
 
-    // Perpetual cruise motion. Yoyo + infinite repeat give the aircraft
-    // a gentle vertical drift (±0.4 units) and wing rock (±2°), like the
-    // light turbulence you feel in real cruise. Different durations on
-    // the two tweens keep the loop from feeling mechanical.
+    // Perpetual cruise motion — gentle vertical drift + wing rock,
+    // different periods so the loop doesn't feel mechanical.
     motionTl = gsap.timeline({
       repeat: -1,
       yoyo: true,
@@ -157,11 +143,27 @@ export function useFlightAircraft() {
     motionTl.to(model.rotation, { z: 0.035, duration: 4.8 }, 0)
   }
 
+  /**
+   * Returns the flat array of materials on the loaded aircraft. Used by
+   * useFlightScroll to opacity-tween them as the iris reveals. Returns
+   * an empty array if the model hasn't loaded yet.
+   */
+  function getMaterials(): THREE.Material[] {
+    if (!model) return []
+    const mats: THREE.Material[] = []
+    model.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const m = (child as THREE.Mesh).material
+        if (Array.isArray(m)) mats.push(...m)
+        else if (m) mats.push(m)
+      }
+    })
+    return mats
+  }
+
   function destroy() {
     motionTl?.kill()
     motionTl = null
-    entranceTw?.kill()
-    entranceTw = null
 
     if (model && scene) {
       scene.remove(model)
@@ -180,5 +182,5 @@ export function useFlightAircraft() {
     scene = null
   }
 
-  return { load, startCruise, destroy }
+  return { load, startCruise, getMaterials, destroy }
 }

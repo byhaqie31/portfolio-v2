@@ -3,32 +3,32 @@ import { gsap } from 'gsap'
 import { useLenis } from '~/composables/useLenis'
 
 /*
- * Welcome card — the second act of the intro. Plays after <CinematicIntro>
- * emits complete, before the static aircraft and hero copy assemble.
+ * Welcome card — second act of the intro. Plays after <CinematicIntro>
+ * emits complete; sits on the persistent <CinematicOverlay> (solid black)
+ * until the user scrolls. Then the master scroll choreography in
+ * useFlightScroll takes the text over (fades + scales it out as the
+ * iris reveals the sky behind).
  *
- * Sequence (~3.1s total):
+ * Sequence (~2.3s total):
  *   t=0.0 → 0.8  Text fades + lifts in (opacity 0 → 1, y +16 → 0), expo.out.
- *   t=0.8 → 2.3  Hold (1.5s).
- *   t=2.3 → 3.1  Text fades + lifts out (opacity 1 → 0, y 0 → -16), expo.in.
- *   t=3.1        Component unmounts, Lenis resumes, parent moves to the
- *                next act (aircraft + hero copy).
+ *   t=0.8 → 2.3  Hold (1.5s) — text stays visible, waiting for the user.
+ *   t=2.3        Emit `complete` so the parent can resume Lenis + arm the
+ *                ScrollTrigger reveal. Component stays mounted; the text
+ *                will be dismissed by scroll, not by an auto fade-out.
  *
- * Lenis stays paused so the welcome can't be scrolled past. Text floats
- * over the sky — no opaque overlay; the cinematic-twilight sky behind it
- * is part of the composition.
+ * Lenis stays paused for the duration of the fade-in + hold. The parent
+ * resumes it on `complete`, after which the page becomes scrollable.
  */
 
 const emit = defineEmits<{ complete: [] }>()
 
 const root = ref<HTMLDivElement | null>(null)
 const text = ref<HTMLParagraphElement | null>(null)
-const visible = ref(true)
 
 const lenis = useLenis()
 let mm: ReturnType<typeof gsap.matchMedia> | null = null
 
 function finish() {
-  visible.value = false
   lenis.instance?.start()
   emit('complete')
 }
@@ -46,13 +46,16 @@ onMounted(() => {
 
       const tl = gsap.timeline({ onComplete: finish })
       tl.to(text.value, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, 0)
-      tl.to(text.value, { opacity: 0, y: -16, duration: 0.8, ease: 'expo.in' }, 2.3)
+      // Hold for 1.5s, then emit `complete`. No fade-out — scroll will
+      // dismiss the text via the master scroll choreography.
+      tl.to({}, { duration: 1.5 }, 0.8)
     }, root.value!)
 
     return () => ctx.revert()
   })
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
+    if (text.value) gsap.set(text.value, { opacity: 1, y: 0 })
     finish()
   })
 })
@@ -64,7 +67,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="visible" ref="root" class="welcome" aria-hidden="true">
+  <div ref="root" class="welcome" aria-hidden="true">
     <p ref="text" class="welcome__text">
       Welcome aboard<br />
       to my journey!
@@ -74,9 +77,12 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .welcome {
+  /* Sits above the persistent <CinematicOverlay> (z 20) so the text
+   * stays visible after the iris reveal starts clipping the overlay.
+   * The text's own opacity + scale are scrubbed by useFlightScroll. */
   position: fixed;
   inset: 0;
-  z-index: var(--z-controls);
+  z-index: 25;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { gsap } from 'gsap'
+import { useFlightScroll } from '~/composables/useFlightScroll'
+import { useFlightAircraft } from '~/composables/useFlightAircraft'
 
 definePageMeta({
   layout: 'cinematic',
@@ -15,71 +16,76 @@ useSeoMeta({
 })
 
 /*
- * The intro is a three-act sequence:
- *   Act 1 — <CinematicIntro>:    plane crosses, sky reveals (~3.7s)
- *   Act 2 — <CinematicWelcome>:  "Welcome aboard to my journey!" (~3.1s)
- *   Act 3 — <CinematicAircraft> + hero copy: assemble in parallel
+ * Two-phase intro choreography:
  *
- * Each act mounts conditionally based on the previous act's `complete`
- * event, so the timeline can't be raced or skipped accidentally. Hero
- * copy stays hidden (opacity 0, y +24) until Act 2 finishes; then GSAP
- * fades it up at the same time the static aircraft fades in, so the
- * main view assembles in one coordinated beat rather than dribbling on.
+ *   Phase A — auto-play (sits at top of page, Lenis paused):
+ *     1. <CinematicIntro>   plane silhouette flies up through black
+ *     2. <CinematicWelcome> "Welcome aboard / to my journey!" fades in,
+ *        holds. Emits `complete` when the user is meant to take over.
+ *
+ *   Phase B — scroll-driven (Lenis resumed, ScrollTrigger pinned):
+ *     The hero section pins for 150vh of scroll. As the user scrolls:
+ *       • <CinematicOverlay> radial-mask hole grows 0 → 150vw — the
+ *         iris reveal, sky + aircraft pop out from the centre of the
+ *         wording (Apple-style mask reveal)
+ *       • Welcome text scales 1 → 0.5, opacity 1 → 0
+ *       • Aircraft materials opacity 0 → 1
+ *       • Hero copy (.hero-reveal) opacity 0 → 1, y 24 → 0, staggered
+ *     After the pin ends, the hero is fully assembled and the user
+ *     continues scrolling to subsequent phases.
  */
 
 const introDone = ref(false)
 const welcomeDone = ref(false)
-const heroRoot = ref<HTMLElement | null>(null)
-let mm: ReturnType<typeof gsap.matchMedia> | null = null
+
+const flightScroll = useFlightScroll()
+const aircraft = useFlightAircraft()
 
 watch(welcomeDone, (done) => {
-  if (!done || !heroRoot.value) return
-
-  mm = gsap.matchMedia()
-
-  mm.add('(prefers-reduced-motion: no-preference)', () => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        '.hero-reveal',
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 1.4, ease: 'expo.out', stagger: 0.18 },
-      )
-    }, heroRoot.value!)
-    return () => ctx.revert()
-  })
-
-  mm.add('(prefers-reduced-motion: reduce)', () => {
-    gsap.set('.hero-reveal', { opacity: 1, y: 0 })
+  if (!done) return
+  // Welcome fade-in + hold has completed; Lenis is back on. Arm the
+  // scroll reveal.
+  //
+  // IMPORTANT: pin the hero section, NOT .experience-root. Pinning the
+  // root would make it a containing block for position:fixed descendants
+  // (CinematicOverlay, CinematicWelcome, CinematicFlightScene), so the
+  // welcome text would "stick" to wherever the pin's transform put the
+  // root instead of staying glued to the viewport. .phase--hero is a
+  // sibling of those overlays — pinning it doesn't affect their layout.
+  flightScroll.init({
+    trigger: '.phase--hero',
+    end: '+=150%',
+    aircraftMaterials: () => aircraft.getMaterials(),
   })
 })
 
 onBeforeUnmount(() => {
-  mm?.revert()
+  flightScroll.destroy()
 })
 </script>
 
 <template>
   <div class="experience-root">
-    <!-- Background layer: the Three.js sky shader, painting behind everything.
-         It boots immediately but is hidden by the intro's black overlay until
-         the reveal moment. -->
+    <!-- Background: Three.js sky + aircraft, hidden behind <CinematicOverlay>
+         until the iris reveal scrubs it away. -->
     <CinematicFlightScene />
-
-    <!-- Act 1 — black overlay + plane flies up through the viewport. -->
-    <CinematicIntro @complete="introDone = true" />
-
-    <!-- Act 2 — welcome card; mounts only after Act 1 completes. -->
-    <CinematicWelcome v-if="introDone" @complete="welcomeDone = true" />
-
-    <!-- Act 3 — static A350 parked in the upper-right of the hero,
-         fades in alongside the hero copy below. Mounts only after Act 2. -->
     <CinematicAircraft v-if="welcomeDone" />
+
+    <!-- Persistent black overlay with radial-mask iris. Sits at z=20,
+         covers the sky/aircraft. useFlightScroll grows --hole-r 0 → 150vw. -->
+    <CinematicOverlay />
+
+    <!-- Auto-play acts. Intro's own overlay (z-modal) plays on top of
+         <CinematicOverlay>; both are the same black so the handoff is
+         invisible. Welcome stays mounted after fade-in — scroll dismisses it. -->
+    <CinematicIntro @complete="introDone = true" />
+    <CinematicWelcome v-if="introDone" @complete="welcomeDone = true" />
 
     <main class="cinematic-page">
       <!-- Phase 00 — Pre-flight. Lower-third composition: small mono dataline
            pinned to the upper-left like a film slate, masthead anchored to
-           the bottom-left, sky dominates the middle. HUD lands in weekend 4. -->
-      <section ref="heroRoot" class="phase phase--hero">
+           the bottom-left, sky dominates the middle. -->
+      <section class="phase phase--hero">
         <p class="phase__label hero-reveal">FLIGHT AB · 2026</p>
 
         <div class="phase__masthead">
@@ -96,11 +102,11 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <!-- Scroll spacer so Lenis has something to do during the smoke test -->
+      <!-- Scroll spacer so the page has somewhere to go after the pin ends. -->
       <section class="phase phase--placeholder">
         <p class="phase__label">SCAFFOLD · WEEKEND 2</p>
         <p class="phase__body">
-          Intro reveal complete. The plane returns via scroll choreography
+          Iris reveal complete. The plane returns via scroll choreography
           in weekend 3 (takeoff / climb / cruise / FL380 / descent / arrival).
         </p>
       </section>
@@ -109,7 +115,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* The content layer sits above the fixed canvas + aircraft via z-content. */
 .experience-root {
   position: relative;
 }
@@ -130,10 +135,6 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 
-/* Phase 00 — Pre-flight. Lower-third composition.
- * Dataline pinned to the top, masthead anchored to the bottom, sky
- * fills the middle. Other phases (placeholder for now) keep the base
- * centered composition. */
 .phase--hero {
   justify-content: space-between;
   align-items: flex-start;
@@ -142,8 +143,6 @@ onBeforeUnmount(() => {
 }
 
 .phase__masthead {
-  /* Bottom-anchored content block. Narrower than the section so the
-   * body wraps to a comfortable reading measure even on wide viewports. */
   max-width: 680px;
 }
 
@@ -175,8 +174,6 @@ onBeforeUnmount(() => {
 }
 
 .phase__rule {
-  /* Hairline divider between name+role above and meta+body below.
-   * Short and architectural, never spans full width. */
   width: 56px;
   height: 1px;
   background: var(--color-divider);
@@ -201,8 +198,8 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
-/* Hero copy is hidden until the intro completes; GSAP fades it up.
- * Scoped to this page, so it can't collide with HeroSection's own
+/* Hero copy is invisible until the master scroll choreography fades it
+ * up. Scoped here so it can't collide with HeroSection's own
  * .hero-reveal pattern on /. */
 .hero-reveal {
   opacity: 0;
