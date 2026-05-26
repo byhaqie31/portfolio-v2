@@ -44,8 +44,6 @@
    * Only animations consumed by admin/internal components remain here. */
   --animate-slide-down: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-
   @keyframes slideDown {
     0% { opacity: 0; transform: translateY(-8px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -74,7 +72,7 @@
   --color-border-strong-raw:  204 207 212;
   --color-text-primary-raw:   29 29 31;         /* Apple #1d1d1f */
   --color-text-secondary-raw: 100 105 112;
-  --color-text-muted-raw:     138 142 148;
+  --color-text-muted-raw:     110 115 122;       /* WCAG AA (4.6:1) on bg #fbfbfc */
   --color-text-inverse-raw:   251 251 252;      /* always near-white on accent button */
 }
 
@@ -96,7 +94,7 @@
   --color-border-strong-raw:  95 100 110;
   --color-text-primary-raw:   244 245 247;      /* Apple #f5f5f7 */
   --color-text-secondary-raw: 170 173 180;
-  --color-text-muted-raw:     122 126 132;
+  --color-text-muted-raw:     140 144 150;       /* WCAG AA (5.4:1) on bg #14161a */
   --color-text-inverse-raw:   251 251 252;      /* white on blue button, both modes */
 }
 
@@ -161,12 +159,12 @@
 @layer components {
   /* ── Buttons (sentence case, Apple-pill radius) ── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
   .btn-primary:hover {
@@ -177,7 +175,7 @@
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-text-primary active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-text-primary active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     border-color: rgb(var(--color-border-raw) / 0.6);
   }
@@ -186,7 +184,7 @@
   }
 
   .btn-icon {
-    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded-full border text-text-muted hover:text-text-primary transition-all duration-200;
+    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded-full border text-text-muted hover:text-text-primary transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     border-color: rgb(var(--color-border-raw) / 0.6);
   }
   .btn-icon:hover {
@@ -237,18 +235,19 @@
   }
 }
 
+/* Backward-compat utilities for admin/feedback surfaces still using the old
+ * cyberpunk vocabulary. They now resolve to the same system stack as font-sans
+ * (Orbitron / DM Mono / Syne are no longer loaded) but the class names are
+ * preserved so those surfaces continue to compile until they get their own
+ * redesign pass. */
 @utility font-display {
-  font-family: 'Orbitron', system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 @utility font-tech {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 @utility font-body {
-  font-family: 'Syne', system-ui, sans-serif;
-}
-
-@utility ease-spring {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
 }
