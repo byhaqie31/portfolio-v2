@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'default', ssr: false })
 
+useSeoMeta({ robots: 'noindex, nofollow' })
+
 const { init, clear } = usePreview()
 
 const route = useRoute()
