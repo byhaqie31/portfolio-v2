@@ -7,7 +7,15 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['gsap', 'gsap/ScrollTrigger', 'lenis', 'three', 'three/examples/jsm/objects/Sky.js'],
+      include: [
+        'gsap',
+        'gsap/ScrollTrigger',
+        'lenis',
+        'three',
+        'three/examples/jsm/objects/Sky.js',
+        'three/examples/jsm/loaders/GLTFLoader.js',
+        'three/examples/jsm/loaders/DRACOLoader.js',
+      ],
     },
   },
 

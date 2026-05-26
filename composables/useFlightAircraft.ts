@@ -1,0 +1,184 @@
+import * as THREE from 'three'
+import { gsap } from 'gsap'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+
+/*
+ * 3D aircraft lifecycle. Loads the A350 GLB into an existing Three.js
+ * scene, normalizes its orientation/scale, runs a cinematic horizontal
+ * flyby with GSAP, and tears down cleanly.
+ *
+ * Pattern adapted from jet-engine-infographic/src/model-loader.js.
+ * Differences from AoT:
+ *   - No procedural fallback (we have the PNG silhouette as Plan B if
+ *     the GLB itself can't load).
+ *   - No AXEL NOVA livery shader patch (default materials for now).
+ *   - Aircraft is rotated for a side-profile flyby, not a runway pose.
+ *
+ * DRACO decoder loads from Google's CDN (matches AoT) — saves ~1MB
+ * of decoder files in /public.
+ */
+
+const DRACO_DECODER = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/'
+const TARGET_FUSELAGE_LENGTH = 18 // scene units; sized to feel cinematic at z=-45
+
+let loader: GLTFLoader | null = null
+let model: THREE.Group | null = null
+let scene: THREE.Scene | null = null
+let motionTl: gsap.core.Timeline | null = null
+let entranceTw: gsap.core.Tween | null = null
+
+function getLoader(): GLTFLoader {
+  if (loader) return loader
+  const draco = new DRACOLoader()
+  draco.setDecoderPath(DRACO_DECODER)
+  draco.preload()
+  loader = new GLTFLoader()
+  loader.setDRACOLoader(draco)
+  return loader
+}
+
+function normalizeModel(g: THREE.Group): THREE.Group {
+  // The A350 GLB has its nose at +Z and wings along X. For a side-profile
+  // flyby we want the nose to point along the travel axis. We'll handle
+  // direction at flyby time by re-setting rotation — here we just normalize
+  // to nose-along-+X as a canonical orientation.
+  g.rotation.y = Math.PI / 2
+
+  // Scale: pull the longest horizontal axis down to the target length.
+  const box = new THREE.Box3().setFromObject(g)
+  const size = new THREE.Vector3()
+  box.getSize(size)
+  const longest = Math.max(size.x, size.z)
+  if (longest > 0) g.scale.setScalar(TARGET_FUSELAGE_LENGTH / longest)
+
+  // Recenter on origin so position transforms read intuitively.
+  box.setFromObject(g)
+  const center = new THREE.Vector3()
+  box.getCenter(center)
+  g.position.sub(center)
+
+  // Materials — keep default PBR. Patch transparent + sRGB on textures so
+  // GSAP opacity tweens work later and colour space matches the renderer.
+  g.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+      mats.forEach((m) => {
+        m.transparent = true
+        const mat = m as THREE.MeshStandardMaterial
+        if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace
+        if (mat.emissiveMap) mat.emissiveMap.colorSpace = THREE.SRGBColorSpace
+        m.needsUpdate = true
+      })
+    }
+  })
+
+  return g
+}
+
+export function useFlightAircraft() {
+  /**
+   * Load the GLB and add it to the given scene. Returns a promise that
+   * resolves once the model is ready and mounted. Safe to call when
+   * the model is already loaded — just re-adds to the (possibly new) scene.
+   */
+  function load(targetScene: THREE.Scene): Promise<THREE.Group> {
+    scene = targetScene
+    if (model) {
+      if (!targetScene.children.includes(model)) targetScene.add(model)
+      return Promise.resolve(model)
+    }
+    return new Promise((resolve, reject) => {
+      getLoader().load(
+        '/models/a350.glb',
+        (gltf) => {
+          model = normalizeModel(gltf.scene)
+          targetScene.add(model)
+          resolve(model)
+        },
+        undefined,
+        (err) => {
+          console.warn('[useFlightAircraft] GLB load failed', err)
+          reject(err)
+        },
+      )
+    })
+  }
+
+  /**
+   * Aircraft already at altitude — appears parked at the centre of the
+   * frame, in side profile, with a slow perpetual bob + wing rock so it
+   * reads as "cruising" rather than "stuck on screen".
+   *
+   * The intro showed the plane taking off (silhouette rising through the
+   * viewport). This is the next shot in the film: we're now alongside it
+   * at altitude, watching it cruise.
+   *
+   * Coordinates: camera at origin looking at (0, 0, -1) with FOV 55°.
+   * Aircraft sits at z=-45 (cinematic distance), y=2 (just above eye level
+   * so the lower-third masthead has room beneath), nose pointing +X (the
+   * viewer sees the aircraft in profile, like a window-seat view of a plane
+   * flying parallel).
+   */
+  function startCruise() {
+    if (!model) return
+
+    motionTl?.kill()
+    entranceTw?.kill()
+
+    model.rotation.set(0, Math.PI / 2, 0)
+    model.position.set(0, 2, -45)
+
+    // Fade the aircraft in by tweening every material's opacity (the
+    // normalizeModel pass set transparent:true on all of them). Collect
+    // the material array once and animate it directly.
+    const mats: THREE.Material[] = []
+    model.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const m = (child as THREE.Mesh).material
+        if (Array.isArray(m)) mats.push(...m)
+        else if (m) mats.push(m)
+      }
+    })
+    mats.forEach((m) => (m.opacity = 0))
+    entranceTw = gsap.to(mats, { opacity: 1, duration: 1.4, ease: 'expo.out' })
+
+    // Perpetual cruise motion. Yoyo + infinite repeat give the aircraft
+    // a gentle vertical drift (±0.4 units) and wing rock (±2°), like the
+    // light turbulence you feel in real cruise. Different durations on
+    // the two tweens keep the loop from feeling mechanical.
+    motionTl = gsap.timeline({
+      repeat: -1,
+      yoyo: true,
+      defaults: { ease: 'sine.inOut' },
+    })
+    motionTl.to(model.position, { y: 2.4, duration: 3.5 }, 0)
+    motionTl.to(model.rotation, { z: 0.035, duration: 4.8 }, 0)
+  }
+
+  function destroy() {
+    motionTl?.kill()
+    motionTl = null
+    entranceTw?.kill()
+    entranceTw = null
+
+    if (model && scene) {
+      scene.remove(model)
+    }
+    if (model) {
+      model.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh
+          mesh.geometry?.dispose()
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+          mats.forEach((m) => m?.dispose())
+        }
+      })
+    }
+    model = null
+    scene = null
+  }
+
+  return { load, startCruise, destroy }
+}
