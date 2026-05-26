@@ -13,7 +13,7 @@ const { visible, state, resolve } = useConfirm()
       leave-to-class="opacity-0"
     >
       <div v-if="visible" class="fixed inset-0 z-100 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60" @click="resolve(false)" />
+        <div class="absolute inset-0 bg-bg/60 backdrop-blur-sm" @click="resolve(false)" />
         <Transition
           enter-active-class="transition duration-200 ease-out"
           enter-from-class="scale-95 opacity-0"
@@ -24,46 +24,49 @@ const { visible, state, resolve } = useConfirm()
         >
           <div
             v-if="visible"
-            class="relative bg-bg-secondary rounded-lg border w-full max-w-sm p-6"
-            style="border-color: rgb(var(--color-border-raw) / 0.2)"
+            class="relative bg-surface rounded-2xl border border-border w-full max-w-sm p-6"
+            style="box-shadow: 0 20px 60px -10px rgba(0,0,0,0.18);"
           >
             <div class="flex items-start gap-4">
               <div
                 class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                :class="state.variant === 'success' ? 'bg-green-500/10' : state.variant === 'danger' ? 'bg-red-500/10' : 'bg-accent/10'"
+                :class="state.variant === 'success'
+                  ? 'bg-accent-tertiary/10 text-accent-tertiary'
+                  : state.variant === 'danger'
+                    ? 'bg-red-500/10 text-red-500'
+                    : 'bg-accent/10 text-accent'"
               >
                 <Icon
                   :name="state.variant === 'success' ? 'fluent:checkmark-circle-24-filled' : state.variant === 'danger' ? 'fluent:warning-24-regular' : 'fluent:question-circle-24-regular'"
                   class="w-5 h-5"
-                  :class="state.variant === 'success' ? 'text-green-400' : state.variant === 'danger' ? 'text-red-400' : 'text-accent'"
                 />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-1">
+                <h3 class="text-base font-semibold text-text-primary mb-1">
                   {{ state.title }}
                 </h3>
-                <p class="text-sm text-text-secondary font-tech">{{ state.message }}</p>
+                <p class="text-sm text-text-secondary leading-relaxed">{{ state.message }}</p>
               </div>
             </div>
 
             <!-- Success: OK button only -->
-            <div v-if="state.variant === 'success'" class="flex justify-center mt-6">
-              <button @click="resolve(false)" class="btn-ghost text-xs border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 hover:text-green-300 hover:border-green-400/50">
+            <div v-if="state.variant === 'success'" class="flex justify-end mt-6">
+              <button @click="resolve(false)" class="btn-primary text-sm">
                 OK
               </button>
             </div>
 
             <!-- Confirm/Danger: Cancel + Confirm buttons -->
-            <div v-else class="flex justify-center gap-3 mt-6">
-              <button @click="resolve(false)" class="btn-ghost text-xs">
+            <div v-else class="flex justify-end gap-3 mt-6">
+              <button @click="resolve(false)" class="btn-ghost text-sm">
                 {{ state.cancelLabel || 'Cancel' }}
               </button>
               <button
                 @click="resolve(true)"
-                class="btn-ghost text-xs"
+                class="text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 :class="state.variant === 'danger'
-                  ? 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400/50'
-                  : 'border-accent/30 bg-accent/10 text-accent hover:bg-accent/20'"
+                  ? 'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500'
+                  : 'bg-accent text-text-inverse hover:opacity-90 focus-visible:ring-accent'"
               >
                 {{ state.confirmLabel || 'Confirm' }}
               </button>
