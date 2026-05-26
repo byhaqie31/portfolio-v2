@@ -15,24 +15,18 @@ const personal = computed(() => {
 
 <template>
   <section id="contact" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <div class="max-w-2xl reveal">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="font-mono text-2xs text-accent uppercase tracking-[0.3em] border border-accent/20 px-2.5 py-1 rounded">
-            Contact
-          </span>
-          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-accent-raw) / 0.3), transparent);" />
-        </div>
+        <p class="text-sm text-accent font-medium mb-3">Contact</p>
 
-        <h2 class="font-display text-2xl md:text-3xl font-bold tracking-[0.05em] uppercase text-text-primary mb-4">
+        <h2 class="text-3xl md:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.1] text-text-primary mb-4">
           Let's build something
-          <span class="text-accent neon-glow">together.</span>
+          <span class="text-accent">together.</span>
         </h2>
 
-        <p class="text-text-secondary leading-relaxed mb-10">
+        <p class="text-lg text-text-secondary leading-relaxed mb-10">
           I'm always open to interesting projects, collaborations, or just a good conversation.
-          Reach out — I usually respond within a day.
+          Reach out, I usually respond within a day.
         </p>
 
         <!-- Primary CTA -->

@@ -3,7 +3,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-03-13',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
+  modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
+
+  vite: {
+    optimizeDeps: {
+      include: ['gsap', 'gsap/ScrollTrigger'],
+    },
+  },
 
   site: {
     url: 'https://baihaqie.com',
@@ -28,16 +34,6 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  googleFonts: {
-    families: {
-      'Orbitron': [400, 700, 900],
-      'DM Mono': [300, 400, 500],
-      'Syne': [400, 600, 800],
-    },
-    display: 'swap',
-    preload: true,
-  },
-
   app: {
     head: {
       title: 'Ahmad Baihaqie — Software Engineer',
@@ -48,7 +44,8 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#020408' },
+        { name: 'theme-color', content: '#fbfbfc', media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: '#14161a', media: '(prefers-color-scheme: dark)' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Ahmad Baihaqie' },
         { property: 'og:locale', content: 'en_US' },

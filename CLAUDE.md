@@ -41,7 +41,8 @@ If a docs file contradicts something you observe in the code, trust the code and
 ## Project context
 
 - Public site: `qie.dev` / `baihaqie.com`
-- Visual language: **Axelnova Cyberpunk** (cyan / rose / green on near-black, scanlines, starfield, mono eyebrows)
+- Visual language **(public site)**: **Apple-faithful Restrained** — light-first, near-white background, near-black text, single SF Blue accent, system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Display", ...`), GSAP-orchestrated motion. Documented in [docs/UI-Standards.md](docs/UI-Standards.md).
+- Visual language **(admin + feedback surfaces)**: still on the legacy **Axelnova Cyberpunk** system (`font-display`/`font-tech` utilities, accent-tinted borders). These resolve to the new system stack via backward-compat utility classes — they compile fine but visually clash with the public site. Pending their own redesign pass.
 - Two surfaces: public landing (`pages/index.vue`) and admin dashboard (`pages/admin/*`)
 - Feedback collection: tokenized one-shot at `pages/feedback/[token].vue`
 - DB lives in the shared `axelnova-infra` stack on the `axelnova-shared` Docker network — not in this repo's compose file.

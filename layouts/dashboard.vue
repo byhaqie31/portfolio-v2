@@ -91,7 +91,7 @@ function initStarfield() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg scanlines flex flex-col">
+  <div class="min-h-screen bg-bg flex flex-col">
     <!-- Starfield canvas -->
     <canvas
       ref="starCanvas"

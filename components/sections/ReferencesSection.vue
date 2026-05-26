@@ -30,55 +30,41 @@ const paginatedFeedbacks = computed(() =>
   ) ?? []
 )
 
-function next() {
-  if (currentPage.value < totalPages.value - 1) currentPage.value++
-}
-
-function prev() {
-  if (currentPage.value > 0) currentPage.value--
+function goTo(page: number) {
+  currentPage.value = page
 }
 </script>
 
 <template>
   <section id="references" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
       <UiSectionHeading
-        label="Transmissions"
+        label="References"
         title="What people say"
         description="Feedback and references from those I've worked with."
       />
 
-      <div class="flex flex-col gap-4 min-h-150">
+      <div class="flex flex-col gap-4">
         <div
           v-for="fb in paginatedFeedbacks"
           :key="'fb-' + fb.submitted_at"
-          class="card-hover relative overflow-hidden is-visible"
+          class="card-hover is-visible"
         >
-          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
-
-          <!-- Top: Rating + Quote -->
-          <div class="flex items-start justify-between gap-4 mb-4">
-            <div v-if="fb.rating" class="text-accent text-sm tracking-wide shrink-0">
-              {{ '★'.repeat(fb.rating) }}{{ '☆'.repeat(5 - fb.rating) }}
-            </div>
-          </div>
-
-          <p class="text-text-secondary leading-relaxed text-sm italic mb-5">
+          <p class="text-base text-text-secondary leading-relaxed mb-6">
             "{{ fb.message }}"
           </p>
 
           <!-- Bottom: Name + Position / Company on one line -->
-          <div class="pt-4 border-t border-accent/10 flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+          <div class="pt-5 border-t border-border-subtle flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
               <Icon name="fluent:person-16-filled" size="16" class="text-accent" />
             </div>
             <div class="flex items-baseline gap-2 flex-wrap">
-              <p class="text-sm font-medium text-text-primary">{{ fb.respondent_name || fb.name }}</p>
-              <span v-if="fb.position || fb.company" class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+              <p class="text-sm font-semibold text-text-primary">{{ fb.respondent_name || fb.name }}</p>
+              <span v-if="fb.position || fb.company" class="text-sm text-text-muted">
                 {{ [fb.position, fb.company].filter(Boolean).join(' · ') }}
               </span>
-              <span v-else-if="fb.relationship" class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+              <span v-else-if="fb.relationship" class="text-sm text-text-muted">
                 {{ fb.relationship }}
               </span>
             </div>
@@ -86,27 +72,21 @@ function prev() {
         </div>
       </div>
 
-      <!-- Pagination controls -->
-      <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-8">
+      <!-- Dot pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-10" role="tablist" aria-label="Reference pages">
         <button
-          :disabled="currentPage === 0"
-          class="font-mono text-sm text-accent border border-accent/20 px-4 py-2 hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          @click="prev"
-        >
-          ← Prev
-        </button>
-        <span class="font-mono text-xs text-text-muted">
-          {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        <button
-          :disabled="currentPage >= totalPages - 1"
-          class="font-mono text-sm text-accent border border-accent/20 px-4 py-2 hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          @click="next"
-        >
-          Next →
-        </button>
+          v-for="i in totalPages"
+          :key="i"
+          role="tab"
+          :aria-label="`Show references page ${i}`"
+          :aria-selected="currentPage === i - 1"
+          class="w-2 h-2 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          :class="currentPage === i - 1
+            ? 'bg-accent w-6'
+            : 'bg-border-strong hover:bg-text-muted'"
+          @click="goTo(i - 1)"
+        />
       </div>
     </div>
   </section>
 </template>
-

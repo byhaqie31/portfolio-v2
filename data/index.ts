@@ -27,8 +27,8 @@ export const personal = {
 // ── NAVIGATION ───────────────────────────────────────────────
 export const navLinks = [
   { label: 'About', href: '#about' },
-  { label: 'Work', href: '#work' },
   { label: 'Experience', href: '#experience' },
+  { label: 'Skills', href: '#skills' },
   { label: 'Projects', href: '#projects' },
   { label: 'References', href: '#references' },
   { label: 'Contact', href: '#contact' },

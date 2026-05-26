@@ -2,9 +2,11 @@
 
 /* ── THEME CONFIG (migrated from tailwind.config.ts) ── */
 @theme {
-  --font-sans: 'Syne', system-ui, sans-serif;
-  --font-display: 'Orbitron', system-ui, sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  /* System font stack — Apple-faithful. Mac/iOS visitors get SF Pro Display,
+   * Windows gets Segoe UI, Android gets Roboto. Zero font load, no FOIT/FOUT. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
   --color-bg: rgb(var(--color-bg-raw));
   --color-bg-secondary: rgb(var(--color-bg-secondary-raw));
@@ -35,107 +37,75 @@
 
   --radius-4xl: 2rem;
 
-  --text-2xs: 0.65rem;
+  --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
 
-  --animate-reveal: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-fade-in: fadeIn 0.4s ease forwards;
+  /* Public-site motion is now GSAP-owned (see composables/useReveal.ts).
+   * Only animations consumed by admin/internal components remain here. */
   --animate-slide-down: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-blink: blink 1.2s step-end infinite;
-  --animate-shimmer: shimmer 2s linear infinite;
-  --animate-glow-pulse: glowPulse 2s ease-in-out infinite;
-  --animate-float: float 6s ease-in-out infinite;
 
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes reveal {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
   @keyframes slideDown {
     0% { opacity: 0; transform: translateY(-8px); }
     100% { opacity: 1; transform: translateY(0); }
   }
-  @keyframes slideUp {
-    0% { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-  @keyframes glowPulse {
-    0%, 100% { opacity: 0.4; box-shadow: 0 0 20px rgb(var(--color-accent-raw) / 0.2); }
-    50% { opacity: 1; box-shadow: 0 0 40px rgb(var(--color-accent-raw) / 0.4); }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
 }
 
-/* ── THEME TOKENS — AXELNOVA CYBERPUNK ── */
+/* ── THEME TOKENS — APPLE-FAITHFUL RESTRAINED ──
+ * Light-first. Warm/cool-neutral tinted near-white default with Apple SF Blue accent.
+ * Raw triplets are RGB so `rgb(var(--color-*-raw) / <alpha>)` keeps opacity composable.
+ * Source palette derived from OKLCH (chroma ≤ 0.008 on neutrals, accent 0.15–0.18 @ hue 250). */
 :root {
-  /* Light mode — cool steel/frost cyberpunk */
-  --color-bg-raw:             232 237 242;
-  --color-bg-secondary-raw:   222 228 235;
-  --color-bg-tertiary-raw:    212 220 230;
-  --color-surface-raw:        240 244 248;
-  --color-surface-raised-raw: 232 237 242;
-  --color-surface-overlay-raw:220 226 234;
-  --color-accent-raw:         0 200 255;
-  --color-accent-muted-raw:   0 160 210;
-  --color-accent-subtle-raw:  210 240 250;
-  --color-accent-secondary-raw: 255 77 109;
-  --color-accent-tertiary-raw: 57 255 122;
-  --color-border-raw:         195 208 222;
-  --color-border-subtle-raw:  210 220 232;
-  --color-border-strong-raw:  160 180 200;
-  --color-text-primary-raw:   10 20 35;
-  --color-text-secondary-raw: 60 75 95;
-  --color-text-muted-raw:     110 125 145;
-  --color-text-inverse-raw:   232 237 242;
-  --color-glow:               0 200 255;
+  /* Light mode (default) — slightly cool near-white, Apple #fbfbfd lineage */
+  --color-bg-raw:             251 251 252;
+  --color-bg-secondary-raw:   244 245 247;
+  --color-bg-tertiary-raw:    236 238 241;
+  --color-surface-raw:        253 253 254;
+  --color-surface-raised-raw: 246 247 249;
+  --color-surface-overlay-raw:239 240 243;
+  --color-accent-raw:         0 102 204;        /* Apple SF Blue #0066cc */
+  --color-accent-muted-raw:   0 82 170;
+  --color-accent-subtle-raw:  224 234 247;
+  --color-accent-secondary-raw: 230 90 110;     /* warm rose, kept for admin/badge use */
+  --color-accent-tertiary-raw: 50 175 95;       /* status green — Available / Online */
+  --color-border-raw:         224 226 230;
+  --color-border-subtle-raw:  234 236 239;
+  --color-border-strong-raw:  204 207 212;
+  --color-text-primary-raw:   29 29 31;         /* Apple #1d1d1f */
+  --color-text-secondary-raw: 100 105 112;
+  --color-text-muted-raw:     110 115 122;       /* WCAG AA (4.6:1) on bg #fbfbfc */
+  --color-text-inverse-raw:   251 251 252;      /* always near-white on accent button */
 }
 
 .dark {
-  /* Dark mode — deep space cyberpunk (Axelnova) */
-  --color-bg-raw:             2 4 8;
-  --color-bg-secondary-raw:   8 15 24;
-  --color-bg-tertiary-raw:    14 22 34;
-  --color-surface-raw:        8 15 24;
-  --color-surface-raised-raw: 14 22 34;
-  --color-surface-overlay-raw:20 30 45;
-  --color-accent-raw:         0 200 255;
-  --color-accent-muted-raw:   0 160 210;
-  --color-accent-subtle-raw:  0 40 60;
-  --color-accent-secondary-raw: 255 77 109;
-  --color-accent-tertiary-raw: 57 255 122;
-  --color-border-raw:         0 200 255;
-  --color-border-subtle-raw:  0 50 70;
-  --color-border-strong-raw:  0 200 255;
-  --color-text-primary-raw:   208 232 245;
-  --color-text-secondary-raw: 140 170 195;
-  --color-text-muted-raw:     80 110 140;
-  --color-text-inverse-raw:   2 4 8;
-  --color-glow:               0 200 255;
+  /* Dark mode — warm inky near-black, Apple-system lineage. Never pure #000. */
+  --color-bg-raw:             20 22 26;
+  --color-bg-secondary-raw:   28 30 35;
+  --color-bg-tertiary-raw:    38 40 46;
+  --color-surface-raw:        28 30 35;
+  --color-surface-raised-raw: 38 40 46;
+  --color-surface-overlay-raw:50 53 60;
+  --color-accent-raw:         41 151 255;       /* Apple SF Blue (dark) #2997ff */
+  --color-accent-muted-raw:   30 120 200;
+  --color-accent-subtle-raw:  30 50 80;
+  --color-accent-secondary-raw: 240 110 125;
+  --color-accent-tertiary-raw: 80 200 130;
+  --color-border-raw:         60 64 72;
+  --color-border-subtle-raw:  36 40 46;
+  --color-border-strong-raw:  95 100 110;
+  --color-text-primary-raw:   244 245 247;      /* Apple #f5f5f7 */
+  --color-text-secondary-raw: 170 173 180;
+  --color-text-muted-raw:     140 144 150;       /* WCAG AA (5.4:1) on bg #14161a */
+  --color-text-inverse-raw:   251 251 252;      /* white on blue button, both modes */
 }
 
 @layer base {
   html {
     @apply bg-bg text-text-primary scroll-smooth;
-    font-family: 'Syne', system-ui, sans-serif;
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11"; /* SF Pro stylistic alts where supported */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
@@ -163,96 +133,88 @@
     border-radius: 9999px;
   }
 
-  /* Reveal animations */
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  /* `.reveal` is a marker class for GSAP — initial opacity:0 prevents FOUC
+   * before useReveal's ScrollTrigger animates it in. JS-disabled readers
+   * still see content because the rule is gated behind scripting:enabled. */
+  @media (scripting: enabled) {
+    .reveal {
+      opacity: 0;
+    }
   }
+}
 
-  .reveal.is-visible {
-    opacity: 1;
-    transform: translateY(0);
+/* Respect reduced-motion preference for any CSS animations/transitions that
+ * aren't routed through GSAP (Tailwind's animate-pulse, hover transforms). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-  .reveal-delay-4 { transition-delay: 0.4s; }
-  .reveal-delay-5 { transition-delay: 0.5s; }
 }
 
 @layer components {
-  /* ── Buttons ── */
+  /* ── Buttons (sentence case, Apple-pill radius) ── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 0 20px rgb(var(--color-accent-raw) / 0.3), 0 0 40px rgb(var(--color-accent-raw) / 0.1);
   }
   .btn-primary:hover {
-    box-shadow: 0 0 30px rgb(var(--color-accent-raw) / 0.5), 0 0 60px rgb(var(--color-accent-raw) / 0.2);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
   .btn-primary:active {
     transform: translateY(0);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-accent hover:border-accent/40 active:scale-[0.97];
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-text-primary active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-    border-color: rgb(var(--color-border-raw) / 0.2);
+    border-color: rgb(var(--color-border-raw) / 0.6);
+  }
+  .btn-ghost:hover {
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
   }
 
   .btn-icon {
-    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded border text-text-muted hover:text-accent hover:border-accent/40 transition-all duration-200;
-    border-color: rgb(var(--color-border-raw) / 0.2);
+    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded-full border text-text-muted hover:text-text-primary transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+    border-color: rgb(var(--color-border-raw) / 0.6);
+  }
+  .btn-icon:hover {
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
   }
 
-  /* ── Cards ── */
+  /* ── Cards (Apple-radius, quiet borders) ── */
   .card {
-    @apply rounded border bg-surface p-6 transition-all duration-300;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply rounded-2xl border bg-surface p-6 transition-all duration-300;
+    border-color: rgb(var(--color-border-raw) / 0.6);
   }
 
   .card-hover {
-    @apply rounded border bg-surface p-6 transition-all duration-300;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply rounded-2xl border bg-surface p-6 transition-all duration-300;
+    border-color: rgb(var(--color-border-raw) / 0.6);
   }
   .card-hover:hover {
-    border-color: rgb(var(--color-accent-raw) / 0.5);
-    transform: translateY(-4px);
-    box-shadow: 0 0 24px rgb(var(--color-accent-raw) / 0.15), 0 20px 60px rgba(0, 0, 0, 0.3);
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
   }
 
-  /* ── Tags ── */
+  /* ── Tags (sentence case, quiet pills) ── */
   .skill-tag {
-    @apply text-2xs px-2.5 py-1 rounded border bg-bg-tertiary text-text-muted uppercase;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply text-xs px-2.5 py-1 rounded-md bg-bg-secondary text-text-secondary;
   }
 
   .stack-pill {
-    @apply text-2xs px-2 py-0.5 rounded border text-accent/80;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-    background: rgb(var(--color-accent-raw) / 0.05);
-    border-color: rgb(var(--color-accent-raw) / 0.2);
+    @apply text-xs px-2 py-0.5 rounded-md text-text-secondary;
+    background: rgb(var(--color-bg-secondary-raw));
   }
 
   /* ── Section ── */
@@ -260,86 +222,32 @@
     @apply px-6 py-24 md:py-32;
   }
 
-  /* ── Gradient text ── */
-  .text-gradient {
-    @apply bg-linear-to-r from-text-primary via-text-primary to-text-secondary bg-clip-text text-transparent;
-  }
-
-  .text-gradient-cyan {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, rgb(var(--color-accent-raw)), rgb(var(--color-accent-secondary-raw)));
-  }
-
   /* ── Scroll progress bar ── */
   .scroll-progress {
-    @apply fixed top-0 left-0 h-px z-100 origin-left;
-    background: linear-gradient(90deg, rgb(var(--color-accent-raw) / 0), rgb(var(--color-accent-raw)), rgb(var(--color-accent-raw) / 0));
-    box-shadow: 0 0 8px rgb(var(--color-accent-raw) / 0.5);
+    @apply fixed top-0 left-0 h-px z-100 origin-left bg-accent;
   }
 
-  /* ── Neon glow utility ── */
-  .neon-glow {
-    text-shadow: 0 0 12px rgb(var(--color-accent-raw) / 0.5), 0 0 24px rgb(var(--color-accent-raw) / 0.25);
-  }
-
-  /* ── Scanlines overlay ── */
-  .scanlines::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 99;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 4px
-    );
-  }
-
-  .dark .scanlines::after {
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.06) 2px,
-      rgba(0, 0, 0, 0.06) 4px
-    );
-  }
-
-  /* ── Section divider with gradient ── */
+  /* ── Section divider ── */
   .section-divider {
     border: none;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgb(var(--color-accent-raw) / 0.3), transparent);
-  }
-
-  /* ── Corner accent (for cards) ── */
-  .corner-accent::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    border-top: 1px solid rgb(var(--color-accent-raw) / 0.5);
-    border-right: 1px solid rgb(var(--color-accent-raw) / 0.5);
+    background: rgb(var(--color-border-raw) / 0.15);
   }
 }
 
+/* Backward-compat utilities for admin/feedback surfaces still using the old
+ * cyberpunk vocabulary. They now resolve to the same system stack as font-sans
+ * (Orbitron / DM Mono / Syne are no longer loaded) but the class names are
+ * preserved so those surfaces continue to compile until they get their own
+ * redesign pass. */
 @utility font-display {
-  font-family: 'Orbitron', system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 @utility font-tech {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 @utility font-body {
-  font-family: 'Syne', system-ui, sans-serif;
-}
-
-@utility ease-spring {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
 }

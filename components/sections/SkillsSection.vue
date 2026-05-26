@@ -17,24 +17,21 @@ const skillGroups = computed(() => {
 </script>
 
 <template>
-  <section id="experience" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
-    <div class="max-w-5xl mx-auto">
+  <section id="skills" class="section">
+    <div class="max-w-6xl mx-auto">
       <UiSectionHeading
         label="Tech Stack"
         title="Skills & Tools"
-        description="Technologies and tools I use day-to-day to design and ship products."
+        description="Technologies and tools I reach for day-to-day to design and ship products."
       />
 
-      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="reveal grid md:grid-cols-2 gap-x-16 gap-y-12">
         <div
           v-for="group in skillGroups"
           :key="group.label"
-          class="reveal card relative overflow-hidden"
+          class="flex flex-col gap-4"
         >
-          <!-- Corner accent -->
-          <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/20" />
-          <p class="font-mono text-2xs text-accent uppercase tracking-[0.25em] mb-4">{{ group.label }}</p>
+          <p class="text-sm text-accent font-medium">{{ group.label }}</p>
           <div class="flex flex-wrap gap-2">
             <span v-for="item in group.items" :key="item" class="skill-tag">
               {{ item }}
