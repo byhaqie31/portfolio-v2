@@ -235,19 +235,3 @@
   }
 }
 
-/* Backward-compat utilities for admin/feedback surfaces still using the old
- * cyberpunk vocabulary. They now resolve to the same system stack as font-sans
- * (Orbitron / DM Mono / Syne are no longer loaded) but the class names are
- * preserved so those surfaces continue to compile until they get their own
- * redesign pass. */
-@utility font-display {
-  font-family: var(--font-sans);
-}
-
-@utility font-tech {
-  font-family: var(--font-mono);
-}
-
-@utility font-body {
-  font-family: var(--font-sans);
-}

@@ -42,16 +42,16 @@ async function save() {
     const isEdit = !!editing.value
     showModal.value = false
     await load()
-    showSuccess({ title: 'Saved', message: isEdit ? 'Activity updated successfully!' : 'Activity created successfully!' })
+    showSuccess({ title: 'Saved', message: isEdit ? 'Activity updated successfully' : 'Activity created successfully' })
   } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
-  const confirmed = await showConfirm({ title: 'Delete Activity', message: 'Are you sure you want to delete this activity? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
+  const confirmed = await showConfirm({ title: 'Delete activity', message: 'Are you sure you want to delete this activity? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/activities/${id}`, { method: 'DELETE' })
   await load()
-  showSuccess({ title: 'Deleted', message: 'Activity deleted successfully!' })
+  showSuccess({ title: 'Deleted', message: 'Activity deleted successfully' })
 }
 
 async function toggleVisible(id: number) {
@@ -66,65 +66,52 @@ onMounted(load)
 <template>
   <div>
     <div class="flex items-center justify-between mb-4">
-      <button @click="openAdd" class="btn-primary text-sm">+ Add Activity</button>
-      <button @click="load" class="btn-ghost text-xs">Refresh</button>
+      <button @click="openAdd" class="btn-primary text-sm">Add activity</button>
+      <button @click="load" class="btn-ghost text-sm">Refresh</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
-      <div class="inline-block w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+      <div class="inline-block w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
     </div>
 
     <div v-else class="space-y-3">
       <div v-for="item in items" :key="item.id" class="card flex items-start justify-between gap-4">
         <div class="flex-1 min-w-0">
           <p class="text-sm text-text-primary">{{ item.content }}</p>
-          <p class="text-xs text-text-muted font-tech mt-1">Order: {{ item.sort_order }}</p>
+          <p class="text-xs text-text-muted mt-1">Order: {{ item.sort_order }}</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <span class="text-2xs font-tech px-2 py-0.5 rounded" :class="item.is_visible ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-500'">
+          <UiBadge :variant="item.is_visible ? 'success' : 'warning'">
             {{ item.is_visible ? 'Visible' : 'Hidden' }}
-          </span>
-          <button @click="toggleVisible(item.id)" class="btn-ghost text-xs uppercase w-16">{{ item.is_visible ? 'Hide' : 'Show' }}</button>
-          <button @click="openEdit(item)" class="btn-ghost text-xs uppercase w-16">Edit</button>
-          <button @click="remove(item.id)" class="btn-ghost text-xs w-16 border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400/50">Delete</button>
+          </UiBadge>
+          <button @click="toggleVisible(item.id)" class="btn-ghost text-xs w-16">{{ item.is_visible ? 'Hide' : 'Show' }}</button>
+          <button @click="openEdit(item)" class="btn-ghost text-xs w-16">Edit</button>
+          <button @click="remove(item.id)" class="text-xs font-medium px-3 py-2 rounded-full text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors">Delete</button>
         </div>
       </div>
     </div>
 
     <!-- Modal -->
-    <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showModal = false">
-        <div class="absolute inset-0 bg-black/60" @click="showModal = false" />
-        <div class="relative bg-bg-secondary rounded-lg border w-full max-w-lg p-6" style="border-color: rgb(var(--color-border-raw) / 0.2)">
-          <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-4">
-            {{ editing ? 'Edit Activity' : 'Add Activity' }}
-          </h3>
+    <UiModal v-model:open="showModal" :title="editing ? 'Edit activity' : 'Add activity'" size="lg">
+      <form id="activities-form" @submit.prevent="save" class="space-y-4">
+        <UiField label="Content" required>
+          <UiTextarea v-model="form.content" :rows="3" required />
+        </UiField>
 
-          <form @submit.prevent="save" class="space-y-4">
-            <div>
-              <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Content</label>
-              <textarea v-model="form.content" rows="3" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Sort Order</label>
-                <input v-model.number="form.sort_order" type="number" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-              <div class="flex items-end pb-2">
-                <label class="flex items-center gap-2 text-xs font-tech text-text-secondary cursor-pointer">
-                  <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))]" /> Visible
-                </label>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
-            </div>
-          </form>
+        <div class="grid grid-cols-2 gap-4">
+          <UiField label="Sort order">
+            <UiInput v-model.number="form.sort_order" type="number" />
+          </UiField>
+          <label class="flex items-center gap-2 text-sm text-text-secondary cursor-pointer self-end pb-2.5">
+            <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))] w-4 h-4" /> Visible
+          </label>
         </div>
-      </div>
-    </Teleport>
+      </form>
+
+      <template #actions>
+        <button type="button" @click="showModal = false" class="btn-ghost text-sm">Cancel</button>
+        <button type="submit" form="activities-form" class="btn-primary text-sm">{{ editing ? 'Update' : 'Create' }}</button>
+      </template>
+    </UiModal>
   </div>
 </template>

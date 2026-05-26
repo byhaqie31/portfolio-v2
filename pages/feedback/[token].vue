@@ -63,169 +63,160 @@ async function submit() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 py-16">
+  <div class="min-h-[80vh] flex items-center justify-center px-4 py-16">
     <div class="w-full max-w-lg">
 
       <!-- Loading -->
       <div v-if="state === 'loading'" class="text-center">
-        <div class="inline-block w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-        <p class="mt-4 text-text-muted font-tech text-sm">Validating link...</p>
+        <div class="inline-block w-8 h-8 border-2 border-border border-t-accent rounded-full animate-spin" />
+        <p class="mt-4 text-text-muted text-sm">Validating link…</p>
       </div>
 
       <!-- Not Found -->
       <div v-else-if="state === 'not_found'" class="card text-center">
-        <div class="text-4xl mb-4">🔗</div>
-        <h2 class="text-xl font-display text-text-primary mb-2">Invalid Link</h2>
-        <p class="text-text-muted text-sm">This feedback link is not valid or has expired.</p>
+        <div class="w-12 h-12 mx-auto rounded-full bg-bg-tertiary flex items-center justify-center mb-4">
+          <Icon name="fluent:link-dismiss-24-regular" size="24" class="text-text-muted" />
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2">Invalid link</h2>
+        <p class="text-text-secondary text-sm">This feedback link is not valid or has expired.</p>
       </div>
 
       <!-- Already Submitted -->
       <div v-else-if="state === 'already_submitted'" class="card text-center">
-        <div class="text-4xl mb-4">✅</div>
-        <h2 class="text-xl font-display text-text-primary mb-2">Already Submitted</h2>
-        <p class="text-text-muted text-sm">Feedback has already been submitted for this link.</p>
+        <div class="w-12 h-12 mx-auto rounded-full bg-accent-tertiary/10 flex items-center justify-center mb-4">
+          <Icon name="fluent:checkmark-circle-24-filled" size="24" class="text-accent-tertiary" />
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2">Already submitted</h2>
+        <p class="text-text-secondary text-sm">Feedback has already been submitted for this link.</p>
       </div>
 
       <!-- Error -->
       <div v-else-if="state === 'error'" class="card text-center">
-        <div class="text-4xl mb-4">⚠️</div>
-        <h2 class="text-xl font-display text-text-primary mb-2">Error</h2>
-        <p class="text-text-muted text-sm">{{ errorMsg }}</p>
+        <div class="w-12 h-12 mx-auto rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+          <Icon name="fluent:warning-24-regular" size="24" class="text-red-500" />
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2">Something went wrong</h2>
+        <p class="text-text-secondary text-sm">{{ errorMsg }}</p>
       </div>
 
       <!-- Success -->
       <div v-else-if="state === 'submitted'" class="card text-center">
-        <div class="text-4xl mb-4">🎉</div>
-        <h2 class="text-xl font-display text-text-primary mb-2">Thank You!</h2>
-        <p class="text-text-muted text-sm">Your feedback has been submitted successfully. It means a lot!</p>
-        <a href="https://baihaqie.com" target="_blank" class="btn-primary inline-block mt-6">
-          View Profile
+        <div class="w-12 h-12 mx-auto rounded-full bg-accent-tertiary/10 flex items-center justify-center mb-4">
+          <Icon name="fluent:checkmark-circle-24-filled" size="24" class="text-accent-tertiary" />
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2">Thank you</h2>
+        <p class="text-text-secondary text-sm mb-6">Your feedback has been submitted. It means a lot.</p>
+        <a href="https://baihaqie.com" target="_blank" class="btn-primary text-sm inline-flex">
+          View profile
         </a>
       </div>
 
       <!-- Feedback Form -->
-      <div v-else-if="state === 'valid'" class="card">
-        <div class="text-center mb-8">
-          <p class="text-text-muted text-sm font-tech uppercase tracking-wider mb-2">Feedback Request</p>
-          <h1 class="text-xl font-display text-text-primary">
-            Hi! <span class="text-accent">{{ feedbackName }}</span> <br />
-            I'd love to hear your honest feedback.
+      <div v-else-if="state === 'valid'" class="card space-y-6">
+        <div class="text-center">
+          <p class="text-sm text-accent font-medium mb-2">Feedback request</p>
+          <h1 class="text-xl font-semibold tracking-tight text-text-primary leading-snug">
+            Hi! <span class="text-accent">{{ feedbackName }}</span> would love your honest feedback.
           </h1>
         </div>
 
-        <form @submit.prevent="submit" class="space-y-6">
-          <!-- Name -->
-          <div>
-            <label for="respondentName" class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-2">
-              Your Name <span class="text-accent-secondary">*</span>
-            </label>
-            <input
+        <form @submit.prevent="submit" class="space-y-5">
+          <UiField label="Your name" for="respondentName" required>
+            <UiInput
               id="respondentName"
               v-model="respondentName"
               type="text"
-              required
               placeholder="John Doe"
-              class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-              style="border-color: rgb(var(--color-border-raw) / 0.2)"
+              required
+              autocomplete="name"
             />
-          </div>
+          </UiField>
 
-          <!-- Position & Company -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="position" class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-2">
-                Position <span class="text-accent-secondary">*</span>
-              </label>
-              <input
+            <UiField label="Position" for="position" required>
+              <UiInput
                 id="position"
                 v-model="position"
                 type="text"
-                required
                 placeholder="Software Engineer"
-                class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border-raw) / 0.2)"
+                required
+                autocomplete="organization-title"
               />
-            </div>
-            <div>
-              <label for="company" class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-2">
-                Company <span class="text-accent-secondary">*</span>
-              </label>
-              <input
+            </UiField>
+            <UiField label="Company" for="company" required>
+              <UiInput
                 id="company"
                 v-model="company"
                 type="text"
-                required
                 placeholder="Acme Inc."
-                class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-                style="border-color: rgb(var(--color-border-raw) / 0.2)"
+                required
+                autocomplete="organization"
               />
-            </div>
+            </UiField>
           </div>
 
           <!-- Star Rating -->
-          <div>
-            <label class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-3">Rating <span class="text-accent-secondary">*</span></label>
-            <div class="flex gap-2 justify-center">
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-text-secondary">
+              Rating <span class="text-red-500" aria-label="required">*</span>
+            </span>
+            <div class="flex gap-1 justify-center" role="radiogroup" aria-label="Rating">
               <button
                 v-for="star in 5"
                 :key="star"
                 type="button"
-                class="text-3xl transition-transform duration-150 hover:scale-110 focus:outline-none"
+                class="p-1.5 transition-transform duration-150 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg rounded-full"
+                role="radio"
+                :aria-checked="rating === star"
+                :aria-label="`${star} star${star > 1 ? 's' : ''}`"
                 @click="rating = star"
                 @mouseenter="hoverRating = star"
                 @mouseleave="hoverRating = 0"
               >
-                <span :class="(hoverRating || rating) >= star ? 'text-accent' : 'text-text-muted/30'">★</span>
+                <Icon
+                  :name="(hoverRating || rating) >= star ? 'fluent:star-24-filled' : 'fluent:star-24-regular'"
+                  size="28"
+                  :class="(hoverRating || rating) >= star ? 'text-accent' : 'text-text-muted/40'"
+                />
               </button>
             </div>
           </div>
 
-          <!-- Message -->
           <div>
-            <label for="message" class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-2">
-              Message <span class="text-accent-secondary">*</span>
-            </label>
-            <textarea
-              id="message"
-              v-model="message"
-              rows="5"
-              maxlength="2000"
-              required
-              placeholder="Share your thoughts..."
-              class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors resize-none"
-              style="border-color: rgb(var(--color-border-raw) / 0.2)"
-            />
-            <p class="text-right text-xs font-tech mt-1" :class="charCount > 1900 ? 'text-accent-secondary' : 'text-text-muted'">
+            <UiField label="Message" for="message" required>
+              <UiTextarea
+                id="message"
+                v-model="message"
+                :rows="5"
+                :maxlength="2000"
+                placeholder="Share your thoughts…"
+                required
+              />
+            </UiField>
+            <p class="text-right text-xs mt-1" :class="charCount > 1900 ? 'text-red-500' : 'text-text-muted'">
               {{ charCount }} / 2000
             </p>
           </div>
 
-          <!-- Email -->
-          <div>
-            <label for="email" class="block text-sm font-tech text-text-secondary uppercase tracking-wider mb-2">
-              Email <span class="text-accent-secondary">*</span>
-            </label>
-            <input
+          <UiField label="Email" for="email" required>
+            <UiInput
               id="email"
               v-model="email"
               type="email"
-              required
               placeholder="your@email.com"
-              class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 transition-colors"
-              style="border-color: rgb(var(--color-border-raw) / 0.2)"
+              required
+              autocomplete="email"
             />
-          </div>
+          </UiField>
 
-          <!-- Error message -->
-          <p v-if="errorMsg" class="text-accent-secondary text-sm text-center">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="text-red-500 text-sm text-center">{{ errorMsg }}</p>
 
-          <!-- Submit -->
           <button
             type="submit"
             :disabled="!message.trim() || !respondentName.trim() || !position.trim() || !company.trim() || !email.trim() || !rating || submitting"
             class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {{ submitting ? 'Submitting...' : 'Submit Feedback' }}
+            {{ submitting ? 'Submitting…' : 'Submit feedback' }}
           </button>
         </form>
       </div>
