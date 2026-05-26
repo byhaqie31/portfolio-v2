@@ -39,11 +39,8 @@ const rest = computed(() => projects.value.filter((p) => p.id !== lead.value?.id
 
       <!-- Lead project — enlarged editorial card -->
       <article v-if="lead" class="reveal group mb-12">
-        <div class="flex items-baseline gap-3 mb-4">
-          <span class="text-sm text-accent font-medium">{{ lead.tag }}</span>
-          <span class="text-sm text-text-muted">Lead project</span>
-        </div>
-        <h3 class="text-3xl md:text-4xl font-semibold tracking-tight text-text-primary mb-4 leading-tight">
+        <p class="text-sm text-accent font-medium mb-3">{{ lead.tag }}</p>
+        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight text-text-primary mb-4 leading-tight">
           {{ lead.name }}
         </h3>
         <p class="text-lg text-text-secondary leading-relaxed max-w-3xl mb-6 line-clamp-4">
@@ -88,13 +85,13 @@ const rest = computed(() => projects.value.filter((p) => p.id !== lead.value?.id
             class="group flex items-center justify-between gap-4 py-5"
           >
             <div class="min-w-0 flex-1">
-              <div class="flex items-baseline gap-3 mb-1">
-                <h4 class="text-lg font-semibold text-text-primary group-hover:text-accent transition-colors truncate">
+              <div class="flex items-baseline gap-3 mb-1 flex-wrap">
+                <h4 class="text-lg font-semibold text-text-primary group-hover:text-accent transition-colors">
                   {{ project.name }}
                 </h4>
                 <span class="text-sm text-accent shrink-0">{{ project.tag }}</span>
               </div>
-              <p class="text-sm text-text-secondary truncate">{{ project.description }}</p>
+              <p class="text-sm text-text-secondary line-clamp-2">{{ project.description }}</p>
               <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-muted">
                 <span v-for="s in project.stack.slice(0, 4)" :key="s">{{ s }}</span>
               </div>

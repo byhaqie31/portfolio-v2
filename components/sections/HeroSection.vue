@@ -54,7 +54,7 @@ onUnmounted(() => mm?.revert())
 
 <template>
   <section ref="heroRoot" class="relative min-h-screen flex items-center px-6 pt-14">
-    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center gap-12 md:gap-12 lg:gap-20">
+    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center lg:items-start gap-12 md:gap-12 lg:gap-20">
       <div class="flex-1 min-w-0">
         <div class="hero-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
