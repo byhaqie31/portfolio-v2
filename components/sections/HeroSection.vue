@@ -78,15 +78,15 @@ onUnmounted(() => mm?.revert())
         </p>
 
         <div class="hero-reveal flex flex-wrap items-center gap-6 mb-14">
-          <a href="#projects" class="btn-primary group">
-            View my work
+          <NuxtLink to="/experience" class="btn-primary group">
+            Experience my journey
             <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
-          </a>
+          </NuxtLink>
           <a
-            :href="`mailto:${personal.email}`"
+            href="#projects"
             class="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1 py-2"
           >
-            Get in touch
+            View my work
             <Icon name="fluent:arrow-right-16-filled" size="13" class="opacity-60" />
           </a>
         </div>
