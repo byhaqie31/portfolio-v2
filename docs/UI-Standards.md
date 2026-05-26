@@ -1,10 +1,10 @@
 # UI Standards — portfolio-v2
 
-The design and engineering guideline for `qie.dev` / `baihaqie.com`. This file is the source of truth for the **Apple-faithful Restrained** visual language used across the public landing page.
+The design and engineering guideline for `qie.dev` / `baihaqie.com`. This file is the source of truth for the **Apple-faithful Restrained** visual language used across **all three surfaces**: the public landing page, the admin dashboard, and the tokenized feedback flow.
 
-When adding a new section, page, or component on the public site, conform to this document. If a rule here gets in the way, update this document in the same PR — don't let the codebase and the standards drift.
+When adding a new section, page, or component, conform to this document. If a rule here gets in the way, update this document in the same PR — don't let the codebase and the standards drift.
 
-> **Scope note.** The public site (`pages/index.vue` + `components/sections/*` + `components/ui/*` + `components/layout/*`) has migrated to the Apple-faithful system described below. The **admin dashboard** (`pages/admin/*`) and **feedback flow** (`pages/feedback/[token].vue`) still use the legacy **Axelnova Cyberpunk** vocabulary (`font-display`/`font-tech` utilities, accent-tinted side borders, all-caps eyebrows). Those utilities are kept as backward-compat shims pointing at the new system stack, so they compile fine, but they visually clash with the public site. They will be migrated in their own redesign pass — when touching them, prefer the patterns documented here.
+> **Cross-surface consistency.** Public site (`pages/index.vue` + `components/sections/*` + `components/layout/*`), admin dashboard (`pages/admin/*` + `components/admin/*`), and feedback collection (`pages/feedback/[token].vue`) all share the same tokens, type scale, button vocabulary, and motion conventions. They differ only in **information density** (admin is form-heavy, public is content-led) and in **motion register** (public has GSAP-orchestrated entrance choreography, admin uses instant feedback transitions per product-register guidance). When working on any surface, prefer the shared primitives in `components/ui/`.
 
 ---
 
@@ -48,7 +48,7 @@ Values are OKLCH-derived (chroma ≤ 0.008 on neutrals tinted toward hue 240, ac
 | `--color-accent-raw` | `0 102 204` (#0066cc) | `41 151 255` (#2997ff) | Apple SF Blue. Primary action, links, focus rings, active states. |
 | `--color-accent-muted-raw` | `0 82 170` | `30 120 200` | Accent at darker intensity. |
 | `--color-accent-subtle-raw` | `224 234 247` | `30 50 80` | Accent at washed background intensity. |
-| `--color-accent-secondary-raw` | `230 90 110` | `240 110 125` | Warm rose. Kept for admin/feedback compatibility. **Do not use on the public site.** |
+| `--color-accent-secondary-raw` | `230 90 110` | `240 110 125` | Warm rose. **Currently unused.** Kept for future semantic role; do not reach for it without a reason. |
 | `--color-accent-tertiary-raw` | `50 175 95` | `80 200 130` | Status green — "Available" / "Online" dot. Semantic only. |
 | `--color-border-raw` | `224 226 230` | `60 64 72` | Default border (neutral, not accent-tinted). |
 | `--color-border-subtle-raw` | `234 236 239` | `36 40 46` | Soft dividers (between list rows, footer separators). |
@@ -58,7 +58,7 @@ Values are OKLCH-derived (chroma ≤ 0.008 on neutrals tinted toward hue 240, ac
 | `--color-text-muted-raw` | `110 115 122` | `140 144 150` | Eyebrows, meta. Bumped to hit WCAG AA at body sizes. |
 | `--color-text-inverse-raw` | `251 251 252` | `251 251 252` | White text on accent (blue) button — same in both modes. |
 
-**Color strategy: Restrained.** Tinted neutrals + one accent ≤10% coverage. Don't introduce a fourth public-site hue. If you need a status color, use the existing `accent-tertiary` (green) for success/available; warm rose (`accent-secondary`) is reserved for admin/feedback.
+**Color strategy: Restrained.** Tinted neutrals + one accent ≤10% coverage. Don't introduce a fourth hue. If you need a status color, use the existing `accent-tertiary` (green) for success/available and `red-500/600` for danger states.
 
 **Border alpha.** Borders default to `border-border-subtle` (essentially `rgb(var(--color-border-subtle-raw))` at full opacity, which is already a very light value). For visible-but-quiet dividers use `border-border`. The cyberpunk-era pattern of `border-accent/X` is **gone from the public site** — replace with neutral borders if you find any.
 
@@ -84,9 +84,8 @@ If a section needs visual distinction, lean on whitespace and type, not a layer.
 
 | Family | Tailwind utility | Role |
 |---|---|---|
-| **System sans** | `font-sans` (default) | All public-site text. The CSS var `--font-sans` resolves to `-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif`. Mac users see SF Pro Display, Windows users see Segoe UI, Android users see Roboto — all crisp at native rendering. |
-| **System mono** | `font-mono` | Reserved for actual code strings (none on the public site currently). `ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace`. |
-| Backward-compat | `font-display`, `font-tech`, `font-body` | These admin/feedback utilities map to the same system stack (Orbitron/DM Mono/Syne are no longer loaded). Public-site code should use `font-sans` only. |
+| **System sans** | `font-sans` (default) | All text across every surface. The CSS var `--font-sans` resolves to `-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif`. Mac users see SF Pro Display, Windows users see Segoe UI, Android users see Roboto — all crisp at native rendering. |
+| **System mono** | `font-mono` | Reserved for code strings and `<kbd>` chips. `ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace`. |
 
 ### Type scale (public site)
 
@@ -150,9 +149,9 @@ Components live under `components/` and resolve via Nuxt's auto-import with the 
 | Folder | Purpose |
 |---|---|
 | `components/sections/` | Top-level page sections, one per scroll anchor. Composed inside `pages/index.vue`. |
-| `components/ui/` | Reusable presentational components — cards, headings, palettes, icons. Must be stateless or self-contained. |
+| `components/ui/` | Reusable presentational primitives — cards, headings, palettes, icons, form fields, modals, badges. Stateless or self-contained. Used by both public and admin surfaces. |
 | `components/layout/` | Navbar, Footer, scaffolding pieces consumed by `layouts/`. |
-| `components/admin/` | Editor panels for the dashboard. Not for public-facing UI. Still on the legacy cyberpunk vocabulary pending its own pass. |
+| `components/admin/` | Editor panels for the dashboard. Compose `<UiField>`, `<UiInput>`, `<UiTextarea>`, `<UiSelect>`, `<UiModal>`, `<UiBadge>` from `components/ui/`. Never roll inline input/modal markup — extract a primitive if a new pattern is needed. |
 
 ### 5.2 Buttons (`@layer components`)
 
@@ -190,17 +189,38 @@ Every public section starts with `<UiSectionHeading :label="..." :title="..." :d
 - Inline icons next to text: `size="14"`. Standalone icon buttons: `size="14"` inside `.btn-icon`.
 - Add `aria-label` to any icon-only `<a>` or `<button>`.
 
-### 5.6 Removed utilities
+### 5.6 Admin form primitives
 
-The following utility classes existed in the cyberpunk era and were **removed** during the Apple migration. Do not reintroduce on the public site:
+The admin and feedback surfaces are built from a small set of shared primitives in `components/ui/`. **Always use these for new admin/feedback work; never roll inline `<input>` or modal markup.** Adding a new field type means extending the primitives, not duplicating the styling.
+
+| Component | Purpose | Key props |
+|---|---|---|
+| `<UiField>` | Wrapper providing label + optional hint/error text. Slots the input. | `label`, `for`, `required`, `hint`, `error` |
+| `<UiInput>` | Text/email/number/url/password input. Includes focus-visible ring. | `v-model`, `type`, `placeholder`, `required`, `id`, `disabled`, `autocomplete` |
+| `<UiTextarea>` | Multi-line input, `resize-none` by default. | `v-model`, `rows`, `placeholder`, `required`, `id`, `disabled`, `maxlength` |
+| `<UiSelect>` | Native select with custom chevron icon. Slot the `<option>` tags. | `v-model`, `id`, `required`, `disabled`, `placeholder` |
+| `<UiModal>` | Modal with backdrop, focus trap, escape-to-close, click-outside-to-close. Slots: default (body), `header`, `actions`. | `v-model:open`, `title`, `size` (sm/md/lg/xl/2xl) |
+| `<UiBadge>` | Status badges. Variants for semantic state. | `variant`: `accent` / `success` / `warning` / `danger` / `neutral` |
+
+**Patterns**
+
+- Forms inside `<UiModal>` use `<form id="…" @submit.prevent="save">` and the submit button lives in the `actions` slot with `form="…"` attribute (lets the modal's structural footer host the button while the form-submit semantics stay intact).
+- Destructive actions (Delete) use a quiet danger-text button: `text-xs font-medium px-3 py-2 rounded-full text-red-600 dark:text-red-400 hover:bg-red-500/10` — no border, no heavy fill. The confirm dialog (`useConfirm`) handles the actual destructive moment with a fuller danger button.
+- Add/remove inline lists (stack pills, bullets) use `<UiInput>` + a `.btn-ghost` "Add" button that briefly flashes `border-accent-tertiary/40 bg-accent-tertiary/10 text-accent-tertiary` to confirm.
+- Loading states use a simple spinner: `<div class="inline-block w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />`. Skeleton screens TBD — current spinners aren't broken, defer until forms grow more complex.
+
+### 5.7 Removed utilities
+
+The following utility classes existed in the cyberpunk era and were **removed** during the Apple migration. Do not reintroduce anywhere:
 
 - `.neon-glow` — text-shadow cyan halo
 - `.text-gradient` / `.text-gradient-cyan` — gradient-clipped text (one of the absolute bans)
 - `.corner-accent` — L-bracket card decoration (side-stripe absolute ban)
 - `.scanlines` — CRT overlay pseudo-element
 - `.section-divider` (cyan gradient variant) — replaced with a flat low-alpha hairline
+- `font-display`, `font-tech`, `font-body` Tailwind utilities — were backward-compat shims pointing at the system stack. Removed after admin/feedback fully migrated. Use `font-sans` and `font-mono` (the only two families that exist).
 
-The keyframes `reveal`, `fadeIn`, `slideUp`, `shimmer`, `blink`, `glowPulse`, `float` were also dropped.
+The keyframes `reveal`, `fadeIn`, `slideUp`, `shimmer`, `blink`, `glowPulse`, `float` were also dropped. Only `slideDown` survives (used by the command palette enter animation).
 
 ---
 
@@ -281,4 +301,3 @@ Every page sets `useSeoMeta({ title, description, ogTitle, ogDescription })`. De
 - **Not a content guide.** Tone, voice, and copy direction live in the writing itself.
 - **Not a comprehensive component library reference.** The components exist; read them. This document captures only the rules that aren't obvious from the code.
 - **Not frozen.** When the design system grows, update the relevant section in the same PR that introduces the change. A standards doc that lags the codebase is worse than no standards doc.
-- **Not the admin/feedback guide.** Those surfaces still use the legacy cyberpunk vocabulary. When they get their own redesign pass, this section will be extended (or a sibling doc added) to document their target system.
