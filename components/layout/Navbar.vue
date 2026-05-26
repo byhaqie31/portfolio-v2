@@ -59,7 +59,7 @@ function closeMenu() { mobileOpen.value = false }
     <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
       <NuxtLink href="/" class="text-base font-semibold tracking-tight text-text-primary hover:text-accent transition-colors">
-        qie<span class="text-accent">.dev</span>
+        Ahmad<span class="text-accent">.Baihaqie</span>
       </NuxtLink>
 
       <!-- Desktop links -->
@@ -85,11 +85,6 @@ function closeMenu() { mobileOpen.value = false }
 
       <!-- Right actions -->
       <div class="hidden md:flex items-center gap-2">
-        <!-- Status indicator -->
-        <span class="flex items-center gap-1.5 mr-3 text-sm text-text-muted">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
-          Online
-        </span>
         <!-- Theme toggle -->
         <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
           <Icon v-if="isDark" name="fluent:weather-sunny-16-filled" size="14" />

@@ -30,26 +30,21 @@ const paginatedFeedbacks = computed(() =>
   ) ?? []
 )
 
-function next() {
-  if (currentPage.value < totalPages.value - 1) currentPage.value++
-}
-
-function prev() {
-  if (currentPage.value > 0) currentPage.value--
+function goTo(page: number) {
+  currentPage.value = page
 }
 </script>
 
 <template>
   <section id="references" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-6xl mx-auto">
       <UiSectionHeading
-        label="Transmissions"
+        label="References"
         title="What people say"
         description="Feedback and references from those I've worked with."
       />
 
-      <div class="flex flex-col gap-4 min-h-150">
+      <div class="flex flex-col gap-4">
         <div
           v-for="fb in paginatedFeedbacks"
           :key="'fb-' + fb.submitted_at"
@@ -77,27 +72,21 @@ function prev() {
         </div>
       </div>
 
-      <!-- Pagination controls -->
-      <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-8">
+      <!-- Dot pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-10" role="tablist" aria-label="Reference pages">
         <button
-          :disabled="currentPage === 0"
-          class="text-sm text-text-secondary hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5"
-          @click="prev"
-        >
-          ← Prev
-        </button>
-        <span class="text-sm text-text-muted">
-          {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        <button
-          :disabled="currentPage >= totalPages - 1"
-          class="text-sm text-text-secondary hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5"
-          @click="next"
-        >
-          Next →
-        </button>
+          v-for="i in totalPages"
+          :key="i"
+          role="tab"
+          :aria-label="`Show references page ${i}`"
+          :aria-selected="currentPage === i - 1"
+          class="w-2 h-2 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          :class="currentPage === i - 1
+            ? 'bg-accent w-6'
+            : 'bg-border-strong hover:bg-text-muted'"
+          @click="goTo(i - 1)"
+        />
       </div>
     </div>
   </section>
 </template>
-

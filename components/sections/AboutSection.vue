@@ -30,7 +30,6 @@ const education = computed(() => {
 
 <template>
   <section id="about" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-6xl mx-auto">
       <div class="grid md:grid-cols-2 gap-16 items-start">
         <!-- Left: bio -->
@@ -43,8 +42,8 @@ const education = computed(() => {
         </div>
 
         <!-- Right: academic background -->
-        <div class="reveal reveal-delay-2">
-          <UiSectionHeading label="Academic" title="Where I study" />
+        <div class="reveal">
+          <UiSectionHeading label="Academic" title="Education" />
           <div class="divide-y divide-border-subtle rounded-2xl border border-border/60 bg-surface overflow-hidden">
             <div
               v-for="edu in education"

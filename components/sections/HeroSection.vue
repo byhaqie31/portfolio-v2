@@ -65,12 +65,12 @@ onUnmounted(() => mm?.revert())
           {{ personal.name }}
         </p>
 
-        <h1 class="hero-reveal text-[clamp(2.75rem,6vw,4.75rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5">
-          {{ personal.role }}.
+        <h1 class="hero-reveal text-[clamp(3rem,7vw,5.5rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5">
+          {{ personal.role }}
         </h1>
 
         <p class="hero-reveal text-xl md:text-2xl text-text-secondary leading-snug mb-8 max-w-xl">
-          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>.
+          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>
         </p>
 
         <p class="hero-reveal max-w-xl text-base text-text-secondary leading-relaxed mb-10">
@@ -110,15 +110,20 @@ onUnmounted(() => mm?.revert())
       </div>
 
       <div class="shrink-0">
-        <div class="hero-photo group relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-96 lg:h-96">
+        <div class="hero-photo group relative w-64 h-72 sm:w-72 sm:h-80 md:w-80 md:h-96 lg:w-104 lg:h-128">
           <div
-            class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
-            style="box-shadow: 0 30px 80px -20px rgba(0,0,0,0.12), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
+            class="relative w-full h-full rounded-3xl overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
+            style="box-shadow: 0 40px 90px -25px rgba(0,0,0,0.18), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
           >
             <img
               src="/images/ProfilePicture.png"
               alt="Ahmad Baihaqie"
               class="w-full h-full object-cover object-top"
+            />
+            <!-- Subtle bottom gradient for visual weight without imposing on the face -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+              style="background: linear-gradient(to top, rgb(var(--color-bg-raw) / 0.15), transparent);"
             />
           </div>
         </div>

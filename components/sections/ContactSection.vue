@@ -15,7 +15,6 @@ const personal = computed(() => {
 
 <template>
   <section id="contact" class="section">
-    <hr class="section-divider mb-24 md:mb-32" />
     <div class="max-w-6xl mx-auto">
       <div class="max-w-2xl reveal">
         <p class="text-sm text-accent font-medium mb-3">Contact</p>
