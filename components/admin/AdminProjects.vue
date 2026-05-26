@@ -75,16 +75,16 @@ async function save() {
     const isEdit = !!editing.value
     showModal.value = false
     await load()
-    showSuccess({ title: 'Saved', message: isEdit ? 'Project updated successfully!' : 'Project created successfully!' })
+    showSuccess({ title: 'Saved', message: isEdit ? 'Project updated successfully' : 'Project created successfully' })
   } catch { /* ignore */ }
 }
 
 async function remove(id: number) {
-  const confirmed = await showConfirm({ title: 'Delete Project', message: 'Are you sure you want to delete this project? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
+  const confirmed = await showConfirm({ title: 'Delete project', message: 'Are you sure you want to delete this project? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' })
   if (!confirmed) return
   await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
   await load()
-  showSuccess({ title: 'Deleted', message: 'Project deleted successfully!' })
+  showSuccess({ title: 'Deleted', message: 'Project deleted successfully' })
 }
 
 async function toggleVisible(id: number) {
@@ -99,135 +99,135 @@ onMounted(load)
 <template>
   <div>
     <div class="flex items-center justify-between mb-4">
-      <button @click="openAdd" class="btn-primary text-sm">+ Add Project</button>
-      <button @click="load" class="btn-ghost text-xs">Refresh</button>
+      <button @click="openAdd" class="btn-primary text-sm">Add project</button>
+      <button @click="load" class="btn-ghost text-sm">Refresh</button>
     </div>
 
     <div v-if="loading" class="text-center py-8">
-      <div class="inline-block w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+      <div class="inline-block w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
     </div>
 
     <div v-else class="space-y-3">
       <div v-for="p in projects" :key="p.id" class="card flex items-start justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <span class="text-sm font-medium text-text-primary">{{ p.name }}</span>
-            <span v-if="p.featured" class="text-2xs font-tech px-2 py-0.5 rounded bg-accent/10 text-accent">Featured</span>
-            <span class="text-2xs font-tech px-2 py-0.5 rounded" :class="p.is_visible ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-500'">
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span class="text-sm font-semibold text-text-primary">{{ p.name }}</span>
+            <UiBadge v-if="p.featured" variant="accent">Featured</UiBadge>
+            <UiBadge :variant="p.is_visible ? 'success' : 'warning'">
               {{ p.is_visible ? 'Visible' : 'Hidden' }}
-            </span>
+            </UiBadge>
           </div>
-          <p class="text-xs text-text-muted font-tech">{{ p.tag }} · Order: {{ p.sort_order }}</p>
+          <p class="text-xs text-text-muted">{{ p.tag }} · Order: {{ p.sort_order }}</p>
           <div v-if="p.stack?.length" class="flex flex-wrap gap-1 mt-2">
-            <span v-for="s in p.stack" :key="s" class="stack-pill text-2xs">{{ s }}</span>
+            <span v-for="s in p.stack" :key="s" class="skill-tag">{{ s }}</span>
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <button @click="toggleVisible(p.id)" class="btn-ghost text-xs uppercase w-16">{{ p.is_visible ? 'Hide' : 'Show' }}</button>
-          <button @click="openEdit(p)" class="btn-ghost text-xs uppercase w-16">Edit</button>
-          <button @click="remove(p.id)" class="btn-ghost text-xs w-16 border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400/50">Delete</button>
+          <button @click="toggleVisible(p.id)" class="btn-ghost text-xs w-16">{{ p.is_visible ? 'Hide' : 'Show' }}</button>
+          <button @click="openEdit(p)" class="btn-ghost text-xs w-16">Edit</button>
+          <button @click="remove(p.id)" class="text-xs font-medium px-3 py-2 rounded-full text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors">Delete</button>
         </div>
       </div>
     </div>
 
     <!-- Modal -->
-    <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showModal = false">
-        <div class="absolute inset-0 bg-black/60" @click="showModal = false" />
-        <div class="relative bg-bg-secondary rounded-lg border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6" style="border-color: rgb(var(--color-border-raw) / 0.2)">
-          <h3 class="text-sm font-display text-text-primary uppercase tracking-wider mb-4">
-            {{ editing ? 'Edit Project' : 'Add Project' }}
-          </h3>
-
-          <form @submit.prevent="save" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Slug</label>
-                <input v-model="form.slug" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Tag</label>
-                <input v-model="form.tag" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Name</label>
-              <input v-model="form.name" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Description</label>
-              <textarea v-model="form.description" rows="3" required class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">URL</label>
-                <input v-model="form.href" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">GitHub URL</label>
-                <input v-model="form.github_url" class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-1">Sort Order</label>
-                <input v-model.number="form.sort_order" type="number" class="w-full rounded border bg-bg-secondary text-text-primary px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-              </div>
-              <div class="flex items-end pb-2">
-                <label class="flex items-center gap-2 text-xs font-tech text-text-secondary cursor-pointer">
-                  <input v-model="form.featured" type="checkbox" class="accent-[rgb(var(--color-accent-raw))]" /> Featured
-                </label>
-              </div>
-              <div class="flex items-end pb-2">
-                <label class="flex items-center gap-2 text-xs font-tech text-text-secondary cursor-pointer">
-                  <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))]" /> Visible
-                </label>
-              </div>
-            </div>
-
-            <!-- Stack -->
-            <div>
-              <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-2">Tech Stack</label>
-              <div class="flex flex-wrap gap-1 mb-2">
-                <span v-for="(s, i) in form.stack" :key="i" class="inline-flex items-center gap-1 stack-pill text-2xs">
-                  {{ s }}
-                  <button type="button" @click="removeStack(i)" class="text-red-400 hover:text-red-300 ml-1">&times;</button>
-                </span>
-              </div>
-              <div class="flex gap-2">
-                <input v-model="newStackItem" placeholder="Add tech..." @keydown.enter.prevent="addStack" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <button type="button" @click="addStack" class="btn-ghost text-xs" :class="stackAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ stackAdded ? '✓ Added' : 'Add' }}</button>
-              </div>
-            </div>
-
-            <!-- Metrics -->
-            <div>
-              <label class="block text-xs font-tech text-text-secondary uppercase tracking-wider mb-2">Metrics</label>
-              <div class="space-y-1 mb-2">
-                <div v-for="(m, i) in form.metrics" :key="i" class="flex items-center gap-2 text-sm text-text-secondary">
-                  <span class="font-bold text-accent">{{ m.value }}</span>
-                  <span>{{ m.label }}</span>
-                  <button type="button" @click="removeMetric(i)" class="text-red-400 hover:text-red-300 text-xs ml-auto">&times;</button>
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <input v-model="newMetric.value" placeholder="Value" class="w-20 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <input v-model="newMetric.label" placeholder="Label" class="flex-1 rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-3 py-2 text-sm focus:outline-none focus:border-accent/60 transition-colors" style="border-color: rgb(var(--color-border-raw) / 0.2)" />
-                <button type="button" @click="addMetric" class="btn-ghost text-xs" :class="metricAdded ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : ''">{{ metricAdded ? '✓ Added' : 'Add' }}</button>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="showModal = false" class="btn-ghost">Cancel</button>
-              <button type="submit" class="btn-primary">{{ editing ? 'Update' : 'Create' }}</button>
-            </div>
-          </form>
+    <UiModal v-model:open="showModal" :title="editing ? 'Edit project' : 'Add project'" size="2xl">
+      <form id="project-form" @submit.prevent="save" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <UiField label="Slug" required>
+            <UiInput v-model="form.slug" required />
+          </UiField>
+          <UiField label="Tag" required>
+            <UiInput v-model="form.tag" required />
+          </UiField>
         </div>
-      </div>
-    </Teleport>
+
+        <UiField label="Name" required>
+          <UiInput v-model="form.name" required />
+        </UiField>
+
+        <UiField label="Description" required>
+          <UiTextarea v-model="form.description" :rows="3" required />
+        </UiField>
+
+        <div class="grid grid-cols-2 gap-4">
+          <UiField label="URL">
+            <UiInput v-model="form.href" type="url" />
+          </UiField>
+          <UiField label="GitHub URL">
+            <UiInput v-model="form.github_url" type="url" />
+          </UiField>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <UiField label="Sort order">
+            <UiInput v-model.number="form.sort_order" type="number" />
+          </UiField>
+          <label class="flex items-center gap-2 text-sm text-text-secondary cursor-pointer self-end pb-2.5">
+            <input v-model="form.featured" type="checkbox" class="accent-[rgb(var(--color-accent-raw))] w-4 h-4" /> Featured
+          </label>
+          <label class="flex items-center gap-2 text-sm text-text-secondary cursor-pointer self-end pb-2.5">
+            <input v-model="form.is_visible" type="checkbox" class="accent-[rgb(var(--color-accent-raw))] w-4 h-4" /> Visible
+          </label>
+        </div>
+
+        <!-- Stack -->
+        <div>
+          <label class="text-sm font-medium text-text-secondary mb-2 block">Tech stack</label>
+          <div v-if="form.stack.length" class="flex flex-wrap gap-1.5 mb-2">
+            <span v-for="(s, i) in form.stack" :key="i" class="skill-tag inline-flex items-center gap-1">
+              {{ s }}
+              <button type="button" @click="removeStack(i)" class="text-text-muted hover:text-red-500 ml-1" aria-label="Remove">&times;</button>
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <UiInput v-model="newStackItem" placeholder="Add tech…" @keydown.enter.prevent="addStack" />
+            </div>
+            <button
+              type="button"
+              @click="addStack"
+              class="btn-ghost text-sm"
+              :class="stackAdded ? 'border-accent-tertiary/40 bg-accent-tertiary/10 text-accent-tertiary' : ''"
+            >
+              {{ stackAdded ? '✓ Added' : 'Add' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div>
+          <label class="text-sm font-medium text-text-secondary mb-2 block">Metrics</label>
+          <div v-if="form.metrics.length" class="space-y-1 mb-2">
+            <div v-for="(m, i) in form.metrics" :key="i" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-secondary border border-border-subtle text-sm">
+              <span class="font-semibold text-accent">{{ m.value }}</span>
+              <span class="text-text-secondary">{{ m.label }}</span>
+              <button type="button" @click="removeMetric(i)" class="text-text-muted hover:text-red-500 ml-auto" aria-label="Remove">&times;</button>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <div class="w-24">
+              <UiInput v-model="newMetric.value" placeholder="Value" />
+            </div>
+            <div class="flex-1">
+              <UiInput v-model="newMetric.label" placeholder="Label" />
+            </div>
+            <button
+              type="button"
+              @click="addMetric"
+              class="btn-ghost text-sm"
+              :class="metricAdded ? 'border-accent-tertiary/40 bg-accent-tertiary/10 text-accent-tertiary' : ''"
+            >
+              {{ metricAdded ? '✓ Added' : 'Add' }}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <template #actions>
+        <button type="button" @click="showModal = false" class="btn-ghost text-sm">Cancel</button>
+        <button type="submit" form="project-form" class="btn-primary text-sm">{{ editing ? 'Update' : 'Create' }}</button>
+      </template>
+    </UiModal>
   </div>
 </template>

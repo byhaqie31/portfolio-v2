@@ -111,20 +111,19 @@ onMounted(() => {
     <!-- Login -->
     <div v-if="!isAuthenticated" class="flex items-center justify-center min-h-[60vh]">
       <div class="card w-full max-w-sm">
-        <h1 class="text-xl font-display text-text-primary text-center mb-6">Admin Access</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-text-primary text-center mb-6">Admin sign in</h1>
         <form @submit.prevent="handleLogin" class="space-y-4">
-          <div>
-            <input
+          <UiField label="Admin key" :error="loginError">
+            <UiInput
               v-model="keyInput"
               type="password"
               placeholder="Enter admin key"
-              class="w-full rounded border bg-bg-secondary text-text-primary placeholder-text-muted/50 px-4 py-3 text-sm focus:outline-none transition-colors"
-              :class="loginError ? 'border-red-500/60' : ''"
-              :style="loginError ? '' : 'border-color: rgb(var(--color-border-raw) / 0.2)'"
+              autocomplete="current-password"
             />
-            <p v-if="loginError" class="text-red-400 text-xs font-tech mt-2">{{ loginError }}</p>
-          </div>
-          <button type="submit" :disabled="loggingIn" class="btn-primary w-full">{{ loggingIn ? 'Authenticating...' : 'Authenticate' }}</button>
+          </UiField>
+          <button type="submit" :disabled="loggingIn" class="btn-primary w-full">
+            {{ loggingIn ? 'Signing in…' : 'Sign in' }}
+          </button>
         </form>
       </div>
     </div>
@@ -132,11 +131,11 @@ onMounted(() => {
     <!-- Dashboard -->
     <div v-else>
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-display text-text-primary">Portfolio Admin</h1>
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-text-primary">Portfolio admin</h1>
         <button @click="handleLogout" class="btn-ghost inline-flex items-center gap-2 text-sm">
           <Icon name="fluent:sign-out-20-filled" size="14" />
-          Logout
+          Sign out
         </button>
       </div>
 
@@ -148,10 +147,10 @@ onMounted(() => {
               v-for="tab in tabs"
               :key="tab.id"
               @click="activeTab = tab.id"
-              class="px-4 py-2.5 rounded text-sm font-tech text-left whitespace-nowrap transition-colors"
+              class="px-4 py-2.5 rounded-lg text-sm font-medium text-left whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               :class="activeTab === tab.id
-                ? 'bg-accent/10 text-accent border border-accent/20'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-transparent'"
+                ? 'bg-accent/10 text-accent'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'"
             >
               {{ tab.label }}
             </button>
@@ -160,7 +159,7 @@ onMounted(() => {
 
         <!-- Form Area -->
         <main class="min-w-0">
-          <h2 class="text-lg font-display text-text-primary mb-6 uppercase tracking-wider">
+          <h2 class="text-lg font-semibold tracking-tight text-text-primary mb-6">
             {{ tabs.find(t => t.id === activeTab)?.label }}
           </h2>
 
@@ -175,20 +174,18 @@ onMounted(() => {
 
         <!-- Live Preview Pane -->
         <aside class="hidden lg:block lg:sticky lg:top-6 lg:self-start min-w-0">
-          <div class="rounded border border-accent/15 bg-bg overflow-hidden flex flex-col" style="height: calc(100vh - 6rem)">
-            <div class="h-10 px-3 flex items-center justify-between border-b border-accent/15 bg-surface-raised shrink-0">
-              <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-accent-secondary animate-pulse" />
-                <span class="font-mono text-2xs text-accent-secondary uppercase tracking-[0.2em]">Live Preview</span>
-                <span class="font-mono text-2xs text-text-muted tracking-wider">
-                  {{ NATIVE_PREVIEW_WIDTH }}px · {{ Math.round(previewScale * 100) }}%
-                </span>
+          <div class="rounded-2xl border border-border bg-surface overflow-hidden flex flex-col" style="height: calc(100vh - 6rem)">
+            <div class="h-10 px-4 flex items-center justify-between border-b border-border-subtle bg-bg-secondary shrink-0">
+              <div class="flex items-center gap-2 text-sm text-text-muted">
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
+                <span class="text-text-secondary font-medium">Live preview</span>
+                <span class="text-xs">{{ NATIVE_PREVIEW_WIDTH }}px · {{ Math.round(previewScale * 100) }}%</span>
               </div>
               <a
                 href="/admin/preview"
                 target="_blank"
                 rel="noopener"
-                class="font-mono text-2xs text-text-muted hover:text-accent uppercase tracking-wider transition-colors inline-flex items-center gap-1"
+                class="text-sm text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1"
                 title="Open in new tab"
               >
                 <Icon name="fluent:arrow-up-right-16-filled" size="12" />

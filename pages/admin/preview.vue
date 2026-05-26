@@ -33,15 +33,12 @@ function exitPreview() {
     <!-- Floating banner — hidden when embedded, since the parent already labels it -->
     <div
       v-if="!isEmbedded"
-      class="fixed top-3 left-1/2 -translate-x-1/2 z-60 flex items-center gap-3 px-4 py-2 rounded-full border border-accent-secondary/40 bg-bg/85 backdrop-blur-md"
-      style="box-shadow: 0 0 24px rgb(var(--color-accent-secondary-raw) / 0.25);"
+      class="fixed top-3 left-1/2 -translate-x-1/2 z-60 flex items-center gap-3 px-4 py-2 rounded-full border border-border bg-surface/95 backdrop-blur-md text-sm text-text-secondary shadow-sm"
     >
-      <span class="w-1.5 h-1.5 rounded-full bg-accent-secondary animate-pulse" />
-      <span class="font-mono text-2xs text-accent-secondary uppercase tracking-[0.2em]">
-        Preview Mode — not published
-      </span>
+      <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
+      <span>Preview mode, not published</span>
       <button
-        class="font-mono text-2xs text-text-muted hover:text-accent-secondary uppercase tracking-wider transition-colors"
+        class="text-text-muted hover:text-text-primary transition-colors"
         @click="exitPreview"
       >
         Close
