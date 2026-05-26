@@ -10,10 +10,10 @@ const year = new Date().getFullYear()
     <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <!-- Left -->
       <div>
-        <p class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary mb-1">
-          ahmad<span class="text-accent">.baihaqie</span>
+        <p class="text-base font-semibold text-text-primary mb-1">
+          Ahmad<span class="text-accent">.Baihaqie</span>
         </p>
-        <p class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+        <p class="text-sm text-text-muted">
           &copy; {{ year }} &mdash; Built with Nuxt & Tailwind CSS
         </p>
       </div>

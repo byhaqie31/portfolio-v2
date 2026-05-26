@@ -45,26 +45,26 @@ const education = computed(() => {
         <!-- Right: academic background -->
         <div class="reveal reveal-delay-2">
           <UiSectionHeading label="Academic" title="Where I study" />
-          <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
+          <div class="divide-y divide-border-subtle rounded-2xl border border-border/60 bg-surface overflow-hidden">
             <div
               v-for="edu in education"
               :key="edu.id"
-              class="flex flex-col gap-3 px-5 py-5 hover:bg-surface-raised transition-colors"
+              class="flex flex-col gap-3 px-6 py-5 hover:bg-surface-raised transition-colors"
             >
               <div class="flex items-start justify-between gap-2">
-                <h3 class="text-sm font-semibold text-text-primary leading-snug">{{ edu.degree }}</h3>
+                <h3 class="text-base font-semibold text-text-primary leading-snug">{{ edu.degree }}</h3>
                 <span
-                  class="font-mono text-2xs px-2 py-0.5 rounded border shrink-0 uppercase tracking-wider"
+                  class="text-xs px-2.5 py-1 rounded-full shrink-0"
                   :class="edu.cgpa === 'In Progress'
-                    ? 'border-emerald-600/20 bg-emerald-600/5 text-emerald-600 dark:border-accent-tertiary/20 dark:bg-accent-tertiary/5 dark:text-accent-tertiary'
-                    : 'border-accent/20 bg-accent/5 text-accent'"
+                    ? 'bg-accent-tertiary/10 text-accent-tertiary'
+                    : 'bg-accent/10 text-accent'"
                 >
-                  {{ edu.cgpa === 'In Progress' ? 'In Progress' : `CGPA ${edu.cgpa}` }}
+                  {{ edu.cgpa === 'In Progress' ? 'In progress' : `CGPA ${edu.cgpa}` }}
                 </span>
               </div>
               <p class="text-sm text-text-secondary">{{ edu.institution }}</p>
-              <p class="flex items-center gap-1 font-mono text-2xs text-text-muted uppercase tracking-wider">
-                <Icon name="fluent:location-16-filled" size="10" />{{ edu.location }} · {{ edu.period }}
+              <p class="flex items-center gap-1.5 text-sm text-text-muted">
+                <Icon name="fluent:location-16-filled" size="12" />{{ edu.location }} · {{ edu.period }}
               </p>
             </div>
           </div>

@@ -50,23 +50,23 @@ function closeMenu() { mobileOpen.value = false }
   >
     <nav class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink href="/" class="font-display text-sm font-bold tracking-[0.15em] uppercase text-text-primary hover:text-accent transition-colors">
+      <NuxtLink href="/" class="text-base font-semibold tracking-tight text-text-primary hover:text-accent transition-colors">
         qie<span class="text-accent">.dev</span>
       </NuxtLink>
 
       <!-- Desktop links -->
-      <ul class="hidden md:flex items-center gap-8">
+      <ul class="hidden md:flex items-center gap-7">
         <li v-for="link in navLinks" :key="link.label">
           <a
             :href="link.href"
-            class="relative font-mono text-xs uppercase tracking-widest transition-colors duration-200"
+            class="relative text-sm transition-colors duration-200"
             :class="activeSection === link.href.replace('#', '')
-              ? 'text-accent'
+              ? 'text-text-primary font-medium'
               : 'text-text-muted hover:text-text-primary'"
           >
             {{ link.label }}
             <span
-              class="absolute -bottom-0.5 left-0 right-0 h-px bg-accent transition-opacity duration-300"
+              class="absolute -bottom-1.5 left-0 right-0 h-px bg-accent transition-opacity duration-300"
               :class="activeSection === link.href.replace('#', '')
                 ? 'opacity-100'
                 : 'opacity-0'"
@@ -78,9 +78,9 @@ function closeMenu() { mobileOpen.value = false }
       <!-- Right actions -->
       <div class="hidden md:flex items-center gap-2">
         <!-- Status indicator -->
-        <span class="flex items-center gap-1.5 mr-3">
+        <span class="flex items-center gap-1.5 mr-3 text-sm text-text-muted">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
-          <span class="font-mono text-2xs text-text-muted tracking-wide uppercase">Online</span>
+          Online
         </span>
         <!-- Theme toggle -->
         <button class="btn-icon" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
@@ -124,9 +124,9 @@ function closeMenu() { mobileOpen.value = false }
           v-for="link in navLinks"
           :key="link.label"
           :href="link.href"
-          class="font-mono text-xs uppercase tracking-widest py-1 transition-colors"
+          class="text-base py-1 transition-colors"
           :class="activeSection === link.href.replace('#', '')
-            ? 'text-accent font-medium'
+            ? 'text-text-primary font-medium'
             : 'text-text-secondary'"
           @click="closeMenu"
         >

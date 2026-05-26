@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-03-13',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
+  modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/sitemap'],
 
   site: {
     url: 'https://baihaqie.com',
@@ -27,16 +27,6 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
-
-  googleFonts: {
-    families: {
-      'Orbitron': [400, 700, 900],
-      'DM Mono': [300, 400, 500],
-      'Syne': [400, 600, 800],
-    },
-    display: 'swap',
-    preload: true,
-  },
 
   app: {
     head: {

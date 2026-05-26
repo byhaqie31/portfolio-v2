@@ -26,25 +26,25 @@ const personal = computed(() => {
     <div class="relative max-w-5xl mx-auto w-full py-24 md:py-36 flex flex-col md:flex-row items-center gap-12 md:gap-16">
       <div class="flex-1 min-w-0">
         <div
-          class="animate-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded border border-accent/20 bg-accent/5 font-mono text-xs text-accent mb-10 uppercase tracking-wider"
+          class="animate-reveal inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/5 text-xs text-accent mb-10"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
           Available for {{ personal.availableFor }}
         </div>
 
-        <p class="animate-reveal font-mono text-2xs text-text-muted uppercase tracking-[0.35em] mb-3" style="animation-delay:0.05s">
-          // {{ personal.name }}
+        <p class="animate-reveal text-sm text-text-muted font-medium mb-3" style="animation-delay:0.05s">
+          {{ personal.name }}
         </p>
 
         <h1
-          class="animate-reveal font-display text-4xl sm:text-5xl md:text-[3.25rem] font-bold tracking-[0.02em] leading-[1.1] text-text-primary mb-2"
+          class="animate-reveal text-[clamp(2.5rem,5.5vw,4.25rem)] font-semibold tracking-tight leading-[1.05] text-text-primary mb-4"
           style="animation-delay:0.1s"
         >
           {{ personal.role }}
         </h1>
 
-        <p class="animate-reveal text-lg text-text-secondary mt-3 mb-8" style="animation-delay:0.15s">
-          Focused on <span class="text-accent font-medium">{{ personal.focus }}</span>
+        <p class="animate-reveal text-lg md:text-xl text-text-secondary mb-8" style="animation-delay:0.15s">
+          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>
         </p>
 
         <p
@@ -64,19 +64,19 @@ const personal = computed(() => {
           </a>
         </div>
 
-        <div class="animate-reveal flex flex-wrap items-center gap-5" style="animation-delay:0.3s">
-          <span class="flex items-center gap-1.5 font-mono text-2xs text-text-muted uppercase tracking-wider">
-            <Icon name="fluent:location-16-filled" size="12" />
+        <div class="animate-reveal flex flex-wrap items-center gap-5 text-sm text-text-muted" style="animation-delay:0.3s">
+          <span class="flex items-center gap-1.5">
+            <Icon name="fluent:location-16-filled" size="14" />
             {{ personal.location }}
           </span>
-          <span class="w-px h-3 bg-accent/20" />
+          <span class="w-px h-3 bg-border" />
           <a
             :href="personal.website"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex items-center gap-1.5 font-mono text-2xs text-text-muted hover:text-accent transition-colors uppercase tracking-wider"
+            class="flex items-center gap-1.5 hover:text-text-primary transition-colors"
           >
-            <Icon name="fluent:globe-16-filled" size="12" />
+            <Icon name="fluent:globe-16-filled" size="14" />
             baihaqie.com
           </a>
         </div>
@@ -86,7 +86,7 @@ const personal = computed(() => {
         <div class="group relative w-56 h-56 md:w-72 md:h-72">
           <div
             class="relative w-full h-full rounded-full overflow-hidden transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-            style="box-shadow: 0 20px 60px rgba(0,0,0,0.15);"
+            style="box-shadow: 0 20px 60px rgba(0,0,0,0.10);"
           >
             <img
               src="/images/ProfilePicture.png"

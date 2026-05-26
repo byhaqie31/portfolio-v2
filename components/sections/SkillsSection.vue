@@ -32,7 +32,7 @@ const skillGroups = computed(() => {
           :key="group.label"
           class="reveal card"
         >
-          <p class="font-mono text-2xs text-accent uppercase tracking-[0.25em] mb-4">{{ group.label }}</p>
+          <p class="text-sm text-accent font-medium mb-4">{{ group.label }}</p>
           <div class="flex flex-wrap gap-2">
             <span v-for="item in group.items" :key="item" class="skill-tag">
               {{ item }}

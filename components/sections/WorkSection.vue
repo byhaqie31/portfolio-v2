@@ -46,28 +46,23 @@ const others = computed(() => projects.value.filter((p) => !p.featured))
       </div>
 
       <!-- Other projects — compact list -->
-      <div v-if="others.length" class="mt-8 reveal">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="font-mono text-2xs text-text-muted uppercase tracking-[0.25em]">More projects</span>
-          <div class="flex-1 h-px" style="background: linear-gradient(to right, rgb(var(--color-border-raw) / 0.2), transparent);" />
-        </div>
-        <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden">
+      <div v-if="others.length" class="mt-12 reveal">
+        <p class="text-sm text-text-muted font-medium mb-4">More projects</p>
+        <div class="divide-y divide-border-subtle rounded-2xl border border-border/60 bg-surface overflow-hidden">
           <div
             v-for="project in others"
             :key="project.id"
-            class="group flex items-center justify-between px-5 py-4 hover:bg-surface-raised transition-colors"
+            class="group flex items-center justify-between px-6 py-4 hover:bg-surface-raised transition-colors"
           >
             <div>
-              <span class="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
+              <span class="text-base font-medium text-text-primary group-hover:text-accent transition-colors">
                 {{ project.name }}
               </span>
-              <div class="flex items-center gap-3 mt-0.5">
-                <span class="font-mono text-2xs text-accent uppercase tracking-wider">{{ project.tag }}</span>
-                <div class="flex gap-2">
-                  <span v-for="s in project.stack.slice(0, 3)" :key="s" class="font-mono text-2xs text-text-muted">
-                    {{ s }}
-                  </span>
-                </div>
+              <div class="flex items-center gap-3 mt-1 text-sm text-text-muted">
+                <span class="text-accent">{{ project.tag }}</span>
+                <span v-for="s in project.stack.slice(0, 3)" :key="s">
+                  {{ s }}
+                </span>
               </div>
             </div>
             <a

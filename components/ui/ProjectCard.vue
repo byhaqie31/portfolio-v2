@@ -7,7 +7,7 @@ defineProps<{ project: Project }>()
 <template>
   <article class="group card-hover reveal flex flex-col h-full">
     <div class="flex items-center justify-between mb-5">
-      <span class="font-mono text-2xs text-accent uppercase tracking-[0.2em]">{{ project.tag }}</span>
+      <span class="text-sm text-accent font-medium">{{ project.tag }}</span>
       <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <a
           v-if="project.github"
@@ -32,11 +32,11 @@ defineProps<{ project: Project }>()
       </div>
     </div>
 
-    <h3 class="font-display text-sm font-bold uppercase tracking-[0.05em] text-text-primary group-hover:text-accent transition-colors mb-2 leading-snug">
+    <h3 class="text-xl font-semibold tracking-tight text-text-primary group-hover:text-accent transition-colors mb-2 leading-tight">
       {{ project.name }}
     </h3>
 
-    <p class="text-sm text-text-secondary leading-relaxed flex-1 mb-5">
+    <p class="text-base text-text-secondary leading-relaxed flex-1 mb-5">
       {{ project.description }}
     </p>
 

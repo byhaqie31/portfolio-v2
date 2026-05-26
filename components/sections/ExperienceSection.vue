@@ -30,7 +30,7 @@ const experiences = computed(() => {
       <UiSectionHeading label="Experience" title="Where I've worked" />
 
       <!-- Work experience -->
-      <div class="divide-y divide-accent/10 rounded border border-accent/10 bg-surface overflow-hidden mb-16">
+      <div class="divide-y divide-border-subtle rounded-2xl border border-border/60 bg-surface overflow-hidden mb-16">
         <div
           v-for="job in experiences"
           :key="job.id"
@@ -38,10 +38,10 @@ const experiences = computed(() => {
         >
           <!-- Left -->
           <div class="md:w-44 shrink-0">
-            <p class="font-mono text-xs text-text-muted uppercase tracking-wider">{{ job.period }}</p>
+            <p class="text-sm text-text-muted">{{ job.period }}</p>
             <span
               v-if="job.current"
-              class="inline-block mt-1 font-mono text-2xs px-2 py-0.5 rounded border border-accent-tertiary/20 bg-accent-tertiary/5 text-accent-tertiary uppercase tracking-wider"
+              class="inline-block mt-2 text-xs px-2.5 py-1 rounded-full bg-accent-tertiary/10 text-accent-tertiary"
             >
               Current
             </span>
@@ -49,12 +49,12 @@ const experiences = computed(() => {
 
           <!-- Right -->
           <div class="flex-1">
-            <h3 class="font-display text-sm font-bold uppercase tracking-[0.05em] text-text-primary group-hover:text-accent transition-colors mb-0.5">
+            <h3 class="text-lg font-semibold text-text-primary mb-0.5 leading-snug">
               {{ job.role }}
             </h3>
-            <p class="text-sm text-text-secondary mb-1">{{ job.company }}</p>
-            <p class="flex items-center gap-1 font-mono text-2xs text-text-muted mb-4 uppercase tracking-wider">
-              <Icon name="fluent:location-16-filled" size="10" />{{ job.location }}
+            <p class="text-base text-text-secondary mb-1">{{ job.company }}</p>
+            <p class="flex items-center gap-1.5 text-sm text-text-muted mb-4">
+              <Icon name="fluent:location-16-filled" size="12" />{{ job.location }}
             </p>
 
             <!-- Bullets -->
@@ -62,7 +62,7 @@ const experiences = computed(() => {
               <li
                 v-for="bullet in job.bullets"
                 :key="bullet"
-                class="text-sm text-text-secondary leading-relaxed pl-4 relative before:absolute before:left-0 before:top-2 before:w-1.5 before:h-px before:bg-accent/40"
+                class="text-base text-text-secondary leading-relaxed pl-4 relative before:absolute before:left-0 before:top-[0.7em] before:w-1.5 before:h-px before:bg-text-muted/40"
               >
                 {{ bullet }}
               </li>

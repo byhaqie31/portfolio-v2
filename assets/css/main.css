@@ -2,9 +2,11 @@
 
 /* ── THEME CONFIG (migrated from tailwind.config.ts) ── */
 @theme {
-  --font-sans: 'Syne', system-ui, sans-serif;
-  --font-display: 'Orbitron', system-ui, sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  /* System font stack — Apple-faithful. Mac/iOS visitors get SF Pro Display,
+   * Windows gets Segoe UI, Android gets Roboto. Zero font load, no FOIT/FOUT. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
   --color-bg: rgb(var(--color-bg-raw));
   --color-bg-secondary: rgb(var(--color-bg-secondary-raw));
@@ -35,7 +37,7 @@
 
   --radius-4xl: 2rem;
 
-  --text-2xs: 0.65rem;
+  --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
 
   --animate-reveal: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -119,9 +121,11 @@
 @layer base {
   html {
     @apply bg-bg text-text-primary scroll-smooth;
-    font-family: 'Syne', system-ui, sans-serif;
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11"; /* SF Pro stylistic alts where supported */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
@@ -170,20 +174,14 @@
 }
 
 @layer components {
-  /* ── Buttons ── */
+  /* ── Buttons (sentence case, Apple-pill radius) ── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none bg-accent text-text-inverse;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
   .btn-primary:hover {
@@ -194,49 +192,46 @@
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-accent hover:border-accent/40 active:scale-[0.97];
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer select-none border text-text-secondary hover:text-text-primary active:scale-[0.97];
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-    border-color: rgb(var(--color-border-raw) / 0.2);
+    border-color: rgb(var(--color-border-raw) / 0.6);
+  }
+  .btn-ghost:hover {
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
   }
 
   .btn-icon {
-    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded border text-text-muted hover:text-accent hover:border-accent/40 transition-all duration-200;
-    border-color: rgb(var(--color-border-raw) / 0.2);
+    @apply w-9 h-9 p-0 inline-flex items-center justify-center rounded-full border text-text-muted hover:text-text-primary transition-all duration-200;
+    border-color: rgb(var(--color-border-raw) / 0.6);
+  }
+  .btn-icon:hover {
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
   }
 
-  /* ── Cards ── */
+  /* ── Cards (Apple-radius, quiet borders) ── */
   .card {
-    @apply rounded border bg-surface p-6 transition-all duration-300;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply rounded-2xl border bg-surface p-6 transition-all duration-300;
+    border-color: rgb(var(--color-border-raw) / 0.6);
   }
 
   .card-hover {
-    @apply rounded border bg-surface p-6 transition-all duration-300;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply rounded-2xl border bg-surface p-6 transition-all duration-300;
+    border-color: rgb(var(--color-border-raw) / 0.6);
   }
   .card-hover:hover {
-    border-color: rgb(var(--color-border-raw) / 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: rgb(var(--color-border-strong-raw) / 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
   }
 
-  /* ── Tags ── */
+  /* ── Tags (sentence case, quiet pills) ── */
   .skill-tag {
-    @apply text-2xs px-2.5 py-1 rounded border bg-bg-tertiary text-text-muted uppercase;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-    border-color: rgb(var(--color-border-raw) / 0.12);
+    @apply text-xs px-2.5 py-1 rounded-md bg-bg-secondary text-text-secondary;
   }
 
   .stack-pill {
-    @apply text-2xs px-2 py-0.5 rounded border text-accent/80;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-    background: rgb(var(--color-accent-raw) / 0.05);
-    border-color: rgb(var(--color-accent-raw) / 0.2);
+    @apply text-xs px-2 py-0.5 rounded-md text-text-secondary;
+    background: rgb(var(--color-bg-secondary-raw));
   }
 
   /* ── Section ── */

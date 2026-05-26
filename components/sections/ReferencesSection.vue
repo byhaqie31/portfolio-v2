@@ -55,21 +55,21 @@ function prev() {
           :key="'fb-' + fb.submitted_at"
           class="card-hover is-visible"
         >
-          <p class="text-text-secondary leading-relaxed text-sm italic mb-5">
+          <p class="text-base text-text-secondary leading-relaxed mb-6">
             "{{ fb.message }}"
           </p>
 
           <!-- Bottom: Name + Position / Company on one line -->
-          <div class="pt-4 border-t border-accent/10 flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+          <div class="pt-5 border-t border-border-subtle flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
               <Icon name="fluent:person-16-filled" size="16" class="text-accent" />
             </div>
             <div class="flex items-baseline gap-2 flex-wrap">
-              <p class="text-sm font-medium text-text-primary">{{ fb.respondent_name || fb.name }}</p>
-              <span v-if="fb.position || fb.company" class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+              <p class="text-sm font-semibold text-text-primary">{{ fb.respondent_name || fb.name }}</p>
+              <span v-if="fb.position || fb.company" class="text-sm text-text-muted">
                 {{ [fb.position, fb.company].filter(Boolean).join(' · ') }}
               </span>
-              <span v-else-if="fb.relationship" class="font-mono text-2xs text-text-muted uppercase tracking-wider">
+              <span v-else-if="fb.relationship" class="text-sm text-text-muted">
                 {{ fb.relationship }}
               </span>
             </div>
@@ -81,17 +81,17 @@ function prev() {
       <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-8">
         <button
           :disabled="currentPage === 0"
-          class="font-mono text-sm text-accent border border-accent/20 px-4 py-2 hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          class="text-sm text-text-secondary hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5"
           @click="prev"
         >
           ← Prev
         </button>
-        <span class="font-mono text-xs text-text-muted">
+        <span class="text-sm text-text-muted">
           {{ currentPage + 1 }} / {{ totalPages }}
         </span>
         <button
           :disabled="currentPage >= totalPages - 1"
-          class="font-mono text-sm text-accent border border-accent/20 px-4 py-2 hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          class="text-sm text-text-secondary hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5"
           @click="next"
         >
           Next →
