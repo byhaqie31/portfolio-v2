@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Sky } from 'three/examples/jsm/objects/Sky.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { gsap } from 'gsap'
 
 /*
  * Three.js scene lifecycle for the cinematic surface. Boots a renderer +
@@ -28,6 +29,33 @@ let host: HTMLElement | null = null
 let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
 let visibilityHandler: (() => void) | null = null
+
+/* Camera direction state — exposed reactively so the page can render
+ * a compass / heading / pitch readout during inspect mode. Convention:
+ *   N (0°)   = looking toward -Z (the cardinal direction the plane is
+ *              parked facing on Z-axis terms — though the plane itself
+ *              points +X, i.e. East, after its π/2 Y-rotation)
+ *   E (90°)  = looking toward +X
+ *   S (180°) = looking toward +Z
+ *   W (270°) = looking toward -X
+ *   pitch positive = camera looking up; negative = looking down. */
+const cameraHeading = ref(90)
+const cameraPitch = ref(0)
+const _dirHelper = new THREE.Vector3()
+
+/* Camera pose snapshot taken when the user enters inspect mode, so
+ * leaving inspect can animate back to the pre-inspect view (zoom +
+ * rotation) instead of stranding the camera wherever they happened
+ * to drag/zoom to. Cleared on each entry, restored on each exit. */
+let inspectEntryPose: {
+  position: THREE.Vector3
+  target: THREE.Vector3
+} | null = null
+
+/* Active reset tween on exit. Held so we can kill it if the user
+ * re-enters inspect mid-animation (otherwise the in-flight tween
+ * would keep writing to camera.position over their drag input). */
+let inspectExitTween: gsap.core.Timeline | null = null
 
 // Spread of the cloud field around the camera/aircraft.
 const CLOUD_FIELD_X = 130
@@ -230,13 +258,40 @@ export function useFlightScene() {
     controls.enablePan = false
     controls.enableZoom = false
     controls.enabled = false
-    // Slow continuous orbit around the aircraft once controls go live,
-    // matching the jet-engine-infographic Scene 0 pattern. Disabled
-    // immediately on first user drag so the page never fights the user.
+    // Slow continuous orbit around the aircraft once controls go live.
+    // Outside inspect mode the user has no influence on the camera —
+    // enableRotate starts false so stray drags don't rotate or kill
+    // the autoRotate. setInspectMode(true) flips both autoRotate and
+    // enableRotate when the user explicitly takes control via the
+    // "Play with Aircraft" CTA. enableZoom follows the same pattern.
     controls.autoRotate = true
     controls.autoRotateSpeed = 0.6
-    controls.addEventListener('start', () => {
-      if (controls) controls.autoRotate = false
+    controls.enableRotate = false
+
+    // Heading + pitch readouts for the inspect-mode compass. Fires on
+    // every camera move (autoRotate ticks, user drag, programmatic
+    // position writes) — Vue batches the ref updates per microtask so
+    // the rerender cost stays bounded.
+    //
+    // cameraHeading is intentionally NOT wrapped to [0, 360). Wrapping
+    // makes CSS rotate transitions animate the long way around when
+    // crossing 0° (e.g. 359 → 1 reads as -358° rotation, snapping the
+    // needle counter-clockwise across the whole dial). Tracking a
+    // continuous accumulated value — shortest-path delta added to the
+    // previous reading — keeps the needle's rotation monotonic and the
+    // CSS transition smooth. The page computes the [0, 360) display
+    // value at render time via `((heading % 360) + 360) % 360`.
+    controls.addEventListener('change', () => {
+      if (!camera) return
+      camera.getWorldDirection(_dirHelper)
+      const raw = (Math.atan2(_dirHelper.x, -_dirHelper.z) * 180 / Math.PI + 360) % 360
+      const prev = cameraHeading.value
+      const wrappedPrev = ((prev % 360) + 360) % 360
+      let delta = raw - wrappedPrev
+      if (delta > 180) delta -= 360
+      else if (delta < -180) delta += 360
+      cameraHeading.value = prev + delta
+      cameraPitch.value = Math.asin(_dirHelper.y) * 180 / Math.PI
     })
 
     resizeObserver = new ResizeObserver(onResize)
@@ -319,16 +374,86 @@ export function useFlightScene() {
 
   /**
    * Enter / exit aircraft inspect mode. In inspect mode autoRotate is
-   * paused (the user owns the rotation) and zoom is enabled (mouse
-   * wheel scales the camera distance instead of scrolling the page —
-   * the page should pause Lenis separately so the wheel reaches us).
-   * Leaving inspect mode restores the autoRotate-on / zoom-off pair.
+   * paused (the user owns the rotation), enableRotate is true (drag
+   * orbits the camera) and enableZoom is true (mouse wheel scales the
+   * camera distance — the page should pause Lenis separately so the
+   * wheel reaches us). Leaving inspect mode restores autoRotate +
+   * locks out user drag/zoom so the plane spins untouchably until the
+   * user explicitly takes control again, AND snaps the camera back to
+   * the pose it was in when they entered inspect — so any zoom or
+   * rotation they did during inspect is rolled back, and autoRotate
+   * resumes from the same view they saw before clicking Play.
    */
   function setInspectMode(on: boolean) {
-    if (!controls) return
-    controls.autoRotate = !on
-    controls.enableZoom = on
+    if (!controls || !camera) return
+
+    // Any in-flight exit animation should be killed before we change
+    // state again — otherwise it would keep writing to camera.position
+    // on top of a fresh inspect-entry drag, or fight a second exit.
+    if (inspectExitTween) {
+      inspectExitTween.kill()
+      inspectExitTween = null
+    }
+
+    if (on) {
+      // ENTRY — snapshot pose so we can animate back to it on exit.
+      inspectEntryPose = {
+        position: camera.position.clone(),
+        target: controls.target.clone(),
+      }
+      controls.autoRotate = false
+      controls.enableZoom = true
+      controls.enableRotate = true
+      return
+    }
+
+    // EXIT — lock user input immediately; keep autoRotate paused while
+    // the tween animates the camera back to the entry pose; flip
+    // autoRotate on in onComplete so it resumes from the restored view.
+    controls.enableRotate = false
+    controls.enableZoom = false
+
+    if (!inspectEntryPose) {
+      controls.autoRotate = true
+      return
+    }
+
+    const targetPose = inspectEntryPose
+    inspectEntryPose = null
+
+    inspectExitTween = gsap.timeline({
+      onComplete: () => {
+        if (controls) controls.autoRotate = true
+        inspectExitTween = null
+      },
+    })
+      .to(camera.position, {
+        x: targetPose.position.x,
+        y: targetPose.position.y,
+        z: targetPose.position.z,
+        duration: 0.7,
+        ease: 'power2.inOut',
+      }, 0)
+      .to(controls.target, {
+        x: targetPose.target.x,
+        y: targetPose.target.y,
+        z: targetPose.target.z,
+        duration: 0.7,
+        ease: 'power2.inOut',
+        // Drive OrbitControls' internal spherical/lookAt every frame
+        // so the camera re-orients smoothly as both tweens progress.
+        onUpdate: () => controls?.update(),
+      }, 0)
   }
 
-  return { init, destroy, getScene, getCamera, setControlsEnabled, setInspectMode }
+  return {
+    init,
+    destroy,
+    getScene,
+    getCamera,
+    setControlsEnabled,
+    setInspectMode,
+    cameraHeading: readonly(cameraHeading),
+    cameraPitch: readonly(cameraPitch),
+  }
 }

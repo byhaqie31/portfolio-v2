@@ -42,6 +42,36 @@ const flightScroll = useFlightScroll()
 const aircraft = useFlightAircraft()
 const lenis = useLenis()
 
+// Compass readouts — pulled from useFlightScene's reactive refs,
+// updated whenever OrbitControls fires `change`. By default the plane
+// is parked facing East (+X), so a fresh-load camera at z=0 looking
+// at the plane reads as roughly heading 90° (looking East), pitch 0°.
+const cameraHeading = flightScene.cameraHeading
+const cameraPitch = flightScene.cameraPitch
+
+// cameraHeading is continuous (no wrap at 0/360) so the CSS rotation
+// stays monotonic; for the readout we wrap to [0, 360).
+const headingWrapped = computed(() => ((cameraHeading.value % 360) + 360) % 360)
+
+const headingLabel = computed(() => {
+  const h = headingWrapped.value
+  if (h < 22.5 || h >= 337.5) return 'N'
+  if (h < 67.5) return 'NE'
+  if (h < 112.5) return 'E'
+  if (h < 157.5) return 'SE'
+  if (h < 202.5) return 'S'
+  if (h < 247.5) return 'SW'
+  if (h < 292.5) return 'W'
+  return 'NW'
+})
+
+const headingDeg = computed(() => Math.round(headingWrapped.value).toString().padStart(3, '0'))
+const pitchDeg = computed(() => {
+  const p = Math.round(cameraPitch.value)
+  const sign = p >= 0 ? '+' : '-'
+  return sign + Math.abs(p).toString().padStart(2, '0')
+})
+
 watch(welcomeDone, (done) => {
   if (!done) return
   // Iris reveal pin only. No aircraft pose choreography (autoRotate
@@ -125,9 +155,9 @@ onBeforeUnmount(() => {
       </div>
     </Transition>
 
-    <!-- Inspect mode UI — top indicator strip showing the controls,
-         bottom exit button to return to the post-reveal CTAs. Both
-         fade together when inspect mode toggles. -->
+    <!-- Inspect mode UI — top-centre controls hint, top-right compass
+         with live heading + pitch readouts, bottom-centre exit button.
+         All fade together when inspect mode toggles. -->
     <Transition name="inspect-fade">
       <div v-if="inspectMode" class="inspect-ui">
         <div class="inspect-ui__indicator">
@@ -140,9 +170,26 @@ onBeforeUnmount(() => {
             Scroll to zoom
           </span>
         </div>
+
+        <div class="compass" aria-label="Camera heading and pitch">
+          <div class="compass__ring">
+            <span class="compass__mark compass__mark--n">N</span>
+            <span class="compass__mark compass__mark--e">E</span>
+            <span class="compass__mark compass__mark--s">S</span>
+            <span class="compass__mark compass__mark--w">W</span>
+            <div class="compass__needle-wrap" :style="`transform: rotate(${cameraHeading}deg)`">
+              <div class="compass__needle" />
+            </div>
+          </div>
+          <div class="compass__readouts">
+            <span class="compass__readout">HDG {{ headingDeg }}° {{ headingLabel }}</span>
+            <span class="compass__readout">PITCH {{ pitchDeg }}°</span>
+          </div>
+        </div>
+
         <button type="button" class="cta cta--ghost inspect-ui__exit" @click="onExitInspect">
           <Icon name="fluent:arrow-left-16-filled" size="14" />
-          <span>Exit Inspect</span>
+          <span>Exit Pilot Mode</span>
         </button>
       </div>
     </Transition>
@@ -345,6 +392,120 @@ onBeforeUnmount(() => {
   z-index: var(--z-controls);
 }
 
+/* ── Compass widget ──────────────────────────────────────────── */
+
+.compass {
+  position: fixed;
+  top: var(--space-8);
+  right: var(--space-8);
+  z-index: var(--z-controls);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(10, 11, 15, 0.55);
+  border: 1px solid var(--color-hairline);
+}
+
+.compass__ring {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 50%;
+}
+
+.compass__mark {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-secondary);
+}
+
+/* N gets the warm-white emphasis — it's the "fixed north" reference
+ * the user reads everything else relative to. */
+.compass__mark--n {
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-ink-primary);
+}
+
+.compass__mark--e {
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass__mark--s {
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass__mark--w {
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* The needle-wrap fills the ring and rotates around its centre. The
+ * needle inside is positioned near the top of the wrap, so rotating
+ * the wrap by `heading deg` sweeps the needle from N (0°) through E
+ * (90°) and back. */
+.compass__needle-wrap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  transition: transform var(--duration-quick) var(--ease-out);
+}
+
+.compass__needle {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 36px;
+  /* Classic compass red — intentionally outside the cinematic palette
+   * (cool/hot accents are too orange-toned for the universal red-needle
+   * convention readers expect). */
+  background: #E11D2A;
+}
+
+.compass__needle::before {
+  /* A small head at the needle's tip so it reads as an arrow, not a line. */
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: #E11D2A;
+  border-radius: 50%;
+}
+
+.compass__readouts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.compass__readout {
+  font-family: var(--font-mono);
+  font-size: var(--font-label);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-primary);
+  font-variant-numeric: tabular-nums;
+}
+
 .inspect-fade-enter-active,
 .inspect-fade-leave-active {
   transition: opacity var(--duration-cinematic) var(--ease-out);
@@ -362,7 +523,9 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .inspect-ui__indicator {
-    top: var(--space-4);
+    /* On mobile, slide the controls hint below the back-link so it
+     * doesn't compete for the top edge with the compass. */
+    top: calc(var(--space-4) + 48px);
     flex-direction: column;
     gap: 0;
     width: calc(100% - var(--space-8));
@@ -383,6 +546,28 @@ onBeforeUnmount(() => {
     bottom: var(--space-6);
     width: calc(100% - var(--space-8));
     justify-content: center;
+  }
+
+  .compass {
+    top: var(--space-4);
+    right: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .compass__ring {
+    width: 56px;
+    height: 56px;
+  }
+
+  .compass__needle {
+    top: 4px;
+    height: 24px;
+  }
+
+  .compass__readout {
+    font-size: 9px;
+    letter-spacing: 0.15em;
   }
 }
 </style>
