@@ -15,6 +15,7 @@ export default defineNuxtConfig({
         'three/examples/jsm/objects/Sky.js',
         'three/examples/jsm/loaders/GLTFLoader.js',
         'three/examples/jsm/loaders/DRACOLoader.js',
+        'three/examples/jsm/controls/OrbitControls.js',
       ],
     },
   },

@@ -25,6 +25,7 @@ import ScrollTrigger from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 let masterTl: gsap.core.Timeline | null = null
+let flightTl: gsap.core.Timeline | null = null
 
 export interface FlightScrollInit {
   /**
@@ -44,10 +45,37 @@ export interface FlightScrollInit {
    * Three.js even though it drives a Three.js-rendered model.
    */
   aircraftMaterials?: () => Array<{ opacity: number }> | null
+  /**
+   * The GLB aircraft model. Used by the choreography ScrollTrigger to
+   * tween rotation.x (pitch) and position.y (height) across the post-pin
+   * phases — takeoff, climb, cruise, FL380, descent, landing. Typed
+   * structurally for the same reason as aircraftMaterials.
+   */
+  aircraftModel?: () => {
+    rotation: { x: number; y: number; z: number }
+    position: { x: number; y: number; z: number }
+  } | null
+  /**
+   * CSS selector for the first post-pin phase (.phase--takeoff). The
+   * choreography ScrollTrigger pins to its top.
+   */
+  flightStart?: string
+  /**
+   * CSS selector for the last phase (.phase--arrival). The choreography
+   * ScrollTrigger ends when its bottom passes the viewport top.
+   */
+  flightEnd?: string
 }
 
 export function useFlightScroll() {
-  function init({ trigger, end = '+=150%', aircraftMaterials }: FlightScrollInit) {
+  function init({
+    trigger,
+    end = '+=150%',
+    aircraftMaterials,
+    aircraftModel,
+    flightStart,
+    flightEnd,
+  }: FlightScrollInit) {
     if (masterTl || typeof window === 'undefined') return
 
     masterTl = gsap.timeline({
@@ -73,6 +101,14 @@ export function useFlightScroll() {
     masterTl.to(
       '.welcome__text',
       { scale: 0.5, opacity: 0, duration: 0.6, ease: 'none' },
+      0,
+    )
+
+    // ── Scroll hint — fades out the moment the user starts scrolling.
+    // It's a doorway, not a passenger; it shouldn't linger.
+    masterTl.to(
+      '.welcome__hint',
+      { opacity: 0, duration: 0.15, ease: 'none' },
       0,
     )
 
@@ -111,12 +147,64 @@ export function useFlightScroll() {
       },
       0.5,
     )
+
+    // ── Aircraft flight choreography ──────────────────────────────────
+    //
+    // Once the pre-flight pin releases and the user enters the
+    // post-pre-flight phases, the aircraft scrubs through a flight arc:
+    //
+    //   Takeoff (phase 01)  → pitch nose up ~9°
+    //   Climb (phase 02)    → ease back toward level
+    //   Cruise (phase 03)   → level (rotation.x = 0)
+    //   FL380 (phases 4-5)  → still level
+    //   Descent (phase 06)  → pitch nose down ~6°
+    //   Landing (phase 07)  → pitch nose down further + drop in frame
+    //
+    // The timeline is built lazily inside an `add()` so the model has
+    // a chance to load before we try to read its transforms. If it
+    // hasn't loaded yet, the no-op is safe — choreography just doesn't
+    // run on this navigation.
+    if (aircraftModel && flightStart && flightEnd) {
+      masterTl.add(() => {
+        const m = aircraftModel()
+        if (!m) return
+
+        flightTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: flightStart,
+            start: 'top top',
+            endTrigger: flightEnd,
+            end: 'bottom top',
+            scrub: 1,
+          },
+        })
+
+        // Pitch (rotation.x) — keyframes by progress fraction.
+        //   0.00 → 0.10  takeoff:  0       → -0.16 (nose up)
+        //   0.25 → 0.40  cruise:   -0.16   →  0    (level off)
+        //   0.40 → 0.70  hold:     0       →  0    (no tween needed)
+        //   0.70 → 0.85  descent:   0      →  0.10 (nose down)
+        //   0.85 → 0.95  landing:   0.10   →  0.18 (more nose down)
+        flightTl.to(m.rotation, { x: -0.16, duration: 0.10, ease: 'power2.out' }, 0)
+        flightTl.to(m.rotation, { x: 0, duration: 0.15, ease: 'sine.inOut' }, 0.25)
+        flightTl.to(m.rotation, { x: 0.10, duration: 0.15, ease: 'sine.inOut' }, 0.70)
+        flightTl.to(m.rotation, { x: 0.18, duration: 0.10, ease: 'sine.inOut' }, 0.85)
+
+        // Height (position.y) — the aircraft drops as it lands.
+        //   0.00 → 0.85  hold at 2 (cruise altitude)
+        //   0.85 → 0.95  drop to 0 (landing height)
+        flightTl.to(m.position, { y: 0, duration: 0.10, ease: 'sine.inOut' }, 0.85)
+      }, 0)
+    }
   }
 
   function destroy() {
     masterTl?.scrollTrigger?.kill()
     masterTl?.kill()
     masterTl = null
+    flightTl?.scrollTrigger?.kill()
+    flightTl?.kill()
+    flightTl = null
     ScrollTrigger.getAll().forEach((t) => t.kill())
   }
 

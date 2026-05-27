@@ -28,7 +28,11 @@ onBeforeUnmount(() => {
   position: fixed;
   inset: 0;
   z-index: var(--z-canvas);
-  pointer-events: none;
+  /* Receives drag events for OrbitControls so the user can rotate the
+   * camera around the aircraft. Higher-z DOM elements (HUD, hero copy,
+   * project tiles, links) sit above the canvas and capture their own
+   * clicks normally. */
+  pointer-events: auto;
   overflow: hidden;
 }
 

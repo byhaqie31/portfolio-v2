@@ -12,7 +12,8 @@ Before acting on any task in this repo, read the docs under [docs/](docs/). They
 |---|---|
 | [docs/STACK.md](docs/STACK.md) | The task touches dependencies, runtime, server/API, DB, Docker, env vars, or the local dev loop. |
 | [docs/STRUCTURE.md](docs/STRUCTURE.md) | The task touches folder layout, where a new file should live, or how routes / components / composables / API endpoints map to disk. |
-| [docs/UI-Standards.md](docs/UI-Standards.md) | The task touches anything visual — components, theme tokens, typography, spacing, motion, accessibility, or the admin/public UI. **Always read this before writing or editing UI code.** |
+| [docs/UI-STANDARDS.md](docs/UI-STANDARDS.md) | The task touches anything visual — components, theme tokens, typography, spacing, motion, accessibility, or the admin/public UI. **Always read this before writing or editing UI code.** |
+| [docs/CINEMATIC.md](docs/CINEMATIC.md) | The task touches anything under `/experience` — the cinematic flight surface (Three.js scene, scroll-driven iris reveal, aircraft choreography, HUD, phase sections). Inherits the Anatomy of Thrust visual vocabulary, not the Apple-faithful Restrained one in UI-STANDARDS. |
 
 If a docs file contradicts something you observe in the code, trust the code and update the docs in the same change. Standards drift silently kills the design system — don't let it.
 
@@ -41,6 +42,8 @@ If a docs file contradicts something you observe in the code, trust the code and
 ## Project context
 
 - Public site: `qie.dev` / `baihaqie.com`
-- Visual language: **Apple-faithful Restrained** — light-first, near-white background, near-black text, single SF Blue accent, system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Display", ...`), GSAP-orchestrated motion on the public site, instant feedback motion on admin. Public site, admin dashboard, and feedback flow now share the same design system. Documented in [docs/UI-Standards.md](docs/UI-Standards.md).
-- Three surfaces: public landing (`pages/index.vue`), admin dashboard (`pages/admin/*`), and tokenized feedback collection (`pages/feedback/[token].vue`).
+- Two distinct visual languages, deliberately:
+  - **Apple-faithful Restrained** — light-first, near-white background, near-black text, single SF Blue accent, system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Display", ...`), GSAP-orchestrated motion on the public site, instant feedback motion on admin. Governs `/`, admin dashboard, and feedback flow. Documented in [docs/UI-STANDARDS.md](docs/UI-STANDARDS.md).
+  - **Cinematic (Anatomy of Thrust vocabulary)** — dark `#0A0B0F` canvas, Playfair Display headlines, JetBrains Mono labels, Geist body, cool→hot accent arc, Three.js sky + GLB aircraft, scroll-driven iris reveal. Governs `/experience` only. Documented in [docs/CINEMATIC.md](docs/CINEMATIC.md). The two surfaces share **no** visual vocabulary — that contrast is intentional.
+- Four surfaces: public landing (`pages/index.vue`), cinematic flight (`pages/experience/index.vue`), admin dashboard (`pages/admin/*`), and tokenized feedback collection (`pages/feedback/[token].vue`).
 - DB lives in the shared `axelnova-infra` stack on the `axelnova-shared` Docker network — not in this repo's compose file.

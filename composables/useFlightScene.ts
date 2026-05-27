@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Sky } from 'three/examples/jsm/objects/Sky.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 /*
  * Three.js scene lifecycle for the cinematic surface. Boots a renderer +
@@ -20,22 +21,117 @@ let renderer: THREE.WebGLRenderer | null = null
 let scene: THREE.Scene | null = null
 let camera: THREE.PerspectiveCamera | null = null
 let sky: Sky | null = null
+let clouds: THREE.Group | null = null
+let cloudTexture: THREE.CanvasTexture | null = null
+let controls: OrbitControls | null = null
 let host: HTMLElement | null = null
 let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
 let visibilityHandler: (() => void) | null = null
 
+// Spread of the cloud field around the camera/aircraft.
+const CLOUD_FIELD_X = 130
+
+/* ── Clouds ────────────────────────────────────────────────────────
+ *
+ * Billboard sprite cloud field. Pattern adapted from
+ * jet-engine-infographic/src/sky.js. Each cloud is a Sprite with a
+ * shared canvas-painted texture; they drift along -X per frame and
+ * recycle to the +X edge when they pass the camera.
+ *
+ * Subtle by design — base opacity caps at 0.5 against the deep sky so
+ * the clouds add depth and motion without bleaching the palette.
+ */
+
+function makeCloudTexture(): THREE.CanvasTexture {
+  const size = 256
+  const cv = document.createElement('canvas')
+  cv.width = cv.height = size
+  const ctx = cv.getContext('2d')!
+  ctx.clearRect(0, 0, size, size)
+
+  // Stack several soft radial blobs into a single puff.
+  for (let i = 0; i < 7; i++) {
+    const r = size * (0.16 + Math.random() * 0.16)
+    const x = size * (0.28 + Math.random() * 0.44)
+    const y = size * (0.40 + Math.random() * 0.24)
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+    g.addColorStop(0, 'rgba(255,255,255,0.95)')
+    g.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  const tex = new THREE.CanvasTexture(cv)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
+function placeCloud(sprite: THREE.Sprite, scatter: boolean) {
+  sprite.position.set(
+    scatter
+      ? (Math.random() * 2 - 1) * CLOUD_FIELD_X
+      : CLOUD_FIELD_X + Math.random() * 30,
+    -8 + Math.random() * 30, // y: -8 to +22 (above and below the cruising plane at y=2)
+    -80 + Math.random() * 60, // z: -80 to -20 (in front of camera)
+  )
+  const w = 14 + Math.random() * 26
+  sprite.scale.set(w, w * 0.62, 1)
+  sprite.userData.speed = 0.08 + Math.random() * 0.16
+  // Cap base opacity at 0.5 so clouds stay subtle against the dim sky.
+  sprite.userData.baseOpacity = 0.25 + Math.random() * 0.25
+}
+
+function buildClouds(count = 16): THREE.Group {
+  if (!cloudTexture) cloudTexture = makeCloudTexture()
+  const group = new THREE.Group()
+  group.name = 'clouds'
+
+  for (let i = 0; i < count; i++) {
+    const mat = new THREE.SpriteMaterial({
+      map: cloudTexture,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    })
+    const sprite = new THREE.Sprite(mat)
+    placeCloud(sprite, true)
+    group.add(sprite)
+  }
+
+  return group
+}
+
+function tickClouds() {
+  if (!clouds) return
+  for (const s of clouds.children as THREE.Sprite[]) {
+    s.position.x -= s.userData.speed
+    const mat = s.material as THREE.SpriteMaterial
+    if (mat.opacity < s.userData.baseOpacity) {
+      mat.opacity = Math.min(s.userData.baseOpacity, mat.opacity + 0.006)
+    }
+    if (s.position.x < -CLOUD_FIELD_X) {
+      placeCloud(s, false)
+      mat.opacity = 0 // fade the recycled cloud back in
+    }
+  }
+}
+
 function buildSky(): Sky {
   const s = new Sky()
   s.scale.setScalar(450000)
+  // Sky uniforms are typed optional in @types/three but are guaranteed
+  // present immediately after `new Sky()` — non-null assert.
   const u = s.material.uniforms
   // Cinematic-twilight palette: high turbidity for heavy atmosphere, low
   // rayleigh keeps the blue saturated under ACES (per sky.js — pushing
   // rayleigh up washes it toward white instead of brightening it).
-  u.turbidity.value = 8
-  u.rayleigh.value = 1.2
-  u.mieCoefficient.value = 0.005
-  u.mieDirectionalG.value = 0.8
+  u.turbidity!.value = 8
+  u.rayleigh!.value = 1.2
+  u.mieCoefficient!.value = 0.005
+  u.mieDirectionalG!.value = 0.8
 
   // Sun low and behind the camera — 12° above the horizon at 200° azimuth
   // (below-and-behind the viewer). The viewer faces away from the sun, so
@@ -45,13 +141,15 @@ function buildSky(): Sky {
   const phi = THREE.MathUtils.degToRad(90 - 12)
   const theta = THREE.MathUtils.degToRad(200)
   sun.setFromSphericalCoords(1, phi, theta)
-  u.sunPosition.value.copy(sun)
+  u.sunPosition!.value.copy(sun)
   return s
 }
 
 function animate() {
   if (!renderer || !scene || !camera) return
   rafId = requestAnimationFrame(animate)
+  tickClouds()
+  controls?.update()
   renderer.render(scene, camera)
 }
 
@@ -95,6 +193,9 @@ export function useFlightScene() {
     sky = buildSky()
     scene.add(sky)
 
+    clouds = buildClouds(16)
+    scene.add(clouds)
+
     // Lighting for the GLB aircraft. Cool ambient matches the twilight sky
     // colour; warm directional key gives the fuselage a single soft highlight
     // edge so it reads as 3D form, not a silhouette. Values mirror AoT's
@@ -108,11 +209,27 @@ export function useFlightScene() {
     renderer.setSize(width, height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    // 0.25 reads as cinematic-twilight — deep saturated blue with enough
+    // 0.18 reads as cinematic-twilight — deep saturated blue with enough
     // darkness for warm-white headlines to land cleanly on top. Higher
-    // values (>0.4) wash the sky toward white and bleach the foreground.
-    renderer.toneMappingExposure = 0.25
+    // values (>0.3) wash the sky toward white and bleach the foreground.
+    renderer.toneMappingExposure = 0.18
     hostEl.appendChild(renderer.domElement)
+
+    // OrbitControls — drag-to-orbit around the aircraft. enabled starts
+    // false so the user can't accidentally rotate the camera during the
+    // intro/welcome (when the overlay covers the scene). pages/experience
+    // calls setControlsEnabled(true) after welcomeDone.
+    //
+    // Zoom disabled to keep mouse-wheel free for page scroll; pan
+    // disabled because there's nothing meaningful to pan to.
+    controls = new OrbitControls(camera, renderer.domElement)
+    controls.target.set(0, 2, -45) // aim at the cruising aircraft
+    controls.enableDamping = true
+    controls.dampingFactor = 0.08
+    controls.rotateSpeed = 0.4
+    controls.enablePan = false
+    controls.enableZoom = false
+    controls.enabled = false
 
     resizeObserver = new ResizeObserver(onResize)
     resizeObserver.observe(hostEl)
@@ -143,6 +260,24 @@ export function useFlightScene() {
       sky = null
     }
 
+    if (clouds) {
+      clouds.traverse((c) => {
+        if ((c as THREE.Sprite).isSprite) {
+          const sprite = c as THREE.Sprite
+          ;(sprite.material as THREE.SpriteMaterial).dispose()
+        }
+      })
+      clouds = null
+    }
+
+    if (cloudTexture) {
+      cloudTexture.dispose()
+      cloudTexture = null
+    }
+
+    controls?.dispose()
+    controls = null
+
     if (renderer) {
       if (host && renderer.domElement.parentNode === host) {
         host.removeChild(renderer.domElement)
@@ -164,5 +299,14 @@ export function useFlightScene() {
     return camera
   }
 
-  return { init, destroy, getScene, getCamera }
+  /**
+   * Toggle whether the user can drag-to-orbit the camera. Disabled
+   * during intro/welcome so accidental drags on the (overlay-covered)
+   * scene don't silently rotate the camera into a weird angle.
+   */
+  function setControlsEnabled(enabled: boolean) {
+    if (controls) controls.enabled = enabled
+  }
+
+  return { init, destroy, getScene, getCamera, setControlsEnabled }
 }

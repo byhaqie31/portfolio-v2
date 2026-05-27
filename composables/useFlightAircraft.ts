@@ -1,31 +1,30 @@
 import * as THREE from 'three'
-import { gsap } from 'gsap'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 /*
  * 3D aircraft lifecycle. Loads the A350 GLB into an existing Three.js
- * scene, normalizes its orientation/scale, runs a cinematic horizontal
- * flyby with GSAP, and tears down cleanly.
+ * scene, normalizes its orientation/scale, places it at the initial
+ * cruise pose, and tears down cleanly. Pose (pitch, height) across
+ * scroll is owned by useFlightScroll — this composable is just the
+ * load + place + dispose lifecycle.
  *
  * Pattern adapted from jet-engine-infographic/src/model-loader.js.
  * Differences from AoT:
  *   - No procedural fallback (we have the PNG silhouette as Plan B if
  *     the GLB itself can't load).
  *   - No AXEL NOVA livery shader patch (default materials for now).
- *   - Aircraft is rotated for a side-profile flyby, not a runway pose.
  *
  * DRACO decoder loads from Google's CDN (matches AoT) — saves ~1MB
  * of decoder files in /public.
  */
 
 const DRACO_DECODER = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/'
-const TARGET_FUSELAGE_LENGTH = 18 // scene units; sized to feel cinematic at z=-45
+const TARGET_FUSELAGE_LENGTH = 30 // scene units; sized to feel cinematic at z=-45
 
 let loader: GLTFLoader | null = null
 let model: THREE.Group | null = null
 let scene: THREE.Scene | null = null
-let motionTl: gsap.core.Timeline | null = null
 
 function getLoader(): GLTFLoader {
   if (loader) return loader
@@ -106,41 +105,29 @@ export function useFlightAircraft() {
   }
 
   /**
-   * Aircraft already at altitude — appears parked at the centre of the
-   * frame, in side profile, with a slow perpetual bob + wing rock so it
-   * reads as "cruising" rather than "stuck on screen".
-   *
-   * The intro showed the plane taking off (silhouette rising through the
-   * viewport). This is the next shot in the film: we're now alongside it
-   * at altitude, watching it cruise.
+   * Place the aircraft at its initial cruise pose. From here, the
+   * useFlightScroll choreography ScrollTrigger owns rotation.x (pitch)
+   * and position.y (height) and scrubs them across the post-pin scroll
+   * distance — pitch up for takeoff, level for cruise, pitch down +
+   * drop for descent and landing.
    *
    * Coordinates: camera at origin looking at (0, 0, -1) with FOV 55°.
-   * Aircraft sits at z=-45 (cinematic distance), y=2 (just above eye level
-   * so the lower-third masthead has room beneath), nose pointing +X (the
-   * viewer sees the aircraft in profile, like a window-seat view of a plane
-   * flying parallel).
+   * Aircraft sits at z=-45 (cinematic distance), y=2 (just above eye
+   * level so the lower-third masthead has room beneath), nose pointing
+   * +X (the viewer sees the aircraft in profile).
    */
   function startCruise() {
     if (!model) return
-
-    motionTl?.kill()
-
     model.rotation.set(0, Math.PI / 2, 0)
     model.position.set(0, 2, -45)
+  }
 
-    // No entrance fade — the iris reveal in useFlightScroll handles
-    // making the aircraft visible. Materials stay at full opacity here
-    // (scroll will tween them 0 → 1 if it's wired to do so).
-
-    // Perpetual cruise motion — gentle vertical drift + wing rock,
-    // different periods so the loop doesn't feel mechanical.
-    motionTl = gsap.timeline({
-      repeat: -1,
-      yoyo: true,
-      defaults: { ease: 'sine.inOut' },
-    })
-    motionTl.to(model.position, { y: 2.4, duration: 3.5 }, 0)
-    motionTl.to(model.rotation, { z: 0.035, duration: 4.8 }, 0)
+  /**
+   * Returns the loaded model (THREE.Group) so external composables can
+   * tween its rotation/position. Returns null until the GLB has loaded.
+   */
+  function getModel(): THREE.Group | null {
+    return model
   }
 
   /**
@@ -162,9 +149,6 @@ export function useFlightAircraft() {
   }
 
   function destroy() {
-    motionTl?.kill()
-    motionTl = null
-
     if (model && scene) {
       scene.remove(model)
     }
@@ -182,5 +166,5 @@ export function useFlightAircraft() {
     scene = null
   }
 
-  return { load, startCruise, getMaterials, destroy }
+  return { load, startCruise, getModel, getMaterials, destroy }
 }
