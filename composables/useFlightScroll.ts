@@ -166,6 +166,11 @@ export function useFlightScroll() {
     // run on this navigation.
     if (aircraftModel && flightStart && flightEnd) {
       masterTl.add(() => {
+        // Scrub re-fires this callback when scroll crosses time 0 in
+        // either direction; without this guard, scrolling back to the
+        // hero and forward again would build duplicate timelines.
+        if (flightTl) return
+
         const m = aircraftModel()
         if (!m) return
 

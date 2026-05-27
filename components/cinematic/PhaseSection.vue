@@ -1,34 +1,37 @@
 <script setup lang="ts">
 /*
- * Generic phase section for /experience. Uses the lower-third
- * composition: small mono dataline pinned to the upper-left of the
- * section, masthead anchored to the bottom-left (Playfair headline +
- * subline + hairline rule + mono meta + body), sky/aircraft fill the
- * middle. One 100vh section per phase; the scroll choreography in
- * useFlightScroll handles aircraft pose across the whole flight.
+ * Phase card for /experience. One discrete card per section, structured
+ * top-down as a flight strip:
  *
- * Body content is slotted so phases with custom layouts (e.g. FL380
- * with project tiles) can override the default body styling.
+ *   TELEMETRY ROW (aviation status — mono, leads the card)
+ *   ──────────────────────────────────────────────────────
+ *   Headline.                          (Playfair, bio chapter title)
+ *   Subline phrase.                    (Geist, optional)
+ *   META DATA · LOCATION               (mono, optional)
+ *
+ *   Body paragraph(s)…                 (Geist, slotted)
+ *
+ * The `phaseLabel` prop is the telemetry string — e.g.
+ * "CRUISE · FL380 · M.85 · 478 KT GS". Real-ish A350-1000 ops data.
  */
 
 defineProps<{
   phaseLabel: string
   headline: string
-  subline: string
+  subline?: string
   meta?: string
 }>()
 </script>
 
 <template>
   <section class="phase phase--standard">
-    <p class="phase__label">{{ phaseLabel }}</p>
-
     <div class="phase__masthead">
-      <h2 class="phase__display">{{ headline }}</h2>
-      <p class="phase__subline">{{ subline }}</p>
+      <p class="phase__telemetry">{{ phaseLabel }}</p>
 
       <hr class="phase__rule" />
 
+      <h2 class="phase__display">{{ headline }}</h2>
+      <p v-if="subline" class="phase__subline">{{ subline }}</p>
       <p v-if="meta" class="phase__meta">{{ meta }}</p>
 
       <div class="phase__body">
@@ -50,17 +53,35 @@ defineProps<{
   align-items: flex-start;
 }
 
+/* Phase mastheads are flight-strip cards: warm-white panel, mono
+ * telemetry row leading, full-width hairline rule, then bio chapter
+ * content beneath. Documented as the masthead panel exception in
+ * CINEMATIC.md §2.1. */
 .phase__masthead {
   max-width: 720px;
+  background: var(--color-ink-primary);
+  padding: var(--space-7) var(--space-8) var(--space-8);
+  border-radius: var(--radius-card);
 }
 
-.phase__label {
+.phase__telemetry {
   font-family: var(--font-mono);
   font-size: var(--font-label);
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: rgba(20, 17, 13, 0.6);
+  margin: 0 0 var(--space-4);
+}
+
+.phase__rule {
+  /* Full-width hairline that separates the telemetry header from the
+   * bio body. Editorial print register — data above the line, story
+   * below. (Was a 56px accent before the card restructure.) */
+  width: 100%;
+  height: 1px;
+  background: rgba(20, 17, 13, 0.18);
+  border: 0;
   margin: 0 0 var(--space-6);
 }
 
@@ -70,37 +91,30 @@ defineProps<{
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: var(--color-ink-primary);
-  margin: 0 0 var(--space-4);
+  /* Deep warm near-black — same value as the hero title exception in §2.1. */
+  color: #14110D;
+  margin: 0 0 var(--space-3);
 }
 
 .phase__subline {
   font-family: var(--font-body);
   font-size: var(--font-body-large);
-  color: var(--color-ink-secondary);
-  margin: 0 0 var(--space-8);
-}
-
-.phase__rule {
-  width: 56px;
-  height: 1px;
-  background: var(--color-divider);
-  border: 0;
-  margin: 0 0 var(--space-6);
+  color: rgba(20, 17, 13, 0.78);
+  margin: 0 0 var(--space-5);
 }
 
 .phase__meta {
   font-family: var(--font-mono);
   font-size: var(--font-ui);
   letter-spacing: 0.1em;
-  color: var(--color-ink-muted);
-  margin: 0 0 var(--space-4);
+  color: rgba(20, 17, 13, 0.55);
+  margin: 0 0 var(--space-5);
 }
 
 .phase__body {
   font-family: var(--font-body);
   font-size: var(--font-body);
-  color: var(--color-ink-secondary);
+  color: rgba(20, 17, 13, 0.78);
   line-height: 1.6;
 }
 

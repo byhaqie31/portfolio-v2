@@ -230,6 +230,14 @@ export function useFlightScene() {
     controls.enablePan = false
     controls.enableZoom = false
     controls.enabled = false
+    // Slow continuous orbit around the aircraft once controls go live,
+    // matching the jet-engine-infographic Scene 0 pattern. Disabled
+    // immediately on first user drag so the page never fights the user.
+    controls.autoRotate = true
+    controls.autoRotateSpeed = 0.6
+    controls.addEventListener('start', () => {
+      if (controls) controls.autoRotate = false
+    })
 
     resizeObserver = new ResizeObserver(onResize)
     resizeObserver.observe(hostEl)
@@ -302,7 +310,8 @@ export function useFlightScene() {
   /**
    * Toggle whether the user can drag-to-orbit the camera. Disabled
    * during intro/welcome so accidental drags on the (overlay-covered)
-   * scene don't silently rotate the camera into a weird angle.
+   * scene don't silently rotate the camera into a weird angle. The
+   * autoRotate set in init() only takes effect once enabled flips true.
    */
   function setControlsEnabled(enabled: boolean) {
     if (controls) controls.enabled = enabled

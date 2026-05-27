@@ -85,10 +85,10 @@ onBeforeUnmount(() => {
     </p>
 
     <div ref="hint" class="welcome__hint">
-      <span class="welcome__hint-label">SCROLL</span>
+      <span class="welcome__hint-label">SCROLL TO EXPLORE MORE</span>
       <Icon
         name="fluent:chevron-down-16-filled"
-        size="16"
+        size="24"
         class="welcome__hint-chevron"
       />
     </div>
@@ -135,16 +135,16 @@ onBeforeUnmount(() => {
 
 .welcome__hint-label {
   font-family: var(--font-mono);
-  font-size: var(--font-label);
+  font-size: var(--font-ui);
   font-weight: 500;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--color-ink-secondary);
 }
 
 .welcome__hint-chevron {
   display: block;
-  color: var(--color-ink-muted);
+  color: var(--color-ink-secondary);
   animation: scroll-bounce 1.8s ease-in-out infinite;
 }
 

@@ -50,7 +50,9 @@ All tokens live in [../assets/css/cinematic.css](../assets/css/cinematic.css), s
 
 **80/15/5 colour rule.** ~80% bg + warm-white ink, ~15% one accent (cool early, hot late), ~5% the opposing accent for contrast. **Never put cool and hot at full saturation side-by-side.** One leads, the other supports as rim/hairline.
 
-**Hero title exception.** The Phase 00 hero display headline (`.phase--hero .phase__display`) uses a deep warm near-black (`#14110D`) instead of `--color-ink-primary` — reads as an editorial magazine masthead against the cinematic-twilight sky. Subsequent phases use the standard warm-white headline.
+**Hero title exception.** The Phase 00 hero display headline (`.phase--hero .phase__display`) uses a deep warm near-black (`#14110D`) instead of `--color-ink-primary` — reads as an editorial magazine masthead against the cinematic-twilight sky.
+
+**Phase masthead panel exception.** Phases 01–08 invert the cinematic register *inside* the masthead block — `<CinematicPhaseSection>`'s `.phase__masthead` is a warm-white panel (`var(--color-ink-primary)` background) with deep warm near-black (`#14110D`) ink for headline, subline, meta, and body. The dataline above the panel (`.phase__label`) and everything outside the panel (HUD, the dark sky itself, the phase-label mono dataline) stay in their original warm-white-on-dark register. The mixed register is intentional: cinematic register for the world the viewer is *in*, editorial print register for the words they are *reading*. FL380 project tiles invert their own surface to match the warm-white panel context (light surface, warm near-black ink).
 
 ### 2.2 Typography
 
@@ -116,7 +118,7 @@ User scrolls. ScrollTrigger pins `.phase--hero` for `+=150%` of scroll distance.
 | Aircraft materials `opacity: 0 → 1` | 0.0 → 0.4 | The 3D A350 becomes visible during the iris reveal. |
 | `.hero-reveal { opacity: 0 → 1, y: 24 → 0 }` (staggered 0.05) | 0.5 → 1.0 | Hero copy (dataline + lower-third masthead) assembles after the sky is visible. |
 
-After the pin releases, the user scrolls naturally through phases 01–07. A **second** ScrollTrigger spans from `.phase--takeoff` to `.phase--arrival` and scrubs the aircraft's pose:
+After the pin releases, the user scrolls naturally through phases 01–08. A **second** ScrollTrigger spans from `.phase--takeoff` (Phase 02) to `.phase--arrival` (Phase 08) and scrubs the aircraft's pose:
 
 | Scroll fraction | Aircraft pose |
 |---|---|
@@ -126,26 +128,31 @@ After the pin releases, the user scrolls naturally through phases 01–07. A **s
 | 0.70 → 0.85 | `rotation.x: 0 → 0.10` (nose down — descent) |
 | 0.85 → 0.95 | `rotation.x: 0.10 → 0.18` + `position.y: 2 → 0` (landing pose + drop in frame) |
 
-The user can also **drag the sky** to orbit the camera 360° around the plane (`OrbitControls` from `three/examples/jsm/controls/`). Damped, pan disabled, zoom disabled (mouse-wheel stays free for page scroll), disabled until welcome clears.
+The camera itself is not scroll-driven. Instead, `OrbitControls` runs a continuous **autoRotate** orbit around the aircraft target — `autoRotateSpeed = 0.6`, matching the jet-engine-infographic Scene 0 / finale pattern. AutoRotate stays armed throughout the experience but only animates while `controls.enabled` is true (after welcome clears). The OrbitControls `start` event listener flips `autoRotate = false` immediately on the first user drag, so the page never fights the user; from that point on, the camera is fully theirs to position.
+
+Damped, pan disabled, zoom disabled (mouse-wheel stays free for page scroll), disabled until welcome clears.
 
 ---
 
 ## 4. Phase manifest
 
-Eight phases. The canonical list lives in [composables/usePhaseState.ts](../composables/usePhaseState.ts)'s `PHASES` constant — the HUD reads from it and the section selectors below match what the ScrollTriggers expect.
+Nine phases. The canonical list lives in [composables/usePhaseState.ts](../composables/usePhaseState.ts)'s `PHASES` constant — the HUD reads from it and the section selectors below match what the ScrollTriggers expect.
 
-| # | Phase | Selector | HUD label | HUD altitude | HUD stage | Source |
-|---|---|---|---|---|---|---|
-| 00 | Pre-flight | `.phase--hero` | PRE-FLIGHT | BOARDING | FLIGHT AB | inline in `pages/experience/index.vue` |
-| 01 | Takeoff | `.phase--takeoff` | TAKEOFF | 5,000 FT | EDUCATION | `data.education` (UM + UPM) |
-| 02 | Climb | `.phase--climb` | CLIMB | 18,000 FT | EARLY WORK | `data.experiences[id=faztech]` |
-| 03 | Cruise | `.phase--cruise` | CRUISE | 32,000 FT | CURRENT WORK | `data.experiences[id=razer]` |
-| 04 | FL380 | `.phase--fl380-selected` | FL380 | 38,000 FT | SELECTED WORK | `data.projects.filter(p => p.featured)` |
-| 05 | FL380 | `.phase--fl380-other` | FL380 | 38,000 FT | OTHER ALTITUDES | `data.projects.filter(p => !p.featured)` |
-| 06 | Descent | `.phase--descent` | DESCENT | 12,000 FT | BUILDING | inline (Axel Nova Ventures) |
-| 07 | Arrival | `.phase--arrival` | ARRIVAL | GROUND | CONTACT | `data.personal` |
+Each non-hero phase renders as a **flight-strip card** through `<CinematicPhaseSection>`: warm-white panel, mono **telemetry row leading** with real-ish A350-1000 ops data, full-width hairline, then Playfair headline + optional subline + optional meta + slotted body. The `phaseLabel` prop is the telemetry string — `phase-label="CRUISE · FL380 · M.85 · 478 KT GS"` — replacing the old `PHASE NN · LABEL` dataline format. Phase 00 (hero) is inline because of its pin behaviour and the `.hero-reveal` class names the master scroll choreography targets.
 
-Each phase 01–07 renders through `<CinematicPhaseSection>` with `phase-label`, `headline`, `subline`, and optional `meta` props plus a default slot for body content. Phase 00 (hero) is inline because of its pin behaviour and the `.hero-reveal` class names the master scroll choreography targets.
+| # | Phase | Selector | HUD label | HUD alt | HUD stage | Telemetry on card | Source |
+|---|---|---|---|---|---|---|---|
+| 00 | Pre-flight | `.phase--hero` | PRE-FLIGHT | GATE | FLIGHT AB | `PRE-FLIGHT · GATE A12 · FLIGHT AB` | inline in `pages/experience/index.vue` |
+| 01 | Taxi | `.phase--ascent` | TAXI | RWY 36L | ABOUT | `TAXI · RWY 36L · GROUND SPEED 14 KT` | `personal.bio[0]` via `usePersonal` |
+| 02 | Takeoff | `.phase--takeoff` | TAKEOFF | V_R | EDUCATION | `TAKEOFF · V_R 165 KT · 1,800 FPM CLIMB` | `data.education` (UM undergrad only) |
+| 03 | Climb | `.phase--climb` | CLIMB | FL180 | EARLY WORK | `CLIMB · 18,000 FT · 280 KT · 1,500 FPM` | `data.experiences[id=faztech]` |
+| 04 | Cruise | `.phase--cruise` | CRUISE | FL320 | CURRENT WORK | `CRUISE · FL320 · M.82 · 462 KT GS` | `data.experiences[id=razer]` |
+| 05 | Step climb | `.phase--fl380-selected` | CRUISE | FL380 | SELECTED WORK | `STEP CLIMB · FL380 · M.85` | `data.projects.filter(p => p.featured)` |
+| 06 | Cruise | `.phase--fl380-other` | CRUISE | FL380 | OTHER ALTITUDES | `CRUISE · FL380 · M.85 · 478 KT GS` | `data.projects.filter(p => !p.featured)` |
+| 07 | Top of descent | `.phase--descent` | DESCENT | TOD | BUILDING | `TOP OF DESCENT · FL120 · -2,000 FPM` | inline (Axel Nova Ventures) |
+| 08 | Touchdown | `.phase--arrival` | TOUCHDOWN | V_REF | CONTACT | `TOUCHDOWN · V_REF 138 KT · TAXI-IN` | `data.personal` |
+
+The aviation status leads each card; the bio chapter sits beneath the hairline as the editorial content. Real A350-1000 ops numbers throughout — anyone who flies will recognise the telemetry as legitimate (V_R is the rotation speed, M.85 is the typical Mach number at cruise, V_REF is the touchdown reference speed). HUD's `alt` column carries the most evocative datum per phase, not always literal altitude (e.g. `RWY 36L` for taxi, `V_R` for takeoff).
 
 ---
 
@@ -253,12 +260,16 @@ Per AoT §12 (verbatim):
 | Sky brightness | `useFlightScene.ts` `toneMappingExposure` | `0.18` |
 | Sky atmosphere | `useFlightScene.ts` `buildSky()` (turbidity, rayleigh, sun phi/theta) | turbidity 8, rayleigh 1.2, sun 12° low / 200° behind |
 | Cloud density | `useFlightScene.ts` `buildClouds(16)` count + `baseOpacity` range | 16 clouds, `0.25 + 0.25` random opacity |
+| Airport ground colour | `useFlightScene.ts` `buildAirport()` ground material | `0x1A1F1A` (dark night-green) at `y = -15` |
+| Runway colour + size | `useFlightScene.ts` `buildAirport()` runway material + `PlaneGeometry` | `0x282C32` (dark asphalt), `1500 × 60` along `+X` |
 | Aircraft size | `useFlightAircraft.ts` `TARGET_FUSELAGE_LENGTH` | `30` scene units |
 | Aircraft initial pose | `useFlightAircraft.ts` `startCruise()` rotation/position | rotation.y=π/2, position (0, 2, -45) |
 | Intro plane duration | `Intro.vue` GSAP `duration: 3` | 3s linear |
 | Welcome timings | `Welcome.vue` timeline (fade-in `0.8`, hold `1.5`) | — |
 | Iris reveal pin distance | `pages/experience/index.vue` `flightScroll.init({ end: '+=150%' })` | 150% of viewport |
 | Aircraft choreography keyframes | `useFlightScroll.ts` inner `flightTl` | see §3 table |
+| Camera autoRotate speed | `useFlightScene.ts` `controls.autoRotateSpeed` | `0.6` (matches jet-engine-infographic) |
+| Masthead panel background | `components/cinematic/PhaseSection.vue` `.phase__masthead` `background` | `var(--color-ink-primary)` — solid warm-white panel |
 | HUD position | `HUD.vue` `.hud { top, right }` | `var(--space-8)` from top + right |
 
 ---

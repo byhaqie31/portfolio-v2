@@ -31,14 +31,15 @@ export interface Phase {
 }
 
 export const PHASES: Phase[] = [
-  { index: 0, pad: '00', label: 'PRE-FLIGHT', alt: 'BOARDING',     stage: 'FLIGHT AB',      selector: '.phase--hero' },
-  { index: 1, pad: '01', label: 'TAKEOFF',    alt: '5,000 FT',     stage: 'EDUCATION',      selector: '.phase--takeoff' },
-  { index: 2, pad: '02', label: 'CLIMB',      alt: '18,000 FT',    stage: 'EARLY WORK',     selector: '.phase--climb' },
-  { index: 3, pad: '03', label: 'CRUISE',     alt: '32,000 FT',    stage: 'CURRENT WORK',   selector: '.phase--cruise' },
-  { index: 4, pad: '04', label: 'FL380',      alt: '38,000 FT',    stage: 'SELECTED WORK',  selector: '.phase--fl380-selected' },
-  { index: 5, pad: '05', label: 'FL380',      alt: '38,000 FT',    stage: 'OTHER ALTITUDES', selector: '.phase--fl380-other' },
-  { index: 6, pad: '06', label: 'DESCENT',    alt: '12,000 FT',    stage: 'BUILDING',       selector: '.phase--descent' },
-  { index: 7, pad: '07', label: 'ARRIVAL',    alt: 'GROUND',       stage: 'CONTACT',        selector: '.phase--arrival' },
+  { index: 0, pad: '00', label: 'PRE-FLIGHT', alt: 'GATE',     stage: 'FLIGHT AB',       selector: '.phase--hero' },
+  { index: 1, pad: '01', label: 'TAXI',       alt: 'RWY 36L',  stage: 'ABOUT',           selector: '.phase--ascent' },
+  { index: 2, pad: '02', label: 'TAKEOFF',    alt: 'V_R',      stage: 'EDUCATION',       selector: '.phase--takeoff' },
+  { index: 3, pad: '03', label: 'CLIMB',      alt: 'FL180',    stage: 'EARLY WORK',      selector: '.phase--climb' },
+  { index: 4, pad: '04', label: 'CRUISE',     alt: 'FL320',    stage: 'CURRENT WORK',    selector: '.phase--cruise' },
+  { index: 5, pad: '05', label: 'CRUISE',     alt: 'FL380',    stage: 'SELECTED WORK',   selector: '.phase--fl380-selected' },
+  { index: 6, pad: '06', label: 'CRUISE',     alt: 'FL380',    stage: 'OTHER ALTITUDES', selector: '.phase--fl380-other' },
+  { index: 7, pad: '07', label: 'DESCENT',    alt: 'TOD',      stage: 'BUILDING',        selector: '.phase--descent' },
+  { index: 8, pad: '08', label: 'TOUCHDOWN',  alt: 'V_REF',    stage: 'CONTACT',         selector: '.phase--arrival' },
 ]
 
 const active = ref(0)
