@@ -317,5 +317,18 @@ export function useFlightScene() {
     if (controls) controls.enabled = enabled
   }
 
-  return { init, destroy, getScene, getCamera, setControlsEnabled }
+  /**
+   * Enter / exit aircraft inspect mode. In inspect mode autoRotate is
+   * paused (the user owns the rotation) and zoom is enabled (mouse
+   * wheel scales the camera distance instead of scrolling the page —
+   * the page should pause Lenis separately so the wheel reaches us).
+   * Leaving inspect mode restores the autoRotate-on / zoom-off pair.
+   */
+  function setInspectMode(on: boolean) {
+    if (!controls) return
+    controls.autoRotate = !on
+    controls.enableZoom = on
+  }
+
+  return { init, destroy, getScene, getCamera, setControlsEnabled, setInspectMode }
 }

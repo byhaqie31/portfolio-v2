@@ -65,6 +65,16 @@ export interface FlightScrollInit {
    * ScrollTrigger ends when its bottom passes the viewport top.
    */
   flightEnd?: string
+  /**
+   * Optional callback fired on every scrub update of the masterTl with
+   * the current progress (0 → 1). Pages can use this to flip their own
+   * state when the iris reveal completes (e.g. revealing post-reveal
+   * CTAs), since the masterTl's scrollTrigger is the authoritative
+   * source of pin progress — sibling ScrollTriggers on a pinned
+   * element calculate progress against a stationary element and stay
+   * at 0.
+   */
+  onScrollProgress?: (progress: number) => void
 }
 
 export function useFlightScroll() {
@@ -75,6 +85,7 @@ export function useFlightScroll() {
     aircraftModel,
     flightStart,
     flightEnd,
+    onScrollProgress,
   }: FlightScrollInit) {
     if (masterTl || typeof window === 'undefined') return
 
@@ -87,6 +98,7 @@ export function useFlightScroll() {
         scrub: 1,
         // anticipatePin reduces a one-frame jump when the pin engages.
         anticipatePin: 1,
+        onUpdate: onScrollProgress ? (self) => onScrollProgress(self.progress) : undefined,
       },
     })
 
@@ -104,12 +116,14 @@ export function useFlightScroll() {
       0,
     )
 
-    // ── Scroll hint — fades out the moment the user starts scrolling.
-    // It's a doorway, not a passenger; it shouldn't linger.
+    // ── Scroll hint — stays visible across almost the entire reveal so
+    // the user knows to keep scrolling, then fades out just as the
+    // post-reveal CTAs take over (the page flips revealComplete at
+    // progress 0.98 — see pages/experience/index.vue).
     masterTl.to(
       '.welcome__hint',
-      { opacity: 0, duration: 0.15, ease: 'none' },
-      0,
+      { opacity: 0, duration: 0.08, ease: 'none' },
+      0.9,
     )
 
     // ── Aircraft materials — fade in across the middle of the scroll.
