@@ -30,6 +30,21 @@ let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
 let visibilityHandler: (() => void) | null = null
 
+/* Two independent reasons to suspend the render loop:
+ *   - `docHidden`  → user switched tab; OS / browser already throttles
+ *                    RAF but cancelling outright drops the GPU work
+ *                    entirely.
+ *   - `heroOffscreen` → user has scrolled past `.experience-hero` into
+ *                    the editorial body. The scene is hidden behind an
+ *                    opaque body bg, so there's no reason to keep
+ *                    drawing it.
+ *
+ * `maybeRun()` resolves both flags and starts / stops `animate()`
+ * accordingly. Either flag flipping triggers the recompute.
+ */
+let docHidden = false
+let heroOffscreen = false
+
 /* Camera direction state — exposed reactively so the page can render
  * a compass / heading / pitch readout during inspect mode. Convention:
  *   N (0°)   = looking toward -Z (the cardinal direction the plane is
@@ -190,15 +205,19 @@ function onResize() {
   renderer.setSize(width, height)
 }
 
-function onVisibility() {
-  if (document.hidden) {
-    if (rafId != null) {
-      cancelAnimationFrame(rafId)
-      rafId = null
-    }
-  } else if (rafId == null && renderer) {
+function maybeRun() {
+  const shouldRun = !docHidden && !heroOffscreen && renderer != null
+  if (shouldRun && rafId == null) {
     animate()
+  } else if (!shouldRun && rafId != null) {
+    cancelAnimationFrame(rafId)
+    rafId = null
   }
+}
+
+function onVisibility() {
+  docHidden = document.hidden
+  maybeRun()
 }
 
 export function useFlightScene() {
@@ -373,6 +392,20 @@ export function useFlightScene() {
   }
 
   /**
+   * Drive the scene's render loop from outside. Called by FlightScene.vue's
+   * IntersectionObserver: the cinematic A350 + sky scene is only meaningful
+   * while `.experience-hero` is in the viewport. Once the user scrolls into
+   * the editorial body the scene is hidden behind an opaque body bg, so
+   * there's no reason to keep drawing it. `maybeRun()` resolves this flag
+   * together with `docHidden` (visibilitychange) and starts / stops the
+   * RAF loop accordingly.
+   */
+  function setActive(active: boolean) {
+    heroOffscreen = !active
+    maybeRun()
+  }
+
+  /**
    * Enter / exit aircraft inspect mode. In inspect mode autoRotate is
    * paused (the user owns the rotation), enableRotate is true (drag
    * orbits the camera) and enableZoom is true (mouse wheel scales the
@@ -453,6 +486,7 @@ export function useFlightScene() {
     getCamera,
     setControlsEnabled,
     setInspectMode,
+    setActive,
     cameraHeading: readonly(cameraHeading),
     cameraPitch: readonly(cameraPitch),
   }

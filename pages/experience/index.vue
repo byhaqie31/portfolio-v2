@@ -16,13 +16,21 @@ useSeoMeta({
 })
 
 /*
- * /experience — clean slate.
+ * /experience — two regions sharing one URL.
  *
- *   Intro splash → welcome card → iris reveal → 3D plane on full screen.
+ *   .experience-hero   100vh cinematic frame: intro splash → welcome card
+ *                      → iris reveal → 3D A350 + sky + clouds + CTAs.
+ *                      The only place WebGL ever renders on this page.
  *
- * All bio / phase content stripped. AutoRotate keeps the plane in motion
- * once the user can see the scene. New narrative content lands in
- * subsequent iterations on top of this minimum.
+ *   .experience-body   Editorial portfolio. No Three.js — just typography,
+ *                      whitespace, and aviation-themed SVG flourishes.
+ *                      Currently a placeholder; content lands in the next
+ *                      review-point PR.
+ *
+ * `VIEW MY JOURNEY` is the threshold — it Lenis-scrolls from hero to
+ * body. The 3D scene's render loop pauses when `.experience-hero` is
+ * offscreen (see FlightScene.vue's IntersectionObserver) and resumes on
+ * re-entry, so scrolling back up restores the cinematic frame.
  */
 
 const introDone = ref(false)
@@ -75,16 +83,22 @@ const pitchDeg = computed(() => {
 watch(welcomeDone, (done) => {
   if (!done) return
   // Iris reveal pin only. No aircraft pose choreography (autoRotate
-  // handles motion). No per-phase ScrollTriggers (no phase content yet).
-  // onScrollProgress is the masterTl's own scrub progress — the only
-  // reliable read on this pinned timeline (sibling ScrollTriggers on a
-  // pinned element calculate against a stationary trigger and stay at 0).
+  // handles motion). The pin trigger is `.experience-hero` — the hero
+  // region wrapper that holds the iris-reveal placeholder. onScrollProgress
+  // is the masterTl's own scrub progress — the only reliable read on
+  // this pinned timeline (sibling ScrollTriggers on a pinned element
+  // calculate against a stationary trigger and stay at 0).
   flightScroll.init({
-    trigger: '.phase--hero',
+    trigger: '.experience-hero',
     end: '+=150%',
     aircraftMaterials: () => aircraft.getMaterials(),
     onScrollProgress: (p) => {
-      revealComplete.value = p >= 0.98
+      // Threshold matches the welcome text's fade-out window
+      // (0.0 → 0.6 in useFlightScroll's masterTl). The moment the
+      // welcome text is gone the CTAs slide in above the still-visible
+      // scroll hint, so the viewer has a clear next action without
+      // waiting for the iris reveal to fully finish at 0.98.
+      revealComplete.value = p >= 0.6
     },
   })
   flightScene.setControlsEnabled(true)
@@ -106,11 +120,55 @@ function onExitInspect() {
 }
 
 function onViewJourney() {
-  // TODO: wire to whatever the next iteration adds beneath the hero
-  // (sticky scrollytelling, stacked phases, etc.). For now, no-op.
+  // The threshold from hero to editorial body. Lenis-scrolls so the
+  // motion matches the rest of the cinematic register (smooth, decisive,
+  // no jump-cut). Falls back to native scrollIntoView if Lenis isn't
+  // available — e.g. under prefers-reduced-motion when the OS-level
+  // setting collapses smooth scroll, or during HMR before Lenis remounts.
+  const target = document.querySelector('.experience-body')
+  if (!target) return
+  if (lenis.instance) {
+    lenis.instance.scrollTo(target as HTMLElement, {
+      duration: 1.8,
+      // expo.out approximation — matches the cinematic easing register
+      // without pulling GSAP's parseEase into this file.
+      easing: (t: number) => 1 - Math.pow(1 - t, 5),
+    })
+  } else {
+    (target as HTMLElement).scrollIntoView({ behavior: 'smooth' })
+  }
 }
 
+/* Hero visibility observer. Owned by the page (not FlightScene) because
+ * the page's onMounted is the first lifecycle hook that runs after the
+ * full template — including `.experience-hero` — is in the DOM. Child
+ * component onMounted hooks fire before their sibling vnodes are
+ * flushed, so observing from FlightScene.vue silently misses the
+ * element on first mount and the gate stays at its initial `true`.
+ *
+ * Single observer drives two consumers:
+ *   - flightScene.setActive() pauses the render loop when the hero
+ *     scrolls offscreen (no point drawing pixels the body covers).
+ *   - The CTAs' v-if uses the same heroVisible state to hide the
+ *     post-reveal CTAs once the user has left the hero. */
+let heroObserver: IntersectionObserver | null = null
+
+onMounted(() => {
+  const heroEl = document.querySelector('.experience-hero')
+  if (!heroEl) return
+  heroObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry) flightScene.setActive(entry.isIntersecting)
+    },
+    { threshold: 0 },
+  )
+  heroObserver.observe(heroEl)
+})
+
 onBeforeUnmount(() => {
+  heroObserver?.disconnect()
+  heroObserver = null
   flightScroll.destroy()
 })
 </script>
@@ -133,27 +191,39 @@ onBeforeUnmount(() => {
     </NuxtLink>
 
     <main class="cinematic-page">
-      <!-- Empty hero placeholder — pinned by useFlightScroll for the
-           iris reveal's +=150% scroll distance. No copy here; that's
-           what the next iteration adds. -->
-      <section class="phase phase--hero" aria-hidden="true" />
-    </main>
+      <!-- Hero region. 100vh, pinned by useFlightScroll for the iris
+           reveal's +=150% scroll distance. The 3D scene + sky + clouds
+           render behind this (via the fixed <CinematicFlightScene />
+           sibling above); the page's IntersectionObserver watches this
+           element to pause the render loop when it scrolls out of view.
+           The post-reveal CTAs live INSIDE this section so they scroll
+           out with the plane — they're part of the hero, not a
+           viewport-fixed overlay. (Hard rule 7 still holds: the CTAs
+           are position:absolute, not position:fixed, so the pin doesn't
+           re-parent their containing block in a problematic way.) -->
+      <section class="experience-hero" aria-hidden="false">
+        <Transition name="ctas-fade">
+          <div v-if="revealComplete && !inspectMode" class="ctas">
+            <button type="button" class="cta cta--ghost" @click="onPlayWithAircraft">
+              <Icon name="fluent:cursor-hover-16-filled" size="14" />
+              <span>Play with Aircraft</span>
+            </button>
+            <button type="button" class="cta cta--solid" @click="onViewJourney">
+              <span>View my journey</span>
+              <Icon name="fluent:arrow-right-16-filled" size="14" />
+            </button>
+          </div>
+        </Transition>
+      </section>
 
-    <!-- Post-reveal CTAs — appear once the hero pin releases and the
-         iris is fully open. Hidden during inspect mode so they don't
-         compete with the inspect UI. -->
-    <Transition name="ctas-fade">
-      <div v-if="revealComplete && !inspectMode" class="ctas">
-        <button type="button" class="cta cta--ghost" @click="onPlayWithAircraft">
-          <Icon name="fluent:cursor-hover-16-filled" size="14" />
-          <span>Play with Aircraft</span>
-        </button>
-        <button type="button" class="cta cta--solid" @click="onViewJourney">
-          <span>View my journey</span>
-          <Icon name="fluent:arrow-right-16-filled" size="14" />
-        </button>
-      </div>
-    </Transition>
+      <!-- Editorial body placeholder. Lives at z-content, opaque bg, so
+           it covers the fixed 3D canvas when scrolled into view. Content
+           lands in the next review-point PR — this stub is here to
+           verify the click-and-scroll threshold works. -->
+      <section class="experience-body">
+        <div class="body-placeholder">Body coming next</div>
+      </section>
+    </main>
 
     <!-- Inspect mode UI — top-centre controls hint, top-right compass
          with live heading + pitch readouts, bottom-centre exit button.
@@ -219,8 +289,38 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.phase--hero {
+.experience-hero {
+  /* The pin trigger. 100vh so the iris reveal has a viewport-height
+   * placeholder to pin against. No overflow:hidden — ScrollTrigger's
+   * pin uses transforms during the pinned window, and clipping the
+   * parent of the pin can interact badly with that. */
+  position: relative;
   min-height: 100vh;
+  width: 100%;
+}
+
+.experience-body {
+  /* Opt back in to pointer events (parent .cinematic-page disables them
+   * so the empty hero placeholder doesn't intercept drags meant for
+   * OrbitControls on the canvas behind). Once we're on the body, the
+   * canvas is hidden behind this opaque bg and pointer events should
+   * land on body content. */
+  position: relative;
+  min-height: 100vh;
+  padding: var(--space-32) var(--space-8);
+  background: var(--color-bg-base);
+  color: var(--color-ink-secondary);
+  font-family: var(--font-body);
+  pointer-events: auto;
+}
+
+.body-placeholder {
+  font-family: var(--font-mono);
+  font-size: var(--font-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  text-align: center;
 }
 
 .back-link {
@@ -263,14 +363,30 @@ onBeforeUnmount(() => {
 /* ── Post-reveal CTAs ─────────────────────────────────────────── */
 
 .ctas {
-  position: fixed;
-  bottom: var(--space-12);
+  /* Absolute, not fixed — the CTAs are part of the hero's content and
+   * scroll out with it when the user moves into the editorial body.
+   * Anchored to .experience-hero (its nearest positioned ancestor) at
+   * 20% from the bottom — which clears the "SCROLL TO EXPLORE MORE"
+   * hint (sits at var(--space-12)) with breathing room and lifts the
+   * CTAs into the lower-third visual zone where they read as a
+   * deliberate call-to-action, not a viewport-bottom UI strip.
+   *
+   * % rather than vh so the value scales with the hero's actual height
+   * if it ever changes; the token scale tops out at var(--space-24)
+   * (96px ≈ 9% of viewport) which isn't enough lift for this register.
+   *
+   * pointer-events: auto opts back in from .cinematic-page's `none`
+   * (which exists so the empty pinned hero doesn't intercept drags
+   * meant for OrbitControls on the canvas behind). */
+  position: absolute;
+  bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-controls);
   display: flex;
   gap: var(--space-4);
   align-items: center;
+  pointer-events: auto;
 }
 
 .cta {
@@ -338,7 +454,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .ctas {
-    bottom: var(--space-6);
+    /* Match desktop's 20%-from-bottom anchor — on a ~700px mobile
+     * viewport that's ~140px, well clear of the welcome hint at
+     * var(--space-12) plus its label + chevron. */
+    bottom: 20%;
     flex-direction: column-reverse;
     gap: var(--space-3);
     width: calc(100% - var(--space-8));
