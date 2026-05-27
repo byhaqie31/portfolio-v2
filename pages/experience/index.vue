@@ -3,6 +3,9 @@ import { useFlightScene } from '~/composables/useFlightScene'
 import { useFlightScroll } from '~/composables/useFlightScroll'
 import { useFlightAircraft } from '~/composables/useFlightAircraft'
 import { useLenis } from '~/composables/useLenis'
+import { gsap } from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+import { personal, education } from '~/data'
 
 definePageMeta({
   layout: 'cinematic',
@@ -152,23 +155,51 @@ function onViewJourney() {
  *   - The CTAs' v-if uses the same heroVisible state to hide the
  *     post-reveal CTAs once the user has left the hero. */
 let heroObserver: IntersectionObserver | null = null
+/* gsap.matchMedia handle for the editorial body's scroll-triggered
+ * reveals. Owned by the page so we can revert() it on unmount, which
+ * kills every ScrollTrigger registered inside its callback. */
+let bodyReveals: gsap.MatchMedia | null = null
 
 onMounted(() => {
   const heroEl = document.querySelector('.experience-hero')
-  if (!heroEl) return
-  heroObserver = new IntersectionObserver(
-    (entries) => {
-      const entry = entries[0]
-      if (entry) flightScene.setActive(entry.isIntersecting)
-    },
-    { threshold: 0 },
-  )
-  heroObserver.observe(heroEl)
+  if (heroEl) {
+    heroObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry) flightScene.setActive(entry.isIntersecting)
+      },
+      { threshold: 0 },
+    )
+    heroObserver.observe(heroEl)
+  }
+
+  gsap.registerPlugin(ScrollTrigger)
+
+  bodyReveals = gsap.matchMedia()
+  bodyReveals.add('(prefers-reduced-motion: no-preference)', () => {
+    /* Education timeline — staggered fade-up of each entry as the
+     * section enters the viewport. Fires once (no scrub), so it reads
+     * as a deliberate reveal not a parallax effect. */
+    gsap.from('.edu-timeline__entry', {
+      opacity: 0,
+      y: 24,
+      duration: 0.8,
+      ease: 'power2.out',
+      stagger: 0.15,
+      scrollTrigger: {
+        trigger: '.edu-timeline',
+        start: 'top 80%',
+        once: true,
+      },
+    })
+  })
 })
 
 onBeforeUnmount(() => {
   heroObserver?.disconnect()
   heroObserver = null
+  bodyReveals?.revert()
+  bodyReveals = null
   flightScroll.destroy()
 })
 </script>
@@ -216,12 +247,54 @@ onBeforeUnmount(() => {
         </Transition>
       </section>
 
-      <!-- Editorial body placeholder. Lives at z-content, opaque bg, so
-           it covers the fixed 3D canvas when scrolled into view. Content
-           lands in the next review-point PR — this stub is here to
-           verify the click-and-scroll threshold works. -->
+      <!-- Editorial body. Lives at z-content, opaque bg, so it covers
+           the fixed 3D canvas when scrolled into view. Composed entirely
+           of <CinematicEditorialSection> blocks — one editorial voice,
+           not a stack of bespoke compositions. Sections land one at a
+           time per review-point. -->
       <section class="experience-body">
-        <div class="body-placeholder">Body coming next</div>
+        <CinematicEditorialSection
+          id="about"
+          label="About"
+          headline="A bit about me."
+          :subline="personal.summary"
+          heading="045°"
+          flourish="none"
+        >
+          <p v-for="(para, i) in personal.bio" :key="i">{{ para }}</p>
+        </CinematicEditorialSection>
+
+        <CinematicEditorialSection
+          id="education"
+          label="Education"
+          headline="Where I learned."
+          heading="023°"
+        >
+          <!-- Vertical-rail timeline. Reverse chronological — most recent
+               (Masters, in progress) at the top, oldest (Foundation) at
+               the bottom. The rail is a 1px hairline running through the
+               dots; the first entry's dot is filled to read as "current".
+               <ul> over <ol> because chronology is conveyed visually by
+               position on the rail, not by list semantics. -->
+          <ul class="edu-timeline">
+            <li
+              v-for="(entry, i) in education"
+              :key="entry.id"
+              class="edu-timeline__entry"
+              :class="{ 'edu-timeline__entry--current': i === 0 }"
+            >
+              <span class="edu-timeline__dot" aria-hidden="true" />
+              <p class="edu-timeline__period">{{ entry.period }}</p>
+              <h3 class="edu-timeline__institution">{{ entry.institution }}</h3>
+              <p class="edu-timeline__degree">{{ entry.degree }}</p>
+              <p class="edu-timeline__meta">
+                <span>CGPA · {{ entry.cgpa }}</span>
+                <span class="edu-timeline__sep" aria-hidden="true">/</span>
+                <span>{{ entry.location }}</span>
+              </p>
+            </li>
+          </ul>
+        </CinematicEditorialSection>
       </section>
     </main>
 
@@ -301,26 +374,129 @@ onBeforeUnmount(() => {
 
 .experience-body {
   /* Opt back in to pointer events (parent .cinematic-page disables them
-   * so the empty hero placeholder doesn't intercept drags meant for
+   * so the empty pinned hero doesn't intercept drags meant for
    * OrbitControls on the canvas behind). Once we're on the body, the
    * canvas is hidden behind this opaque bg and pointer events should
-   * land on body content. */
+   * land on body content.
+   *
+   * No padding here — <CinematicEditorialSection> owns its own internal
+   * top/bottom padding so the wing-divider flourishes between sections
+   * land in the right gap. Sections compose vertically with their own
+   * rhythm; the body just provides the dark canvas and bounds. */
   position: relative;
-  min-height: 100vh;
-  padding: var(--space-32) var(--space-8);
   background: var(--color-bg-base);
   color: var(--color-ink-secondary);
   font-family: var(--font-body);
   pointer-events: auto;
 }
 
-.body-placeholder {
+/* ── Education timeline (vertical rail with date stops) ──────── */
+
+.edu-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.edu-timeline::before {
+  /* The rail — a 1px hairline running through every dot's centre.
+   * Insets top/bottom so it terminates at the first and last dots
+   * rather than running off the edges. */
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 5px;
+  width: 1px;
+  background: var(--color-hairline);
+}
+
+.edu-timeline__entry {
+  position: relative;
+  padding-left: var(--space-8);
+  padding-bottom: var(--space-12);
+}
+
+.edu-timeline__entry:last-child {
+  padding-bottom: 0;
+}
+
+.edu-timeline__dot {
+  /* Sits on top of the rail so the hairline reads as passing through
+   * the entry. Bg fills with body bg so the rail doesn't show inside
+   * the hollow dot; current-entry variant fills with ink instead. */
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-ink-muted);
+}
+
+.edu-timeline__entry--current .edu-timeline__dot {
+  /* Most recent entry — filled, slightly brighter ring. Reads as
+   * "the now stop". */
+  background: var(--color-ink-secondary);
+  border-color: var(--color-ink-secondary);
+}
+
+.edu-timeline__period {
   font-family: var(--font-mono);
   font-size: var(--font-label);
+  font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-ink-muted);
-  text-align: center;
+  margin: 0 0 var(--space-2);
+}
+
+.edu-timeline__institution {
+  font-family: var(--font-display);
+  font-size: var(--font-display-medium);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--color-ink-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.edu-timeline__degree {
+  font-family: var(--font-body);
+  font-size: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-ink-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.edu-timeline__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-caption);
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin: 0;
+}
+
+.edu-timeline__sep {
+  color: var(--color-ink-faint);
+}
+
+@media (max-width: 640px) {
+  .edu-timeline__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  .edu-timeline__sep {
+    display: none;
+  }
 }
 
 .back-link {
