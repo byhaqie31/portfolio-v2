@@ -1,0 +1,121 @@
+/* ============================================================
+ * cinematic.css — design tokens for /experience
+ * Loaded only by layouts/cinematic.vue; scoped to
+ * :root[data-layout="cinematic"] so it cannot leak into /.
+ *
+ * Source of truth: jet-engine-infographic/docs/DESIGN-SYSTEM.md §13.
+ * If you change a token here, mirror the change in CINEMATIC.md.
+ * ============================================================ */
+
+/* Variable font packages — provide their own @font-face declarations. */
+@import '@fontsource-variable/playfair-display';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* Geist ships as a next/font npm package with no plain CSS, so we
+ * self-host the variable woff2 from /public/fonts/geist/ instead. */
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist/Geist-Variable.woff2') format('woff2-variations'),
+       url('/fonts/geist/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root[data-layout='cinematic'] {
+  /* === Colors === */
+  --color-bg-base:        #0A0B0F;
+  --color-bg-surface:     #13151C;
+  --color-bg-elevated:    #1C1F28;
+  --color-ink-primary:    #F5F5F0;
+  --color-ink-secondary:  #B8BAC3;
+  --color-ink-muted:      #8B8D98;
+  --color-ink-faint:      #5A5C66;
+  --color-cool:           #4FC3F7;
+  --color-cool-soft:      #8FB4C8;
+  --color-hot:            #FF6B35;
+  --color-hot-soft:       #FF8C42;
+  --color-amber:          #FFB07A;
+  --color-hairline:       rgba(255, 255, 255, 0.08);
+  --color-hairline-soft:  rgba(255, 255, 255, 0.04);
+  --color-divider:        rgba(255, 255, 255, 0.12);
+  --color-focus-ring:     rgba(79, 195, 247, 0.5);
+  --color-overlay:        rgba(10, 11, 15, 0.85);
+
+  /* === Typography === */
+  --font-display: 'Playfair Display Variable', Georgia, serif;
+  --font-body:    'Geist', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'SF Mono', monospace;
+
+  --font-display-hero:    clamp(48px, 6vw, 96px);
+  --font-display-large:   clamp(32px, 4.5vw, 56px);
+  --font-display-medium:  clamp(24px, 3vw, 36px);
+  --font-body-large:      18px;
+  --font-body:            16px;
+  --font-body-small:      14px;
+  --font-ui:              13px;
+  --font-caption:         11px;
+  --font-label:           10px;
+  --font-data-large:      24px;
+  --font-data:            18px;
+  --font-data-small:      14px;
+
+  /* === Spacing === */
+  --space-1:  4px;   --space-2:  8px;   --space-3: 12px;
+  --space-4:  16px;  --space-5:  20px;  --space-6: 24px;
+  --space-8:  32px;  --space-10: 40px;  --space-12: 48px;
+  --space-16: 64px;  --space-20: 80px;  --space-24: 96px;
+
+  /* === Motion === */
+  --ease-out:        cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out:     cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-precise:    cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-cinematic:  cubic-bezier(0.16, 1, 0.3, 1);
+
+  --duration-instant:   0.15s;
+  --duration-quick:     0.3s;
+  --duration-standard:  0.6s;
+  --duration-slow:      0.8s;
+  --duration-cinematic: 1.2s;
+  --duration-counter:   1.5s;
+
+  /* === Radii === */
+  --radius-sharp:    2px;
+  --radius-card:     4px;
+  --radius-surface:  12px;
+
+  /* === Shadows === */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* === Z-Index === */
+  --z-canvas:    0;
+  --z-particles: 1;
+  --z-content:   5;
+  --z-controls:  10;
+  --z-tooltip:   20;
+  --z-modal:     50;
+  --z-loading:   100;
+}
+
+/* Paint the page surface from the tokens. Scoped under [data-layout]
+ * so / keeps its light-first Apple-faithful background untouched. */
+html[data-layout='cinematic'],
+html[data-layout='cinematic'] body {
+  background: var(--color-bg-base);
+  color: var(--color-ink-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-layout='cinematic'] ::selection {
+  background: var(--color-cool);
+  color: var(--color-bg-base);
+}
+
+html[data-layout='cinematic'] *:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}

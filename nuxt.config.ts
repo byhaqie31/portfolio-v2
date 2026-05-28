@@ -7,7 +7,16 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['gsap', 'gsap/ScrollTrigger'],
+      include: [
+        'gsap',
+        'gsap/ScrollTrigger',
+        'lenis',
+        'three',
+        'three/examples/jsm/objects/Sky.js',
+        'three/examples/jsm/loaders/GLTFLoader.js',
+        'three/examples/jsm/loaders/DRACOLoader.js',
+        'three/examples/jsm/controls/OrbitControls.js',
+      ],
     },
   },
 
@@ -24,8 +33,13 @@ export default defineNuxtConfig({
   // from a localStorage-backed preview store that doesn't exist on the
   // server. SSRing it would prefetch the real API and lock the iframe
   // onto published data instead of the in-progress edits.
+  //
+  // /experience is client-only because the cinematic surface reads
+  // window/document/RAF in Lenis, GSAP ScrollTrigger and (later)
+  // Three.js. SSRing it would error during render.
   routeRules: {
     '/admin/preview': { ssr: false },
+    '/experience': { ssr: false },
   },
 
   icon: {
