@@ -45,14 +45,82 @@ withDefaults(defineProps<{
    * for sections that already feel busy (e.g. SELECTED WORK).
    */
   showRouteArc?: boolean
+  /**
+   * Pin mode — when true, the section is wrapped in a tall runway
+   * and uses CSS position:sticky inside to lock to the viewport
+   * while the user scrolls through the runway. The page's GSAP
+   * scrubs animations against the runway scroll progress.
+   */
+  pin?: boolean
+  /**
+   * Total runway height when `pin` is true. Sticky duration =
+   * pinHeight - 100vh (the visible section height). Example:
+   *   '400vh' — 100vh locked + 300vh of card transitions
+   */
+  pinHeight?: string
 }>(), {
   flourish: 'wing-divider',
   showRouteArc: true,
+  pin: false,
+  pinHeight: '200vh',
 })
 </script>
 
 <template>
-  <section :id="id" :class="['editorial-section', `editorial-section--${id}`]">
+  <!-- Pin mode: outer runway wrapper provides scroll length, inner
+       section uses CSS position:sticky to lock to viewport. -->
+  <div
+    v-if="pin"
+    :class="['editorial-section__runway', `editorial-section__runway--${id}`]"
+    :style="{ height: pinHeight }"
+  >
+    <section
+      :id="id"
+      :class="[
+        'editorial-section',
+        `editorial-section--${id}`,
+        'editorial-section--pinned',
+      ]"
+    >
+      <div v-if="flourish !== 'none'" class="editorial-section__flourish">
+        <CinematicAviationFlourish :motif="flourish" />
+      </div>
+
+      <p class="editorial-section__label">
+        <CinematicAviationFlourish motif="compass-mark" />
+        <span>{{ label }}</span>
+      </p>
+
+      <h2 class="editorial-section__headline">{{ headline }}</h2>
+
+      <CinematicAviationFlourish
+        v-if="showRouteArc"
+        motif="route-arc"
+        class="editorial-section__route-arc"
+      />
+
+      <p v-if="subline" class="editorial-section__subline">{{ subline }}</p>
+
+      <div class="editorial-section__body">
+        <slot />
+      </div>
+
+      <div v-if="heading" class="editorial-section__footer">
+        <span>HDG {{ heading }}</span>
+        <span>{{ label }}</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- Normal (un-pinned) mode -->
+  <section
+    v-else
+    :id="id"
+    :class="[
+      'editorial-section',
+      `editorial-section--${id}`,
+    ]"
+  >
     <div v-if="flourish !== 'none'" class="editorial-section__flourish">
       <CinematicAviationFlourish :motif="flourish" />
     </div>
@@ -192,6 +260,74 @@ withDefaults(defineProps<{
 
   .editorial-section__flourish {
     margin-bottom: var(--space-8);
+  }
+}
+
+/* ── Pinned variant — runway + sticky pattern ──────────────── */
+
+.editorial-section__runway {
+  /* Runway provides the scroll length. Height set inline from
+   * pinHeight prop. Sticky child locks for runway.height - 100vh. */
+  position: relative;
+}
+
+.editorial-section--pinned {
+  /* CSS sticky locks the section to viewport top while the runway
+   * scrolls past. The page's GSAP scrubs animations against the
+   * runway scroll progress. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  max-height: 100vh;
+  padding: var(--space-12) var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+}
+
+.editorial-section--pinned .editorial-section__flourish {
+  /* Reduce the breathing-room margin so the header doesn't eat too
+   * much vertical space in the constrained 100vh layout. */
+  margin-bottom: var(--space-4);
+}
+
+.editorial-section--pinned .editorial-section__route-arc {
+  margin: var(--space-2) 0;
+}
+
+.editorial-section--pinned .editorial-section__body {
+  /* Fills available vertical space. min-height:0 lets flex children
+   * actually shrink below their intrinsic height (without it,
+   * scrollable / overflow content forces the body to its full size
+   * and breaks the 100vh constraint). */
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: var(--space-3);
+  /* Drop the body's prose max-width when pinned — pin mode is for
+   * full-bleed content (card stacks, horizontal tracks), not prose. */
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.editorial-section--pinned .editorial-section__footer {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  /* Mobile drops the runway + sticky entirely. */
+  .editorial-section__runway {
+    height: auto !important;
+  }
+  .editorial-section--pinned {
+    position: static;
+    top: auto;
+    height: auto;
+    max-height: none;
+    padding: var(--space-16) var(--space-5);
+    overflow: visible;
   }
 }
 </style>
