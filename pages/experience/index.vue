@@ -61,6 +61,15 @@ const {
 
 const { perfFps, perfCalls, perfTris, perfDpr } = flightScene
 
+/* Pre-flight loading sequence: loader (real GLB progress) → silhouette
+ * intro (plane climbs away) → welcome → flight. `loadProgress` is the GLB
+ * byte fraction; `assetsReady` flips once the GLB has parsed and fonts are
+ * ready; `loaderDone` gates the silhouette intro so it only plays once the
+ * loader has handed off. */
+const loadProgress = ref(0)
+const assetsReady = ref(false)
+const loaderDone = ref(false)
+
 /* Experiences come from the same /api/experiences endpoint the public
  * portfolio uses — so the waypoint cards see the DB overlay + admin
  * preview edits, with `data/index.ts` as the static fallback. */
@@ -139,7 +148,7 @@ const waypointCards = computed<WaypointCard[]>(() => {
       year: '2020',
       org: faztech?.company ?? 'Faztech Services',
       role: `${faztech?.role ?? 'Graphic Designer & Technician'} · ${faztech?.location ?? 'Tangkak, Johor'}`,
-      desc: 'Where it started — designing client artwork across the Adobe suite while coordinating an 8-person technician team through OS maintenance and support.',
+      desc: 'Where it started — designing client artwork across the Adobe suite while keeping an 8-person technician team’s installs, maintenance and support running clean.',
       highlights: [
         'Client artwork across brochures, cards & flyers',
         '8/10 recurring support cases closed weekly',
@@ -160,7 +169,7 @@ const waypointCards = computed<WaypointCard[]>(() => {
       year: '2023',
       org: 'Universiti Malaya',
       role: 'BSc Islamic Studies & Information Technology',
-      desc: 'Graduated First Class Honours — bridging information technology with a human, organisational lens. Student leadership across faculty programmes along the way.',
+      desc: 'Graduated First Class Honours — pairing information technology with a human, organisational lens. Faculty leadership across student programmes along the way.',
       highlights: [
         'Information technology with a human, organisational lens',
         'Faculty leadership — treasurer & head of multimedia',
@@ -172,26 +181,26 @@ const waypointCards = computed<WaypointCard[]>(() => {
     },
     {
       idx: 'WP·03',
-      year: '2025 · Current',
-      org: 'Fiuu — Razer MS',
+      year: '2023 · Current',
+      org: 'Fiuu - Razer Merchant Services',
       role: `${razer?.role ?? 'Software Engineer — UI/UX'} · ${razer?.location ?? 'Shah Alam'}`,
-      desc: 'Cruise altitude. Building high-quality fintech UIs across Merchant and Admin portals — streamlining flows, sharpening validations, lowering escalations, lifting adoption.',
+      desc: 'Cruise altitude. Building fintech UIs across the Merchant and Admin portals and multiple payment modules in Nuxt + TypeScript — streamlining flows, sharpening validations, lowering escalations, lifting adoption.',
       highlights: [
         'Merchant + Admin portals & payment modules',
         'Sharper validations, fewer support escalations',
       ],
       stats: [
-        { value: '3', accent: '+', label: 'Portals & modules shipped' },
-        { value: '', accent: '↓', label: 'Support escalations' },
+        { value: '3', accent: '+', label: 'Portals & modules' },
+        { value: '2', accent: '+ yrs', label: 'Shipping fintech UIs' },
       ],
-      meta: razer?.tags?.slice(0, 4) ?? ['Vue.js', 'Tailwind CSS', 'REST API', 'Figma'],
+      meta: razer?.tags?.slice(0, 6) ?? ['Vue.js', 'Nuxt', 'TypeScript', 'Laravel', 'Docker', 'AWS'],
     },
     {
       idx: 'WP·04',
       year: 'Now',
       final: true,
       org: 'On approach.',
-      desc: 'Open to full-time and contract roles in fintech and SaaS. Currently also reading an MSc in Human Resource Development at UPM.',
+      desc: 'Open to full-time and contract roles in fintech and SaaS. Also reading a Master of Science at UPM — researching how AI adoption and generational change are reshaping the modern workplace.',
       signoff: 'Thanks for flying along.',
       cta: { label: 'Begin descent → say hello', href: `mailto:${personal.email}` },
       links: [
@@ -229,16 +238,31 @@ onMounted(() => {
     aircraft,
     progress: flightProgress,
   })
+
+  // Load the GLB, feeding byte progress to the pre-flight loader bar.
   const scene = flightScene.getScene()
-  if (scene) {
-    aircraft
-      .load(scene)
-      .then(() => flightPath.setRevealMaterials(aircraft.getMaterials()))
-      .catch(() => {
-        /* Load failure already logged in useFlightAircraft — the sky +
-         * intro still play; only the aircraft is missing. */
-      })
-  }
+  const glbLoad = scene
+    ? aircraft
+        .load(scene, (f) => {
+          loadProgress.value = f
+        })
+        .then(() => flightPath.setRevealMaterials(aircraft.getMaterials()))
+        .catch(() => {
+          /* Load failure already logged in useFlightAircraft — the sky +
+           * intro still play; only the aircraft is missing. */
+        })
+    : Promise.resolve()
+
+  // The loader holds until both the GLB has parsed and the fonts are ready
+  // (so the welcome card doesn't reflow under the loader).
+  const fontsReady =
+    typeof document !== 'undefined' && 'fonts' in document
+      ? document.fonts.ready
+      : Promise.resolve()
+
+  Promise.allSettled([glbLoad, fontsReady]).then(() => {
+    assetsReady.value = true
+  })
 })
 
 onBeforeUnmount(() => {
@@ -289,9 +313,16 @@ onBeforeUnmount(() => {
       <CinematicFlightWaypoints :cards="waypointCards" :active="activeWp" />
     </div>
 
-    <!-- Auto-played silhouette splash. Pauses Lenis, plays ~3.7s, then
-         resumes scroll and hands off to the scroll-driven flight. -->
-    <CinematicIntro />
+    <!-- Pre-flight loading screen — the first thing on the page. The
+         silhouette A350 climbs as the real GLB load progresses (progress
+         bar alongside); when ready it flies off the top and fades, handing
+         straight off to the welcome / scroll-driven flight. -->
+    <CinematicFlightLoader
+      v-if="!loaderDone"
+      :progress="loadProgress"
+      :ready="assetsReady"
+      @complete="loaderDone = true"
+    />
 
     <!-- Back to the restrained surface. Always visible so the viewer can
          leave at any moment. `external` does a full document load (mirrors

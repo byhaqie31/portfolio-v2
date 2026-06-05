@@ -29,6 +29,15 @@ defineProps<{
       <span class="flight-rail__name">{{ label }}</span>
       <span class="flight-rail__dot" />
     </div>
+
+    <!-- The aircraft riding the timeline at the current progress, nose
+         down the route. The cool fill trails behind it. -->
+    <Icon
+      name="fluent:airplane-16-filled"
+      size="16"
+      class="flight-rail__plane"
+      :style="{ top: `${progress * 100}%` }"
+    />
   </div>
 </template>
 
@@ -104,6 +113,19 @@ defineProps<{
 .flight-rail__stop--active .flight-rail__name {
   color: var(--color-ink-secondary);
   opacity: 1;
+}
+
+.flight-rail__plane {
+  position: absolute;
+  right: 4px;
+  /* Centre the icon on the rail line and point its nose down the route
+   * (the Fluent airplane points up, so 180°). Warm-white with a cool glow
+   * so it reads as the live position ahead of the cool trail. */
+  transform: translate(50%, -50%) rotate(90deg);
+  color: var(--color-ink-primary);
+  filter: drop-shadow(0 0 6px rgba(79, 195, 247, 0.7));
+  transition: top 0.15s linear;
+  z-index: 1;
 }
 
 @media (max-width: 760px) {

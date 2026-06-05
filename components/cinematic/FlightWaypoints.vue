@@ -101,23 +101,25 @@ defineProps<{
 }
 
 .wp {
+  /* Left-anchored, vertically centred — the IFE info panel beside the
+   * flight. A touch wider so the moving-map strip + copy breathe. */
   position: absolute;
-  left: var(--space-6);
-  bottom: 84px;
-  max-width: 440px;
+  left: var(--space-10);
+  top: 50%;
+  width: min(520px, 42vw);
   padding: var(--space-6) var(--space-8);
   background: rgba(10, 11, 15, 0.58);
   border: 1px solid var(--color-hairline);
   border-left: 2px solid var(--color-cool);
   border-radius: var(--radius-sharp);
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(calc(-50% + 18px));
   transition: opacity 0.5s var(--ease-cinematic), transform 0.5s var(--ease-cinematic);
 }
 
 .wp--active {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(-50%);
 }
 
 .wp__head {
@@ -251,7 +253,7 @@ defineProps<{
   left: 50%;
   top: 50%;
   bottom: auto;
-  max-width: 540px;
+  width: min(560px, 86vw);
   margin-top: -40px;
   text-align: center;
   border-left: 1px solid var(--color-hairline);
@@ -343,8 +345,7 @@ defineProps<{
   .wp {
     left: var(--space-4);
     right: var(--space-4);
-    bottom: 96px;
-    max-width: none;
+    width: auto;
     padding: var(--space-5);
   }
   .wp--final {

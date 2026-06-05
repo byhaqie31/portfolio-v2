@@ -6,7 +6,7 @@ The design and engineering contract for the second surface at `baihaqie.com/expe
 
 > **Two surfaces, one author.** `/` is the fast, professional handshake. `/experience` is the cinematic frame for the work the handshake hints at. They share *nothing* visually — different tokens, different fonts, different motion register — and that contrast is the point. Do not bleed cinematic patterns onto `/` or restrained patterns into `/experience`.
 
-> **Current state.** `/experience` is a single **scroll-driven cinematic flight, full stop** — no editorial body. A silhouette splash → a "Welcome aboard." greeting that highlights a tagline word-by-word and zooms out → a dark-overlay reveal of the **A350 already aloft** → the aircraft flying a scroll-driven 3D spline past **four career waypoints** (which climb to a cruise peak then **descend into a contact-finale arrival**) while a **live telemetry HUD** reads its altitude, heading and speed, over a sun-lit sky with drifting clouds, a star field at altitude, and wingtip contrails. The camera is fully scripted by a chase rig — there is **no OrbitControls / Pilot Mode** (replaced 2026-06; see §4). About / Education / Projects / Contact deliberately live only on `/` — repeating them here was redundant; the four waypoints carry the journey. Built from the approved prototype in `design_handoff_experience_flight/`.
+> **Current state.** `/experience` is a single **scroll-driven cinematic flight, full stop** — no editorial body. A pre-flight **loader** — the silhouette plane climbs the screen as the GLB loads, progress bar alongside, then flies off the top — → a "Welcome aboard." greeting that highlights a tagline word-by-word and zooms out → a dark-overlay reveal of the **A350 already aloft** → the aircraft flying a scroll-driven 3D spline past **four career waypoints** (which climb to a cruise peak then **descend into a contact-finale arrival**) while a **live telemetry HUD** reads its altitude, heading and speed, over a sun-lit sky with drifting clouds, a star field at altitude, and wingtip contrails. The camera is fully scripted by a chase rig — there is **no OrbitControls / Pilot Mode** (replaced 2026-06; see §4). About / Education / Projects / Contact deliberately live only on `/` — repeating them here was redundant; the four waypoints carry the journey. Built from the approved prototype in `design_handoff_experience_flight/`.
 
 ---
 
@@ -93,9 +93,9 @@ flightT = clamp((progress - INTRO_END) / (1 - INTRO_END), 0, 1)
 
 The first `INTRO_END` of scroll is the intro; the rest flies the spline.
 
-### Movement 0 — Silhouette splash (~3.7s, auto-play)
+### Movement 0 — Pre-flight loader (auto, holds ≥ 1.1s)
 
-`<CinematicIntro>` still fires on mount: a white-inverted A350 silhouette rises through a black overlay, which then fades. Lenis is paused throughout so a stray scroll can't interrupt it; on `complete` Lenis resumes and the scroll-driven flight takes over. The flight is already at `progress = 0` behind the splash (welcome card composed, reveal overlay dark), so the handoff is a seamless dark cross-fade.
+`<CinematicFlightLoader>` is the first thing on the page, and **the climbing plane is the loading animation**: a white-inverted A350 silhouette climbs the screen as the **real GLB byte load** progresses (`useFlightAircraft.load`'s `onProgress`), with a progress bar + rotating status line ("Pre-flight · Loading aircraft" … "Ready for takeoff") + percentage alongside. The bar and the climb ease toward the live fraction, capped at 92% until `assetsReady` (GLB parsed **and** `document.fonts.ready`) so they don't finish during the DRACO decode; then they complete, hold a minimum beat (so the climb always reads even when the GLB is cached), the plane **flies off the top**, the screen fades, and it emits `complete`. Lenis is paused on mount and resumed on `complete` (the welcome/flight beyond is scroll-driven). The flight is already at `progress = 0` behind the loader (welcome card composed, reveal overlay dark), so the loader → welcome handoff is a seamless dark cross-fade.
 
 ### Movement 1 — Welcome (introT 0 → ~0.42)
 
@@ -160,7 +160,7 @@ pages/experience/index.vue              # entrypoint — flight runway + chrome 
 layouts/cinematic.vue                   # dark shell + html[data-layout=cinematic] + Lenis init
 
 components/cinematic/
-├── Intro.vue                           # Movement 0 — plane silhouette rises through black              [RENDERED]
+├── FlightLoader.vue                    # Movement 0 — pre-flight loader: climbing plane + progress bar  [RENDERED]
 ├── FlightScene.vue                     # Three.js canvas mount (host + lifecycle)                      [RENDERED]
 ├── FlightIntro.vue                     # welcome greeting + word-highlight tagline (introT-driven)     [RENDERED]
 ├── FlightHud.vue                       # telemetry gauges + compass needle + perf readout              [RENDERED]

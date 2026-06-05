@@ -116,10 +116,14 @@ export function useFlightAircraft() {
    * given scene. Resolves with the pivot once mounted. Safe to call when
    * already loaded — just re-adds to the (possibly new) scene.
    */
-  function load(targetScene: THREE.Scene): Promise<THREE.Group> {
+  function load(
+    targetScene: THREE.Scene,
+    onProgress?: (frac: number) => void,
+  ): Promise<THREE.Group> {
     scene = targetScene
     if (pivot) {
       if (!targetScene.children.includes(pivot)) targetScene.add(pivot)
+      onProgress?.(1)
       return Promise.resolve(pivot)
     }
     return new Promise((resolve, reject) => {
@@ -133,7 +137,11 @@ export function useFlightAircraft() {
           targetScene.add(pivot)
           resolve(pivot)
         },
-        undefined,
+        onProgress
+          ? (e: ProgressEvent) => {
+              if (e.lengthComputable && e.total > 0) onProgress(e.loaded / e.total)
+            }
+          : undefined,
         (err) => {
           console.warn('[useFlightAircraft] GLB load failed', err)
           reject(err)
