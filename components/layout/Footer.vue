@@ -20,6 +20,14 @@ const year = new Date().getFullYear()
 
       <!-- Links -->
       <div class="flex items-center gap-3">
+        <NuxtLink
+          to="/admin"
+          class="btn-icon"
+          aria-label="Admin"
+          title="Admin"
+        >
+          <Icon name="fluent:settings-16-filled" size="15" />
+        </NuxtLink>
         <a
           :href="personal.github"
           target="_blank"

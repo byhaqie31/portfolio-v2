@@ -106,30 +106,121 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen px-4 py-8 max-w-400 mx-auto">
+  <div>
 
-    <!-- Login -->
-    <div v-if="!isAuthenticated" class="flex items-center justify-center min-h-[60vh]">
-      <div class="card w-full max-w-sm">
-        <h1 class="text-xl font-semibold tracking-tight text-text-primary text-center mb-6">Admin sign in</h1>
-        <form @submit.prevent="handleLogin" class="space-y-4">
-          <UiField label="Admin key" :error="loginError">
-            <UiInput
-              v-model="keyInput"
-              type="password"
-              placeholder="Enter admin key"
-              autocomplete="current-password"
-            />
-          </UiField>
-          <button type="submit" :disabled="loggingIn" class="btn-primary w-full">
-            {{ loggingIn ? 'Signing in…' : 'Sign in' }}
-          </button>
-        </form>
+    <!-- Login — full-screen split. The header (wordmark + label) and footer
+         (copyright + link) are baked into the panels; the dashboard layout hides
+         its own chrome while signed out (see layouts/dashboard.vue). -->
+    <div v-if="!isAuthenticated" class="grid lg:grid-cols-2 h-dvh overflow-hidden">
+      <!-- Left — sign-in, with integrated top bar + footer -->
+      <div class="flex flex-col h-full px-6 sm:px-10 lg:px-14 py-7">
+        <!-- Top bar -->
+        <div class="flex items-center justify-between shrink-0">
+          <NuxtLink to="/" class="text-base font-semibold tracking-tight text-text-primary hover:text-accent transition-colors">
+            Ahmad<span class="text-accent">.Baihaqie</span>
+          </NuxtLink>
+          <span class="text-sm text-text-muted">Portfolio admin</span>
+        </div>
+
+        <!-- Centered form -->
+        <div class="flex-1 min-h-0 flex flex-col justify-center overflow-y-auto py-8">
+          <div class="w-full max-w-sm mx-auto">
+            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-accent/10 text-accent mb-6">
+              <Icon name="fluent:lock-closed-16-filled" size="18" />
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">Welcome back</h1>
+            <p class="mt-2 text-sm text-text-secondary leading-relaxed">
+              Sign in to manage your portfolio content.
+            </p>
+
+            <form @submit.prevent="handleLogin" class="mt-8 space-y-4">
+              <UiField label="Admin key" :error="loginError">
+                <UiInput
+                  v-model="keyInput"
+                  type="password"
+                  placeholder="Enter admin key"
+                  autocomplete="current-password"
+                />
+              </UiField>
+              <button type="submit" :disabled="loggingIn" class="btn-primary w-full">
+                <span
+                  v-if="loggingIn"
+                  class="inline-block w-4 h-4 border-2 border-text-inverse/40 border-t-text-inverse rounded-full animate-spin"
+                />
+                {{ loggingIn ? 'Signing in…' : 'Sign in' }}
+              </button>
+            </form>
+
+            <NuxtLink
+              to="/"
+              class="mt-8 inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
+            >
+              <Icon name="fluent:arrow-left-16-filled" size="14" />
+              Back to site
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between shrink-0 text-sm text-text-muted">
+          <span>© {{ new Date().getFullYear() }} Ahmad Baihaqie</span>
+          <a
+            href="https://baihaqie.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-text-primary transition-colors"
+          >
+            baihaqie.com
+          </a>
+        </div>
       </div>
+
+      <!-- Right — full-height brand statement. Reuses the sanctioned .dark-chapter
+           token flip (navy field + vibrant blue accent); the panel-scoped style
+           contains its glow. Status pill top, statement bottom. -->
+      <aside class="statement-panel dark-chapter relative hidden lg:flex flex-col justify-between overflow-hidden px-14 py-7">
+        <!-- Oversized monogram watermark -->
+        <span
+          aria-hidden="true"
+          class="pointer-events-none select-none absolute -right-12 top-1/2 -translate-y-1/2 text-[26rem] leading-none font-semibold tracking-tighter text-text-primary/4"
+        >
+          AB
+        </span>
+
+        <!-- Top — status pill -->
+        <div class="relative flex justify-end shrink-0">
+          <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/40 px-3 py-1.5 text-sm text-text-secondary backdrop-blur-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
+            All systems operational
+          </span>
+        </div>
+
+        <!-- Bottom — statement -->
+        <div class="relative max-w-lg">
+          <p class="text-sm font-medium text-accent mb-4">Ahmad Baihaqie · Portfolio admin</p>
+          <h2 class="text-[clamp(2.25rem,3.2vw,3.25rem)] font-semibold tracking-tight leading-[1.05] text-text-primary">
+            Craft the details<br>that make the whole.
+          </h2>
+          <p class="mt-5 text-base text-text-secondary leading-relaxed max-w-md">
+            The quiet workspace where the portfolio is shaped — projects, experience, and the details that add up to the difference.
+          </p>
+
+          <!-- Sign-off badge -->
+          <div class="mt-8 inline-flex items-center gap-3 rounded-xl border border-border bg-surface/40 px-4 py-3 backdrop-blur-sm">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-accent/15 text-accent shrink-0">
+              <Icon name="fluent:shield-keyhole-16-filled" size="15" />
+            </span>
+            <div class="text-sm leading-tight">
+              <p class="font-medium text-text-primary">Private workspace</p>
+              <p class="text-text-muted">Key-protected · session only</p>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
 
     <!-- Dashboard -->
-    <div v-else>
+    <div v-else class="min-h-screen px-4 py-8 max-w-400 mx-auto">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-semibold tracking-tight text-text-primary">Portfolio admin</h1>
@@ -215,3 +306,18 @@ onMounted(() => {
 
   </div>
 </template>
+
+<style scoped>
+/* Inherit .dark-chapter's navy token flip, but replace its full-bleed,
+   viewport-fixed glow with a soft one contained to this panel. */
+.statement-panel {
+  background-color: rgb(var(--color-bg-raw));
+  background-image: radial-gradient(
+    72% 52% at 74% 32%,
+    rgb(41 151 255 / 0.2) 0%,
+    transparent 62%
+  );
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+</style>
