@@ -50,14 +50,20 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Ahmad Baihaqie — Software Engineer',
+      title: 'Ahmad Baihaqie',
       htmlAttrs: { lang: 'en' },
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/images/ABIcon.svg' },
+        { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon/favicon-96x96.png' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon/favicon.svg' },
+        { rel: 'shortcut icon', href: '/favicon/favicon.ico' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/favicon/site.webmanifest' },
       ],
       meta: [
-        { name: 'description', content: 'Software engineer portfolio — Ahmad Baihaqie' },
+        { name: 'description', content: 'Ahmad Baihaqie — Software Engineer (UI/UX) building clean, scalable interfaces for fintech & SaaS with Vue.js, Nuxt and Tailwind CSS.' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'author', content: 'Ahmad Baihaqie' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
         { name: 'theme-color', content: '#fbfbfc', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#14161a', media: '(prefers-color-scheme: dark)' },
         { property: 'og:type', content: 'website' },

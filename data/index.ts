@@ -24,6 +24,65 @@ export const personal = {
   ],
 }
 
+// ── HERO CREDENTIAL BADGES ───────────────────────────────────
+// Two floating glass badges over the hero portrait: `heroBadge` (the
+// stack/role, bottom-left) and `heroBadgeExp` (the where, top-right —
+// desktop only). They drift apart as the portrait zooms on hover.
+export const heroBadge = {
+  key: 'Vue · Nuxt',
+  label: 'Software Engineer - UI/UX',
+}
+
+export const heroBadgeExp = {
+  key: '3+ years',
+  label: 'Design & Developing',
+}
+
+// ── HERO TAGLINES (rotating subtitle) ────────────────────────
+// The hero sub cross-fades between these. Wrap a phrase in **double
+// asterisks** to emphasise it (rendered with text-primary + medium weight).
+export const heroTaglines = [
+  'Software Engineer **(UI/UX)** shaping clean, scalable interfaces for **fintech & SaaS**.',
+  'Designer-minded front-end engineer building **fintech products** with a **human lens**.',
+]
+
+// ── STATEMENT (pinned scale/zoom interstitial) ───────────────
+// Words light up one-by-one as the phrase scales up on scroll.
+// `accent` is the final, accent-colored word.
+export const statement = {
+  words: ['I', 'design', 'and', 'build', 'interfaces', 'where', 'complexity', 'quietly'],
+  accent: 'disappears.',
+}
+
+// ── IMPACT (animated metric band) ────────────────────────────
+// Directional glyphs stay qualitative; the counter figure tweens 0 → target.
+export interface ImpactMetric {
+  glyph?: string
+  count?: number
+  suffix?: string
+  label: string
+  sub: string
+}
+
+export const impact: ImpactMetric[] = [
+  {
+    glyph: '↓',
+    label: 'Support escalations',
+    sub: 'Streamlined flows & sharper validations',
+  },
+  {
+    glyph: '↑',
+    label: 'System adoption',
+    sub: 'Across merchant & admin portals',
+  },
+  {
+    count: 3,
+    suffix: '+',
+    label: 'Portals & modules shipped',
+    sub: 'Fintech payment products at Fiuu',
+  },
+]
+
 // ── NAVIGATION ───────────────────────────────────────────────
 export const navLinks = [
   { label: 'About', href: '#about' },
@@ -66,6 +125,7 @@ export const projects: Project[] = [
     description:
       'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
     stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
+    metrics: [{ value: '100%', label: 'Functional compliance' }],
     href: '#',
     github: 'https://github.com/byhaqie31/HouseOfParfum',
   },

@@ -40,8 +40,9 @@ const experiences = computed(() => {
             <p class="text-sm text-text-muted">{{ job.period }}</p>
             <span
               v-if="job.current"
-              class="inline-block mt-2 text-xs px-2.5 py-1 rounded-full bg-accent-tertiary/10 text-accent-tertiary"
+              class="inline-flex items-center gap-2 mt-2 text-xs font-medium text-accent-tertiary"
             >
+              <span class="dot-available" />
               Current
             </span>
           </div>
