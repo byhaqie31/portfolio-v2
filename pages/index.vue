@@ -108,7 +108,13 @@ definePageMeta({ layout: 'default' })
 <template>
   <div>
     <SectionsHeroSection />
-    <SectionsStatementSection />
+    <!-- Dark immersive chapter: the expanding statement scrolls into a deep
+         navy field with light ink + a vibrant blue accent, then eases back
+         to light. Statement only — About stays on the restrained light
+         surface. See main.css / UI-STANDARDS §dark chapter. -->
+    <div class="dark-chapter">
+      <SectionsStatementSection />
+    </div>
     <SectionsAboutSection />
     <SectionsExperienceSection />
     <SectionsImpactSection />
@@ -116,6 +122,10 @@ definePageMeta({ layout: 'default' })
     <SectionsSkillsSection />
     <SectionsWorkSection />
     <SectionsReferencesSection />
-    <SectionsContactSection />
+    <!-- Dark finale — the Contact section closes on the same deep navy as
+         the Statement opener, bookending the light middle. -->
+    <div class="dark-chapter">
+      <SectionsContactSection />
+    </div>
   </div>
 </template>

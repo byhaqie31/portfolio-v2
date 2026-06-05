@@ -39,10 +39,10 @@ Values are OKLCH-derived (chroma ≤ 0.008 on neutrals tinted toward hue 240, ac
 
 | Token | Light (default) | Dark | Role |
 |---|---|---|---|
-| `--color-bg-raw` | `251 251 252` (#fbfbfc) | `20 22 26` (#14161a) | Page background. Never `#fff` / `#000` — always tinted. |
-| `--color-bg-secondary-raw` | `244 245 247` | `28 30 35` | Subtle banding, mobile menu open state, tag backgrounds. |
-| `--color-bg-tertiary-raw` | `236 238 241` | `38 40 46` | Deepest neutral tint. |
-| `--color-surface-raw` | `253 253 254` | `28 30 35` | Cards, panels, command palette. |
+| `--color-bg-raw` | `239 244 251` (#EFF4FB) | `20 22 26` (#14161a) | Page background. A **soft sky-blue-tinted off-white** (deliberately not flat white); never `#fff` / `#000`. |
+| `--color-bg-secondary-raw` | `230 238 248` | `28 30 35` | Subtle banding, mobile menu open state, tag backgrounds. |
+| `--color-bg-tertiary-raw` | `221 231 244` | `38 40 46` | Deepest neutral tint. |
+| `--color-surface-raw` | `249 251 254` | `28 30 35` | Cards, panels, command palette — kept brighter than the sky bg so they still lift off it. |
 | `--color-surface-raised-raw` | `246 247 249` | `38 40 46` | Hover state for cards / list rows. |
 | `--color-surface-overlay-raw` | `239 240 243` | `50 53 60` | Floating overlays. |
 | `--color-accent-raw` | `0 102 204` (#0066cc) | `41 151 255` (#2997ff) | Apple SF Blue. Primary action, links, focus rings, active states. |
@@ -75,6 +75,17 @@ Values are OKLCH-derived (chroma ≤ 0.008 on neutrals tinted toward hue 240, ac
 **There are no decorative background layers on the public site.** No starfield. No noise. No scanlines. No hex grid. No cursor spotlight. No ambient glows. The background is the bg token; that's it.
 
 If a section needs visual distinction, lean on whitespace and type, not a layer. Drift back into chrome only with a real product reason.
+
+### 2.4 The dark chapter (one sanctioned exception)
+
+`/` is light-first, but it has **two** deliberate dark moments that **bookend** the light middle: the **Statement** section near the top and the **Contact** finale at the bottom are each wrapped in a `.dark-chapter` (a deep-navy field with a single soft blue glow) the light page scrolls into and back out of — the Apple product-page move of dark immersive sections amid light ones. Everything between (About → References) stays on the light surface. These are the only places the public site goes dark-by-design (independent of the light/dark mode toggle).
+
+Rules so this stays *one* tasteful exception, not a slide back into chrome:
+
+- **Implemented as a token override, not bespoke styling.** `.dark-chapter` (in [main.css](../assets/css/main.css) `@layer components`) re-declares the colour tokens for its subtree, so every Tailwind utility and scoped section style inside repaints automatically to navy bg + light ink + the **vibrant blue accent** (`#5AACFF`). Don't hand-roll per-element dark colours inside it. **Gotcha:** override the *resolved* `--color-*` vars, **not just** the `--color-*-raw` triplets — Tailwind v4 declares the resolved vars on `:root`, so they compute there once and inherit already-resolved; re-declaring only `-raw` mid-page repaints backgrounds (which read `-raw` directly) but leaves text dark. `.dark-chapter` sets both (resolved for `var(--color-*)` consumers, `-raw` for `rgb(var(--color-*-raw)/<alpha>)` consumers + its own bg).
+- **The glow is the lone background layer permitted on `/`** — a soft, low-opacity blue radial behind the centred statement (viewport-anchored via `background-attachment: fixed`, dropped to scroll on ≤768px). One glow, restrained. §2.3 otherwise still holds everywhere else.
+- **Edges blend, never hard-cut.** The chapter's top/bottom 22vh fade to `--page-bg-raw` (the surrounding page colour, defined per theme) so entering/leaving is seamless. `--page-bg-raw` is intentionally *not* overridden inside `.dark-chapter`.
+- **Two is the cap — opener + finale, far apart.** The Statement and Contact bookends work *because* they sandwich a long light middle. Don't add a third, and don't move them adjacent — the drama is the contrast.
 
 ---
 

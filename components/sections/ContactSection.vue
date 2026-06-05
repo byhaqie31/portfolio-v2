@@ -30,7 +30,10 @@ function scrollToTop() {
 </script>
 
 <template>
-  <section id="contact" class="section text-center">
+  <!-- Extra py beyond the default .section padding grows the dark-chapter band.
+       The fade edges are a fixed 22vh, so this padding adds solid navy. Dial the
+       numbers up/down to taste (py-32 ≈ 8rem · py-48 ≈ 12rem · py-64 ≈ 16rem). -->
+  <section id="contact" class="section text-center py-40 md:py-56">
     <div class="max-w-2xl mx-auto">
       <p class="reveal text-sm text-accent font-medium mb-4">Contact</p>
 

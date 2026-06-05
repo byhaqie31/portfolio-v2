@@ -3,28 +3,52 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 /*
- * 3D aircraft lifecycle. Loads the A350 GLB into an existing Three.js
- * scene, normalizes its orientation/scale, places it at the initial
- * cruise pose, and tears down cleanly. Pose (pitch, height) across
- * scroll is owned by useFlightScroll — this composable is just the
- * load + place + dispose lifecycle.
+ * 3D aircraft lifecycle for the cinematic flight. Loads the A350 GLB into
+ * an existing Three.js scene, normalizes its scale + orientation, and
+ * wraps it in a pivot group the flight choreography drives along the
+ * spline. This composable owns load + place + dispose only; per-frame
+ * position / orientation / banking lives in useFlightPath.
  *
- * Pattern adapted from jet-engine-infographic/src/model-loader.js.
- * Differences from AoT:
- *   - No procedural fallback (we have the PNG silhouette as Plan B if
- *     the GLB itself can't load).
- *   - No AXEL NOVA livery shader patch (default materials for now).
+ * Pattern adapted from jet-engine-infographic/src/model-loader.js. DRACO
+ * decoder loads from Google's CDN (matches AoT) — saves ~1MB of decoder
+ * files in /public.
  *
- * DRACO decoder loads from Google's CDN (matches AoT) — saves ~1MB
- * of decoder files in /public.
+ * ── Orientation contract ──────────────────────────────────────────────
+ * The flight rig is a parent pivot `Group`; the normalized GLB sits
+ * inside it, recentred on the pivot's origin and oriented so its NOSE
+ * points along the pivot's local +Z. That convention is what lets the
+ * flight loop use `pivot.lookAt(point + tangent)` — THREE's Object3D
+ * lookAt aligns an object's local +Z toward the target — to fly the
+ * aircraft nose-first down the spline, then `pivot.rotateZ(roll)` to bank
+ * about the nose axis. (The repo's parked-pose code noses the model +X
+ * via rotation.y = π/2; the flight rig re-derives orientation for the
+ * +Z-forward convention instead.)
  */
 
 const DRACO_DECODER = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/'
-const TARGET_FUSELAGE_LENGTH = 30 // scene units; sized to feel cinematic at z=-45
+const TARGET_FUSELAGE_LENGTH = 30 // scene units; sized to feel cinematic in the chase rig
+
+/*
+ * Rotation applied to the raw GLB so its nose ends up along the pivot's
+ * local +Z (travel direction). The A350 GLB ships nose-along-+Z already,
+ * so this is a no-op (0). Kept as a single tunable: if the aircraft ever
+ * flies sideways/backwards, this is the one value to adjust (e.g. Math.PI
+ * to flip front/back, ±π/2 to swap a +X/+Z nose).
+ */
+const NOSE_ALIGN_Y = 0
 
 let loader: GLTFLoader | null = null
-let model: THREE.Group | null = null
+let model: THREE.Group | null = null // normalized GLB (recentred inside the pivot)
+let pivot: THREE.Group | null = null // what the flight loop positions / orients
 let scene: THREE.Scene | null = null
+
+// Wingtip emit points (pivot-local) + measured span, derived from the
+// normalized model bounds. Consumed by the contrail emitters.
+const wingtips = {
+  left: new THREE.Vector3(),
+  right: new THREE.Vector3(),
+  halfSpan: 0,
+}
 
 function getLoader(): GLTFLoader {
   if (loader) return loader
@@ -37,27 +61,38 @@ function getLoader(): GLTFLoader {
 }
 
 function normalizeModel(g: THREE.Group): THREE.Group {
-  // The A350 GLB has its nose at +Z and wings along X. For a side-profile
-  // flyby we want the nose to point along the travel axis. We'll handle
-  // direction at flyby time by re-setting rotation — here we just normalize
-  // to nose-along-+X as a canonical orientation.
-  g.rotation.y = Math.PI / 2
+  // Orient the nose to +Z (see orientation contract above).
+  g.rotation.y = NOSE_ALIGN_Y
 
   // Scale: pull the longest horizontal axis down to the target length.
-  const box = new THREE.Box3().setFromObject(g)
+  let box = new THREE.Box3().setFromObject(g)
   const size = new THREE.Vector3()
   box.getSize(size)
   const longest = Math.max(size.x, size.z)
   if (longest > 0) g.scale.setScalar(TARGET_FUSELAGE_LENGTH / longest)
 
-  // Recenter on origin so position transforms read intuitively.
-  box.setFromObject(g)
+  // Recenter on origin so the pivot rotates about the aircraft's centre,
+  // not its model origin. Done on the inner group so the offset survives
+  // the flight loop overwriting the pivot's position every frame.
+  box = new THREE.Box3().setFromObject(g)
   const center = new THREE.Vector3()
   box.getCenter(center)
   g.position.sub(center)
 
+  // Measure wingtips from the normalized, centred bounds. Nose is +Z, so
+  // the wing span runs along X. Emit just inboard of the tip (×0.92),
+  // slightly below and slightly aft so the ribbons trail off the wing.
+  box = new THREE.Box3().setFromObject(g)
+  box.getSize(size)
+  wingtips.halfSpan = size.x / 2
+  const tipX = wingtips.halfSpan * 0.92
+  const tipY = -size.y * 0.12
+  const tipZ = -size.z * 0.08 // nose is +Z, so a small −Z offset trails the emit point slightly aft
+  wingtips.left.set(tipX, tipY, tipZ)
+  wingtips.right.set(-tipX, tipY, tipZ)
+
   // Materials — keep default PBR. Patch transparent + sRGB on textures so
-  // GSAP opacity tweens work later and colour space matches the renderer.
+  // opacity reveals work and colour space matches the renderer.
   g.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh
@@ -77,25 +112,36 @@ function normalizeModel(g: THREE.Group): THREE.Group {
 
 export function useFlightAircraft() {
   /**
-   * Load the GLB and add it to the given scene. Returns a promise that
-   * resolves once the model is ready and mounted. Safe to call when
-   * the model is already loaded — just re-adds to the (possibly new) scene.
+   * Load the GLB, wrap it in a pivot group, and add the pivot to the
+   * given scene. Resolves with the pivot once mounted. Safe to call when
+   * already loaded — just re-adds to the (possibly new) scene.
    */
-  function load(targetScene: THREE.Scene): Promise<THREE.Group> {
+  function load(
+    targetScene: THREE.Scene,
+    onProgress?: (frac: number) => void,
+  ): Promise<THREE.Group> {
     scene = targetScene
-    if (model) {
-      if (!targetScene.children.includes(model)) targetScene.add(model)
-      return Promise.resolve(model)
+    if (pivot) {
+      if (!targetScene.children.includes(pivot)) targetScene.add(pivot)
+      onProgress?.(1)
+      return Promise.resolve(pivot)
     }
     return new Promise((resolve, reject) => {
       getLoader().load(
         '/models/a350.glb',
         (gltf) => {
           model = normalizeModel(gltf.scene)
-          targetScene.add(model)
-          resolve(model)
+          pivot = new THREE.Group()
+          pivot.name = 'aircraft-pivot'
+          pivot.add(model)
+          targetScene.add(pivot)
+          resolve(pivot)
         },
-        undefined,
+        onProgress
+          ? (e: ProgressEvent) => {
+              if (e.lengthComputable && e.total > 0) onProgress(e.loaded / e.total)
+            }
+          : undefined,
         (err) => {
           console.warn('[useFlightAircraft] GLB load failed', err)
           reject(err)
@@ -104,36 +150,27 @@ export function useFlightAircraft() {
     })
   }
 
-  /**
-   * Place the aircraft at its initial cruise pose. From here, the
-   * useFlightScroll choreography ScrollTrigger owns rotation.x (pitch)
-   * and position.y (height) and scrubs them across the post-pin scroll
-   * distance — pitch up for takeoff, level for cruise, pitch down +
-   * drop for descent and landing.
-   *
-   * Coordinates: camera at origin looking at (0, 0, -1) with FOV 55°.
-   * Aircraft sits at z=-45 (cinematic distance), y=2 (just above eye
-   * level so the lower-third masthead has room beneath), nose pointing
-   * +X (the viewer sees the aircraft in profile).
-   */
-  function startCruise() {
-    if (!model) return
-    model.rotation.set(0, Math.PI / 2, 0)
-    model.position.set(0, 2, -45)
+  /** The pivot the flight loop positions / orients / banks. Null until loaded. */
+  function getPivot(): THREE.Group | null {
+    return pivot
   }
 
-  /**
-   * Returns the loaded model (THREE.Group) so external composables can
-   * tween its rotation/position. Returns null until the GLB has loaded.
-   */
+  /** The inner normalized GLB. Null until loaded. */
   function getModel(): THREE.Group | null {
     return model
   }
 
   /**
-   * Returns the flat array of materials on the loaded aircraft. Used by
-   * useFlightScroll to opacity-tween them as the iris reveals. Returns
-   * an empty array if the model hasn't loaded yet.
+   * Wingtip emit points (pivot-local) + measured half-span. Consumed by
+   * the contrail emitters, transformed to world via the pivot transform.
+   */
+  function getWingtips() {
+    return wingtips
+  }
+
+  /**
+   * Flat array of materials on the loaded aircraft. Used by the flight
+   * reveal to opacity-tween them in. Empty until the GLB has loaded.
    */
   function getMaterials(): THREE.Material[] {
     if (!model) return []
@@ -149,9 +186,7 @@ export function useFlightAircraft() {
   }
 
   function destroy() {
-    if (model && scene) {
-      scene.remove(model)
-    }
+    if (pivot && scene) scene.remove(pivot)
     if (model) {
       model.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
@@ -163,8 +198,9 @@ export function useFlightAircraft() {
       })
     }
     model = null
+    pivot = null
     scene = null
   }
 
-  return { load, startCruise, getModel, getMaterials, destroy }
+  return { load, getPivot, getModel, getWingtips, getMaterials, destroy }
 }

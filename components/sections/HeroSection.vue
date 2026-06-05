@@ -159,7 +159,15 @@ onUnmounted(() => mm?.revert())
         </p>
 
         <div data-hero-stagger class="mt-10 flex flex-wrap items-center gap-5">
-          <NuxtLink to="/experience" class="btn-primary group">
+          <!-- `external` forces a full document load into /experience rather
+               than an SPA transition. The cinematic surface is `ssr: false`
+               with its own layout, Lenis scroll engine and a singleton
+               Three.js scene; client-side navigating into it can race the
+               layout/scroll/WebGL hand-off and leave the page half-loaded
+               (needing a hard reload). A clean load is the right boundary
+               here — the two surfaces share no scroll engine or design
+               language by design. -->
+          <NuxtLink to="/experience" external class="btn-primary group">
             Experience my journey
             <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
           </NuxtLink>
