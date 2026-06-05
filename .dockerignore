@@ -1,0 +1,18 @@
+# Keep the image build context lean — exclude everything the multi-stage
+# Dockerfile doesn't need. Source (pages/components/server/data/etc.) is kept.
+node_modules
+.nuxt
+.output
+.git
+.github
+.vscode
+.idea
+docs
+*.md
+.env
+.env.*
+.DS_Store
+docker-compose*.yml
+Dockerfile.dev
+npm-debug.log*
+yarn-error.log*

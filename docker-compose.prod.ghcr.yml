@@ -1,0 +1,52 @@
+# Production stack for portfolio-v2 — GHCR (image-pull) variant.
+#
+# Identical to docker-compose.yml EXCEPT the image is pulled from GHCR instead
+# of built on the VPS. Used by .github/workflows/deploy.yml.
+#
+# Prereqs on the VPS (one-time):
+#   1. Shared infra running (provides the `mysql` service on axelnova-shared).
+#   2. Repo present at ~/portfolio-v2 with a filled-in `.env`
+#      (DB_PASSWORD, ADMIN_SECRET, BASE_URL).
+#   3. Image is PUBLIC on GHCR → no `docker login` needed to pull.
+#
+# Deploy (done by CI):
+#   docker compose -f docker-compose.prod.ghcr.yml pull
+#   docker compose -f docker-compose.prod.ghcr.yml up -d
+
+services:
+  portfolio:
+    image: ghcr.io/byhaqie31/portfolio-v2:latest
+    container_name: portfolio
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=portfolio_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=portfolio_db
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - BASE_URL=${BASE_URL}
+      - NUXT_TELEMETRY_DISABLED=1
+    networks:
+      - axelnova-shared
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# MySQL + phpMyAdmin live in the shared axelnova-infra stack. DB_HOST=mysql
+# resolves over the axelnova-shared network. See: byhaqie31/axelnova-infra
+networks:
+  axelnova-shared:
+    name: axelnova-shared
+    external: true
