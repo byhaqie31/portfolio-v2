@@ -58,8 +58,11 @@ definePageMeta({ layout: 'default' })
 <template>
   <div>
     <SectionsHeroSection />
+    <SectionsStatementSection />
     <SectionsAboutSection />
     <SectionsExperienceSection />
+    <SectionsImpactSection />
+    <SectionsEducationSection />
     <SectionsSkillsSection />
     <SectionsWorkSection />
     <SectionsReferencesSection />

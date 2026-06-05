@@ -24,6 +24,50 @@ export const personal = {
   ],
 }
 
+// ── HERO CREDENTIAL BADGE ────────────────────────────────────
+// Floating glass badge over the hero portrait.
+export const heroBadge = {
+  key: 'Vue · Nuxt',
+  label: 'Front-end at Fiuu (Razer MS)',
+}
+
+// ── STATEMENT (pinned scale/zoom interstitial) ───────────────
+// Words light up one-by-one as the phrase scales up on scroll.
+// `accent` is the final, accent-colored word.
+export const statement = {
+  words: ['I', 'design', 'and', 'build', 'interfaces', 'where', 'complexity', 'quietly'],
+  accent: 'disappears.',
+}
+
+// ── IMPACT (animated metric band) ────────────────────────────
+// Directional glyphs stay qualitative; the counter figure tweens 0 → target.
+export interface ImpactMetric {
+  glyph?: string
+  count?: number
+  suffix?: string
+  label: string
+  sub: string
+}
+
+export const impact: ImpactMetric[] = [
+  {
+    glyph: '↓',
+    label: 'Support escalations',
+    sub: 'Streamlined flows & sharper validations',
+  },
+  {
+    glyph: '↑',
+    label: 'System adoption',
+    sub: 'Across merchant & admin portals',
+  },
+  {
+    count: 3,
+    suffix: '+',
+    label: 'Portals & modules shipped',
+    sub: 'Fintech payment products at Fiuu',
+  },
+]
+
 // ── NAVIGATION ───────────────────────────────────────────────
 export const navLinks = [
   { label: 'About', href: '#about' },
@@ -66,6 +110,7 @@ export const projects: Project[] = [
     description:
       'Final year project — developed a full-stack e-commerce web application with emphasis on frontend UI quality and backend PHP integration. Conducted user testing and iterated based on feedback to achieve 100% functional compliance.',
     stack: ['PHP', 'Bootstrap', 'JavaScript', 'MySQL', 'Figma'],
+    metrics: [{ value: '100%', label: 'Functional compliance' }],
     href: '#',
     github: 'https://github.com/byhaqie31/HouseOfParfum',
   },

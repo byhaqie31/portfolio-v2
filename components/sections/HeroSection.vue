@@ -1,29 +1,37 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
-import { personal as staticPersonal } from '~/data/index'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { personal as staticPersonal, heroBadge } from '~/data/index'
 
 const { data: personalData } = await usePersonal()
 
 const personal = computed(() => {
   const d = personalData.value as any
   return {
-    name: d?.name || staticPersonal.name,
     shortName: d?.short_name || staticPersonal.shortName,
-    role: d?.role || staticPersonal.role,
-    summary: d?.summary || staticPersonal.summary,
     location: d?.location || staticPersonal.location,
-    email: d?.email || staticPersonal.email,
-    website: d?.website || staticPersonal.website,
-    github: d?.github || staticPersonal.github,
-    linkedin: d?.linkedin || staticPersonal.linkedin,
     availableFor: d?.available_for || staticPersonal.availableFor,
     focus: d?.focus || staticPersonal.focus,
   }
 })
 
+// Stacked headline — first word on its own line, the rest (with the accent
+// period) beneath it, mirroring the "Ahmad / Baihaqie." prototype.
+const nameParts = computed(() => {
+  const parts = personal.value.shortName.trim().split(' ')
+  return { first: parts[0], rest: parts.slice(1).join(' ') || parts[0] }
+})
+
 const heroRoot = ref<HTMLElement | null>(null)
+const photo = ref<HTMLImageElement | null>(null)
 
 let mm: ReturnType<typeof gsap.matchMedia> | null = null
+
+// After the portrait settles, recompute pinned-section measurements so the
+// Statement / Projects pins start from the correct document height.
+function refreshTriggers() {
+  if (import.meta.client) ScrollTrigger.refresh()
+}
 
 onMounted(() => {
   if (!heroRoot.value) return
@@ -32,113 +40,168 @@ onMounted(() => {
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
     const ctx = gsap.context(() => {
-      gsap.set('.hero-reveal', { opacity: 0, y: 24 })
-      gsap.set('.hero-photo', { opacity: 0, scale: 0.96 })
-
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
-      tl.to('.hero-photo', { opacity: 1, scale: 1, duration: 1.6 }, 0)
-        .to('.hero-reveal', { opacity: 1, y: 0, duration: 1.1, stagger: 0.08 }, 0.15)
+      tl.fromTo('.hero-photo-wrap', { opacity: 0, scale: 0.92, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1.6 }, 0)
+        .fromTo('[data-hero-stagger]', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.09 }, 0.15)
+        .fromTo('.hero-photo-badge', { opacity: 0, y: 14, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.9 }, 0.9)
+        .fromTo('.scroll-cue', { opacity: 0 }, { opacity: 1, duration: 0.8 }, 1.2)
     }, heroRoot.value!)
 
     return () => ctx.revert()
   })
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
-    gsap.set('.hero-reveal', { opacity: 1, y: 0 })
-    gsap.set('.hero-photo', { opacity: 1, scale: 1 })
+    gsap.set('[data-hero-stagger], .hero-photo-wrap, .hero-photo-badge, .scroll-cue', {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    })
   })
+
+  // Image may already be cached (complete) on mount.
+  if (photo.value?.complete) refreshTriggers()
 })
 
 onUnmounted(() => mm?.revert())
 </script>
 
 <template>
-  <section ref="heroRoot" class="relative min-h-screen flex items-center px-6 pt-14">
-    <div class="relative max-w-6xl mx-auto w-full py-28 md:py-40 flex flex-col md:flex-row items-center lg:items-start gap-12 md:gap-12 lg:gap-20">
-      <div class="flex-1 min-w-0">
-        <div class="hero-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface text-sm text-text-secondary mb-8">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent-tertiary animate-pulse" />
-          Available for {{ personal.availableFor }}
-        </div>
+  <section
+    id="top"
+    ref="heroRoot"
+    class="relative min-h-[100svh] flex items-center px-6 pt-20"
+  >
+    <div class="max-w-6xl mx-auto w-full grid lg:grid-cols-[1.15fr_0.85fr] gap-11 lg:gap-16 items-center">
+      <!-- Left: copy -->
+      <div class="order-2 lg:order-1">
+        <span
+          data-hero-stagger
+          class="inline-flex items-center gap-2.5 text-sm font-medium text-text-secondary mb-7"
+        >
+          <span class="dot-available" />
+          Available for {{ personal.availableFor }} · {{ personal.location }}
+        </span>
 
-        <p class="hero-reveal text-sm text-text-muted font-medium mb-3">
-          {{ personal.name }}
-        </p>
-
-        <h1 class="hero-reveal text-[clamp(3rem,7vw,5.5rem)] font-semibold tracking-tight leading-[1.02] text-text-primary mb-5">
-          {{ personal.role }}
+        <h1 class="text-[clamp(3rem,8vw,5.5rem)] font-semibold leading-[0.98] text-text-primary" style="letter-spacing:-0.035em">
+          <span data-hero-stagger class="block">{{ nameParts.first }}</span>
+          <span data-hero-stagger class="block">{{ nameParts.rest }}<span class="text-accent">.</span></span>
         </h1>
 
-        <p class="hero-reveal text-xl md:text-2xl text-text-secondary leading-snug mb-8 max-w-xl">
-          Focused on <span class="text-text-primary font-medium">{{ personal.focus }}</span>
+        <p data-hero-stagger class="mt-7 text-[clamp(1.125rem,2.2vw,1.5rem)] text-text-secondary leading-snug max-w-[34ch]">
+          Software Engineer <span class="text-text-primary font-medium">(UI/UX)</span>
+          shaping clean, scalable interfaces for
+          <span class="text-text-primary font-medium">{{ personal.focus }}</span>.
         </p>
 
-        <p class="hero-reveal max-w-xl text-base text-text-secondary leading-relaxed mb-10">
-          {{ personal.summary }}
-        </p>
-
-        <div class="hero-reveal flex flex-wrap items-center gap-6 mb-14">
+        <div data-hero-stagger class="mt-10 flex flex-wrap items-center gap-5">
           <NuxtLink to="/experience" class="btn-primary group">
             Experience my journey
             <Icon name="fluent:arrow-right-16-filled" size="14" class="group-hover:translate-x-0.5 transition-transform" />
           </NuxtLink>
-          <a
-            href="#projects"
-            class="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1 py-2"
-          >
-            View my work
-            <Icon name="fluent:arrow-right-16-filled" size="13" class="opacity-60" />
-          </a>
-        </div>
-
-        <div class="hero-reveal flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted">
-          <span class="flex items-center gap-1.5">
-            <Icon name="fluent:location-16-filled" size="14" />
-            {{ personal.location }}
-          </span>
-          <span class="w-px h-3 bg-border hidden sm:inline-block" />
-          <a
-            href="https://axelnovaventures.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-1.5 hover:text-text-primary transition-colors"
-          >
-            <Icon name="fluent:globe-16-filled" size="14" />
-            axelnovaventures.com
+          <a href="#contact" class="link-quiet">
+            Get in touch <span class="arrow">→</span>
           </a>
         </div>
       </div>
 
-      <div class="shrink-0">
-        <div class="hero-photo group relative w-64 h-72 sm:w-72 sm:h-80 md:w-80 md:h-96 lg:w-104 lg:h-128">
-          <div
-            class="relative w-full h-full rounded-3xl overflow-hidden transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
-            style="box-shadow: 0 40px 90px -25px rgba(0,0,0,0.18), 0 0 0 1px rgb(var(--color-border-raw) / 0.5);"
-          >
-            <img
-              src="/images/ProfilePicture.png"
-              alt="Ahmad Baihaqie"
-              class="w-full h-full object-cover object-top"
-            />
-            <!-- Subtle bottom gradient for visual weight without imposing on the face -->
-            <div
-              class="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
-              style="background: linear-gradient(to top, rgb(var(--color-bg-raw) / 0.15), transparent);"
-            />
-          </div>
+      <!-- Right: portrait + floating credential badge -->
+      <div class="hero-photo-wrap order-1 lg:order-2 relative justify-self-center lg:justify-self-end">
+        <div class="hero-photo relative overflow-hidden rounded-[28px] border border-border-subtle">
+          <img
+            ref="photo"
+            src="/images/ProfilePicture.png"
+            alt="Portrait of Ahmad Baihaqie"
+            class="w-full h-full object-cover object-top"
+            @load="refreshTriggers"
+          />
+        </div>
+        <div class="hero-photo-badge">
+          <div class="text-2xl font-semibold tracking-tight text-text-primary">{{ heroBadge.key }}</div>
+          <div class="text-xs text-text-muted mt-0.5">{{ heroBadge.label }}</div>
         </div>
       </div>
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="scroll-cue">
+      <span class="mouse" />
+      Scroll
     </div>
   </section>
 </template>
 
 <style scoped>
-/* FOUC guard for the GSAP entrance — only applies when JS is enabled,
- * so JS-disabled readers still see the hero content rendered by SSR. */
+.hero-photo {
+  width: clamp(260px, 30vw, 400px);
+  aspect-ratio: 4 / 5;
+  box-shadow: 0 40px 80px -40px rgb(var(--color-accent-raw) / 0.45);
+}
+
+.hero-photo-badge {
+  position: absolute;
+  left: -20px;
+  bottom: 28px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgb(var(--color-surface-raw) / 0.82);
+  border: 1px solid var(--color-border-subtle);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px -24px rgb(var(--color-text-primary-raw) / 0.4);
+}
+
+.scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.scroll-cue .mouse {
+  width: 22px;
+  height: 34px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 12px;
+  position: relative;
+}
+.scroll-cue .mouse::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--color-text-muted);
+  animation: scroll-wheel 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes scroll-wheel {
+  0% { opacity: 0; transform: translate(-50%, 0); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 10px); }
+}
+
+@media (max-width: 1023px) {
+  .hero-photo-badge { left: auto; right: -8px; }
+}
+
+/* FOUC guard — only when JS can run the entrance. SSR/no-JS shows content. */
 @media (scripting: enabled) {
-  .hero-reveal,
-  .hero-photo {
+  [data-hero-stagger],
+  .hero-photo-wrap,
+  .scroll-cue {
     opacity: 0;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue { display: none; }
 }
 </style>

@@ -7,10 +7,16 @@ const personal = computed(() => {
   const d = personalData.value as any
   return {
     email: d?.email || staticPersonal.email,
+    mobile: d?.mobile || staticPersonal.mobile,
+    website: d?.website || staticPersonal.website,
     github: d?.github || staticPersonal.github,
     linkedin: d?.linkedin || staticPersonal.linkedin,
   }
 })
+
+// tel: needs a punctuation-free number.
+const telHref = computed(() => `tel:${personal.value.mobile.replace(/[^\d+]/g, '')}`)
+const websiteLabel = computed(() => personal.value.website.replace(/^https?:\/\//, '').replace(/\/$/, ''))
 </script>
 
 <template>
@@ -29,35 +35,47 @@ const personal = computed(() => {
           Reach out, I usually respond within a day.
         </p>
 
-        <!-- Primary CTA -->
-        <a
-          :href="`mailto:${personal.email}`"
-          class="btn-primary inline-flex group mb-8"
-        >
-          <Icon name="fluent:mail-16-filled" size="15" />
-          {{ personal.email }}
-          <Icon name="fluent:arrow-right-16-filled" size="14" class="ml-1 group-hover:translate-x-0.5 transition-transform" />
-        </a>
+        <!-- Primary actions: email + phone -->
+        <div class="flex flex-wrap items-center gap-4 mb-10">
+          <a :href="`mailto:${personal.email}`" class="btn-primary group">
+            <Icon name="fluent:mail-16-filled" size="15" />
+            {{ personal.email }}
+            <Icon name="fluent:arrow-right-16-filled" size="14" class="ml-1 group-hover:translate-x-0.5 transition-transform" />
+          </a>
+          <a :href="telHref" class="btn-ghost">
+            <Icon name="fluent:call-16-filled" size="15" />
+            {{ personal.mobile }}
+          </a>
+        </div>
 
-        <!-- Secondary links -->
-        <div class="flex flex-wrap items-center gap-4">
+        <!-- Channels -->
+        <div class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[0.9375rem]">
           <a
             :href="personal.github"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-ghost inline-flex items-center gap-2 text-sm"
+            class="inline-flex items-center gap-2 text-text-secondary hover:text-accent transition-colors"
           >
-            <UiIconGithub :size="14" />
+            <UiIconGithub :size="15" />
             GitHub
           </a>
           <a
             :href="personal.linkedin"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-ghost inline-flex items-center gap-2 text-sm"
+            class="inline-flex items-center gap-2 text-text-secondary hover:text-accent transition-colors"
           >
-            <UiIconLinkedin :size="14" />
+            <UiIconLinkedin :size="15" />
             LinkedIn
+          </a>
+          <a
+            :href="personal.website"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-text-secondary hover:text-accent transition-colors"
+          >
+            <Icon name="fluent:globe-16-filled" size="15" />
+            {{ websiteLabel }}
           </a>
         </div>
       </div>

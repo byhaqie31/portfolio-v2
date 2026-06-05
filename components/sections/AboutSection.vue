@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { personal as staticPersonal, education as staticEducation } from '~/data/index'
+import { personal as staticPersonal } from '~/data/index'
 
 const { data: personalData } = await usePersonal()
-
-const { data: educationData } = await usePreviewableFetch<any[]>('education', '/api/education', {
-  key: 'education',
-  default: () => staticEducation as any[],
-})
 
 const bio = computed(() => {
   const d = personalData.value as any
@@ -14,60 +9,49 @@ const bio = computed(() => {
   return staticPersonal.bio
 })
 
-const education = computed(() => {
-  const data = educationData.value as any[]
-  if (!data?.length) return staticEducation
-  return data.map((e: any) => ({
-    id: e.slug || e.id,
-    period: e.period,
-    institution: e.institution,
-    location: e.location,
-    degree: e.degree,
-    cgpa: e.cgpa,
-  }))
+const meta = computed(() => {
+  const d = personalData.value as any
+  return {
+    location: d?.location || staticPersonal.location,
+    focus: d?.focus || staticPersonal.focus,
+    availableFor: d?.available_for || staticPersonal.availableFor,
+    languages: staticPersonal.languages,
+  }
 })
 </script>
 
 <template>
   <section id="about" class="section">
     <div class="max-w-6xl mx-auto">
-      <div class="grid md:grid-cols-2 gap-16 items-start">
+      <UiSectionHeading label="About" title="Engineering with a human lens." />
+
+      <div class="grid md:grid-cols-[1fr_0.8fr] gap-12 md:gap-20 items-start">
         <!-- Left: bio -->
-        <div>
-          <UiSectionHeading label="About" title="A bit about me" />
-
-          <div class="space-y-4 text-text-secondary leading-relaxed reveal">
-            <p v-for="(paragraph, i) in bio" :key="i">{{ paragraph }}</p>
-          </div>
+        <div class="space-y-5 text-[1.0625rem] text-text-secondary leading-[1.7] reveal">
+          <p v-for="(paragraph, i) in bio" :key="i" class="max-w-[56ch]">{{ paragraph }}</p>
         </div>
 
-        <!-- Right: academic background -->
-        <div class="reveal">
-          <UiSectionHeading label="Academic" title="Education" />
-          <div class="divide-y divide-border-subtle rounded-2xl border border-border/60 bg-surface overflow-hidden">
-            <div
-              v-for="edu in education"
-              :key="edu.id"
-              class="flex flex-col gap-3 px-6 py-5 hover:bg-surface-raised transition-colors"
-            >
-              <div class="flex items-start justify-between gap-2">
-                <h3 class="text-base font-semibold text-text-primary leading-snug">{{ edu.degree }}</h3>
-                <span
-                  class="text-xs px-2.5 py-1 rounded-full shrink-0"
-                  :class="edu.cgpa === 'In Progress'
-                    ? 'bg-accent-tertiary/10 text-accent-tertiary'
-                    : 'bg-accent/10 text-accent'"
-                >
-                  {{ edu.cgpa === 'In Progress' ? 'In progress' : `CGPA ${edu.cgpa}` }}
-                </span>
-              </div>
-              <p class="text-sm text-text-secondary">{{ edu.institution }}</p>
-              <p class="flex items-center gap-1.5 text-sm text-text-muted">
-                <Icon name="fluent:location-16-filled" size="12" />{{ edu.location }} · {{ edu.period }}
-              </p>
-            </div>
+        <!-- Right: at-a-glance meta rows -->
+        <dl class="reveal flex flex-col">
+          <div class="flex items-baseline justify-between gap-5 py-4 border-t border-border-subtle">
+            <dt class="text-sm text-text-muted">Based in</dt>
+            <dd class="text-[0.9375rem] font-medium text-text-primary text-right">{{ meta.location }}</dd>
           </div>
-        </div>
+          <div class="flex items-baseline justify-between gap-5 py-4 border-t border-border-subtle">
+            <dt class="text-sm text-text-muted">Focus</dt>
+            <dd class="text-[0.9375rem] font-medium text-text-primary text-right">{{ meta.focus }}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-5 py-4 border-t border-border-subtle">
+            <dt class="text-sm text-text-muted">Open to</dt>
+            <dd class="text-[0.9375rem] font-medium text-text-primary text-right">{{ meta.availableFor }}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-5 py-4 border-t border-b border-border-subtle">
+            <dt class="text-sm text-text-muted">Languages</dt>
+            <dd class="flex flex-col gap-1 text-[0.9375rem] font-medium text-text-primary text-right">
+              <span v-for="l in meta.languages" :key="l.lang">{{ l.lang }}</span>
+            </dd>
+          </div>
+        </dl>
       </div>
     </div>
   </section>
