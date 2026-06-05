@@ -55,13 +55,17 @@
  * Raw triplets are RGB so `rgb(var(--color-*-raw) / <alpha>)` keeps opacity composable.
  * Source palette derived from OKLCH (chroma ≤ 0.008 on neutrals, accent 0.15–0.18 @ hue 250). */
 :root {
-  /* Light mode (default) — slightly cool near-white, Apple #fbfbfd lineage */
-  --color-bg-raw:             251 251 252;
-  --color-bg-secondary-raw:   244 245 247;
-  --color-bg-tertiary-raw:    236 238 241;
-  --color-surface-raw:        253 253 254;
-  --color-surface-raised-raw: 246 247 249;
-  --color-surface-overlay-raw:239 240 243;
+  /* Light mode (default) — a soft sky-blue-tinted off-white (not flat
+   * white). Surfaces stay brighter than the page so cards still lift. */
+  --color-bg-raw:             239 244 251;       /* sky off-white #EFF4FB */
+  /* Mirrors the page bg per theme; NOT overridden inside .dark-chapter, so
+   * the chapter's edge-blend always fades to the surrounding page colour. */
+  --page-bg-raw:              239 244 251;
+  --color-bg-secondary-raw:   230 238 248;
+  --color-bg-tertiary-raw:    221 231 244;
+  --color-surface-raw:        249 251 254;       /* cards — brighter than the sky bg */
+  --color-surface-raised-raw: 243 247 252;
+  --color-surface-overlay-raw:234 240 248;
   --color-accent-raw:         0 102 204;        /* Apple SF Blue #0066cc */
   --color-accent-muted-raw:   0 82 170;
   --color-accent-subtle-raw:  224 234 247;
@@ -72,13 +76,14 @@
   --color-border-strong-raw:  204 207 212;
   --color-text-primary-raw:   29 29 31;         /* Apple #1d1d1f */
   --color-text-secondary-raw: 100 105 112;
-  --color-text-muted-raw:     110 115 122;       /* WCAG AA (4.6:1) on bg #fbfbfc */
+  --color-text-muted-raw:     106 111 118;       /* WCAG AA (~4.6:1) on sky bg #EFF4FB; still lighter than text-secondary */
   --color-text-inverse-raw:   251 251 252;      /* always near-white on accent button */
 }
 
 .dark {
   /* Dark mode — warm inky near-black, Apple-system lineage. Never pure #000. */
   --color-bg-raw:             20 22 26;
+  --page-bg-raw:              20 22 26;
   --color-bg-secondary-raw:   28 30 35;
   --color-bg-tertiary-raw:    38 40 46;
   --color-surface-raw:        28 30 35;
@@ -220,6 +225,79 @@
   /* ── Section ── */
   .section {
     @apply px-6 py-24 md:py-32;
+  }
+
+  /* ── Dark immersive chapter ──────────────────────────────────────────
+   * A deliberate tonal shift (the Statement section) the light page scrolls
+   * INTO and back out of — the one Apple-style dark moment on an otherwise
+   * restrained, light-first surface. Documented in UI-STANDARDS §2.4.
+   *
+   * Tailwind v4 declares the resolved `--color-*` theme vars on :root, so
+   * they compute there ONCE and descendants inherit the already-resolved
+   * value — overriding the `-raw` triplet on a mid-page wrapper does NOT
+   * re-resolve them (that only works on <html>, where the vars live, which
+   * is why dark mode does it there). So we override BOTH: the resolved
+   * `--color-*` (for `var(--color-*)` consumers — utilities + scoped styles)
+   * AND the `-raw` triplet (for alpha consumers `rgb(var(--color-*-raw)/a)`
+   * and the chapter's own background). */
+  .dark-chapter {
+    position: relative;
+    isolation: isolate;
+
+    /* Resolved theme vars — what `text-text-primary`, `var(--color-accent)`
+     * etc. actually read; these are what flip the ink to light. */
+    --color-bg:             rgb(10 24 46);     /* #0A182E */
+    --color-bg-secondary:   rgb(14 30 56);
+    --color-bg-tertiary:    rgb(20 40 72);
+    --color-surface:        rgb(17 35 64);
+    --color-surface-raised: rgb(23 45 80);
+    --color-accent:         rgb(90 172 255);   /* vibrant blue #5AACFF */
+    --color-accent-muted:   rgb(60 140 230);
+    --color-border:         rgb(52 78 122);
+    --color-border-subtle:  rgb(40 64 104);
+    --color-border-strong:  rgb(74 104 152);
+    --color-text-primary:   rgb(244 248 254);
+    --color-text-secondary: rgb(180 198 226);
+    --color-text-muted:     rgb(132 154 190);
+    --color-text-inverse:   rgb(10 24 46);     /* dark ink on the bright accent button */
+
+    /* Raw triplets — for alpha consumers + the background below. */
+    --color-bg-raw:             10 24 46;
+    --color-bg-secondary-raw:   14 30 56;
+    --color-surface-raw:        17 35 64;
+    --color-accent-raw:         90 172 255;
+    --color-accent-subtle-raw:  26 50 88;
+    --color-border-raw:         52 78 122;
+    --color-border-subtle-raw:  40 64 104;
+    --color-text-primary-raw:   244 248 254;
+    --color-text-secondary-raw: 180 198 226;
+    --color-text-muted-raw:     132 154 190;
+
+    color: rgb(var(--color-text-primary-raw));
+
+    /* Navy fill + a soft viewport-anchored blue glow behind the centred
+     * statement, with the top/bottom 22vh blended to the surrounding page
+     * colour so entering / leaving the chapter is seamless (no hard edge). */
+    background-color: rgb(var(--color-bg-raw));
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgb(var(--page-bg-raw)) 0,
+        rgb(var(--page-bg-raw) / 0) 22vh,
+        rgb(var(--page-bg-raw) / 0) calc(100% - 22vh),
+        rgb(var(--page-bg-raw)) 100%
+      ),
+      radial-gradient(68% 52% at 50% 42%, rgb(41 151 255 / 0.16) 0%, transparent 62%);
+    background-repeat: no-repeat;
+    background-attachment: scroll, fixed;
+  }
+
+  /* The fixed glow can stutter on touch scrolling — anchor it to the
+   * chapter instead on small screens. */
+  @media (max-width: 768px) {
+    .dark-chapter {
+      background-attachment: scroll, scroll;
+    }
   }
 
   /* ── Scroll progress bar ── */
