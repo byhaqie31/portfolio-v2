@@ -178,14 +178,18 @@ export function useFlightPath() {
   const vs = ref('+000')
 
   // ── Route ───────────────────────────────────────────────────────────
+  // Climbs through the career (takeoff → cruise peak around the Fiuu
+  // waypoint) then DESCENDS into the final "On approach" waypoint, so the
+  // telemetry reads a genuine descent (V/S negative, ALT dropping) over
+  // the arrival finale — the aircraft is literally on approach.
   const routePts = [
     new THREE.Vector3(-70, -2, 46),
-    new THREE.Vector3(-10, 4, 14),
-    new THREE.Vector3(60, 14, -22),
-    new THREE.Vector3(135, 24, 18),
-    new THREE.Vector3(205, 38, -26),
-    new THREE.Vector3(280, 50, 12),
-    new THREE.Vector3(355, 60, -8),
+    new THREE.Vector3(-10, 6, 14),
+    new THREE.Vector3(60, 16, -22),
+    new THREE.Vector3(135, 28, 18),
+    new THREE.Vector3(205, 44, -26),
+    new THREE.Vector3(285, 52, 14), // cruise peak (~Fiuu)
+    new THREE.Vector3(360, 26, -6), // descent — "on approach"
   ]
   const curve = new THREE.CatmullRomCurve3(routePts, false, 'catmullrom', 0.5)
 
@@ -195,6 +199,7 @@ export function useFlightPath() {
 
   let clouds: THREE.Sprite[] = []
   let cloudTex: THREE.CanvasTexture | null = null
+  let stars: THREE.Points | null = null
   let trailL: Contrail | null = null
   let trailR: Contrail | null = null
   let revealMaterials: THREE.Material[] | null = null
@@ -220,27 +225,86 @@ export function useFlightPath() {
 
   function buildClouds(scene: THREE.Scene) {
     cloudTex = makeCloudTexture()
-    for (let i = 0; i < 18; i++) {
+
+    // Low/mid cumulus layer along the route. A third run warm (sun-lit
+    // edge), the rest cool, so the field has depth instead of one flat grey.
+    for (let i = 0; i < 22; i++) {
       const base = curve.getPointAt(Math.random())
+      const warm = Math.random() < 0.32
       const m = new THREE.SpriteMaterial({
         map: cloudTex,
         transparent: true,
-        opacity: 0.1 + Math.random() * 0.22,
+        opacity: 0.08 + Math.random() * 0.2,
         depthWrite: false,
-        color: 0xaebccf,
+        color: warm ? 0xd9c3ac : 0xaebccf,
       })
       const s = new THREE.Sprite(m)
       s.position.set(
-        base.x + (Math.random() - 0.5) * 220,
+        base.x + (Math.random() - 0.5) * 240,
         base.y + (Math.random() - 0.3) * 70 - 10,
-        base.z + (Math.random() - 0.5) * 220,
+        base.z + (Math.random() - 0.5) * 240,
       )
-      const sc = 40 + Math.random() * 90
-      s.scale.set(sc, sc * 0.6, 1)
+      const sc = 40 + Math.random() * 100
+      s.scale.set(sc, sc * 0.58, 1)
       s.userData.drift = 2 + Math.random() * 4
       scene.add(s)
       clouds.push(s)
     }
+
+    // High cirrus layer — wide, thin, faint, slow; sits well above the
+    // route so there's a sense of sky depth as the aircraft climbs.
+    for (let i = 0; i < 8; i++) {
+      const base = curve.getPointAt(Math.random())
+      const m = new THREE.SpriteMaterial({
+        map: cloudTex,
+        transparent: true,
+        opacity: 0.05 + Math.random() * 0.07,
+        depthWrite: false,
+        color: 0xb8c6dc,
+      })
+      const s = new THREE.Sprite(m)
+      s.position.set(
+        base.x + (Math.random() - 0.5) * 340,
+        base.y + 55 + Math.random() * 70,
+        base.z + (Math.random() - 0.5) * 340,
+      )
+      const sc = 120 + Math.random() * 170
+      s.scale.set(sc, sc * 0.3, 1)
+      s.userData.drift = 1 + Math.random() * 2
+      scene.add(s)
+      clouds.push(s)
+    }
+  }
+
+  /* A star field on a large dome that follows the camera (so it reads as
+   * infinitely distant). Its opacity is driven by altitude in update() —
+   * stars emerge as the aircraft climbs and fade on the descent. */
+  function buildStars(scene: THREE.Scene) {
+    const N = 600
+    const pos = new Float32Array(N * 3)
+    for (let i = 0; i < N; i++) {
+      const theta = Math.random() * Math.PI * 2
+      // Bias toward the upper hemisphere so stars sit in the sky, not the ground.
+      const phi = Math.acos(1 - Math.random() * 1.1)
+      const r = 820
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta)
+      pos[i * 3 + 1] = r * Math.cos(phi) * 0.9 + 30
+      pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
+    }
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    const mat = new THREE.PointsMaterial({
+      color: 0xdfe9ff,
+      size: 1.7,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      fog: false,
+    })
+    stars = new THREE.Points(geo, mat)
+    stars.frustumCulled = false
+    scene.add(stars)
   }
 
   /**
@@ -261,10 +325,11 @@ export function useFlightPath() {
     if (!scene) return
 
     buildClouds(scene)
+    buildStars(scene)
 
     if (!REDUCED) {
-      trailL = new Contrail(0.55, 0xcfe6ff)
-      trailR = new Contrail(0.55, 0xcfe6ff)
+      trailL = new Contrail(0.6, 0xcfe6ff)
+      trailR = new Contrail(0.6, 0xcfe6ff)
       scene.add(trailL.mesh)
       scene.add(trailR.mesh)
     }
@@ -308,31 +373,57 @@ export function useFlightPath() {
       pivot.rotateZ(THREE.MathUtils.clamp(-dh * 9, -0.6, 0.6))
     }
 
-    // Camera chase rig. Wide establishing frame during the intro (bias),
-    // easing into the chase as flightT leaves 0.
+    // Camera chase rig.
+    //  · introBias — wide establishing frame while flightT is near 0.
+    //  · focus     — linger: as the aircraft nears a waypoint the camera
+    //                eases closer + slower so it "admires" the stop.
+    //  · arrival   — settle: over the final approach it levels behind the
+    //                aircraft and slows, like rolling up to a gate.
     const introBias = Math.max(0, 1 - ft / 0.06)
-    const back = 34 + introBias * 50
-    const up = 12 + introBias * 5
-    const side = 16 - introBias * 5
+
+    let minWpD = 1
+    for (let i = 0; i < FLIGHT_WAYPOINTS.length; i++) {
+      minWpD = Math.min(minWpD, Math.abs(ft - FLIGHT_WAYPOINTS[i].t))
+    }
+    const focus = 1 - smoothstep(0.0, 0.09, minWpD)
+    const arrival = smoothstep(0.9, 1.0, ft)
+
+    const back = 34 + introBias * 50 - focus * 8 + arrival * 6
+    const up = 12 + introBias * 5 + focus * 2 + arrival * 5
+    const side = (16 - introBias * 5) * (1 - arrival * 0.55)
     tmpSide.crossVectors(tmpTan, WORLD_UP).normalize()
     tmpEye
       .copy(tmpPos)
       .addScaledVector(tmpTan, -back)
       .addScaledVector(WORLD_UP, up)
       .addScaledVector(tmpSide, side)
+    const lerpAmt = (0.06 - focus * 0.025) * (1 - arrival * 0.45)
     if (REDUCED) camera.position.copy(tmpEye)
-    else camera.position.lerp(tmpEye, 0.06)
-    tmpLook.copy(tmpPos).addScaledVector(tmpTan, 20)
+    else camera.position.lerp(tmpEye, Math.max(0.02, lerpAmt))
+    tmpLook.copy(tmpPos).addScaledVector(tmpTan, 20 - arrival * 9)
     camera.lookAt(tmpLook)
 
-    // Contrails from the wingtips (transform pivot-local emit points to
-    // world via the pivot's orientation + position).
-    if (!REDUCED && pivot && trailL && trailR && aircraftApi) {
+    // Star field follows the camera (infinite-distance feel) and fades in
+    // with altitude — emerging at cruise, receding on the descent.
+    if (stars) {
+      stars.position.copy(camera.position)
+      const altT = THREE.MathUtils.clamp((tmpPos.y - 8) / 44, 0, 1)
+      ;(stars.material as THREE.PointsMaterial).opacity = altT * 0.9
+    }
+
+    // Contrails from the wingtips — only once the flight is underway (so no
+    // trail blob sits at the start), opacity swelling with travel speed.
+    if (!REDUCED && pivot && trailL && trailR && aircraftApi && ft > 0.02) {
       const wt = aircraftApi.getWingtips()
       tmpWing.copy(wt.left).applyQuaternion(pivot.quaternion).add(pivot.position)
       trailL.push(tmpWing, tmpTan)
       tmpWing.copy(wt.right).applyQuaternion(pivot.quaternion).add(pivot.position)
       trailR.push(tmpWing, tmpTan)
+      const trailA =
+        THREE.MathUtils.clamp((ft - 0.02) / 0.08, 0, 1) *
+        (0.32 + Math.min(0.3, smScrollV * 0.02))
+      trailL.mat.uniforms.uOpacity.value = trailA
+      trailR.mat.uniforms.uOpacity.value = trailA
     }
 
     // Cloud drift.
@@ -413,6 +504,12 @@ export function useFlightPath() {
     clouds = []
     cloudTex?.dispose()
     cloudTex = null
+    if (stars) {
+      scene?.remove(stars)
+      stars.geometry.dispose()
+      ;(stars.material as THREE.Material).dispose()
+      stars = null
+    }
     if (trailL) {
       scene?.remove(trailL.mesh)
       trailL.dispose()

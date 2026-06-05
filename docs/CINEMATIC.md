@@ -6,7 +6,7 @@ The design and engineering contract for the second surface at `baihaqie.com/expe
 
 > **Two surfaces, one author.** `/` is the fast, professional handshake. `/experience` is the cinematic frame for the work the handshake hints at. They share *nothing* visually — different tokens, different fonts, different motion register — and that contrast is the point. Do not bleed cinematic patterns onto `/` or restrained patterns into `/experience`.
 
-> **Current state.** `/experience` is a single **scroll-driven cinematic flight**: a silhouette splash → a "Welcome aboard." greeting that highlights a tagline word-by-word and zooms out → a dark-overlay reveal of the **A350 already aloft** → the aircraft flying a scroll-driven 3D spline past **four career waypoints** while a **live telemetry HUD** reads its altitude, heading and speed. After the flight runway, an **editorial body** (About, Education, Experience, Projects, Contact) continues below for depth. The camera is fully scripted by a chase rig — there is **no OrbitControls / Pilot Mode** anymore (replaced 2026-06; see §4). Built from the approved prototype in `design_handoff_experience_flight/`.
+> **Current state.** `/experience` is a single **scroll-driven cinematic flight, full stop** — no editorial body. A silhouette splash → a "Welcome aboard." greeting that highlights a tagline word-by-word and zooms out → a dark-overlay reveal of the **A350 already aloft** → the aircraft flying a scroll-driven 3D spline past **four career waypoints** (which climb to a cruise peak then **descend into a contact-finale arrival**) while a **live telemetry HUD** reads its altitude, heading and speed, over a sun-lit sky with drifting clouds, a star field at altitude, and wingtip contrails. The camera is fully scripted by a chase rig — there is **no OrbitControls / Pilot Mode** (replaced 2026-06; see §4). About / Education / Projects / Contact deliberately live only on `/` — repeating them here was redundant; the four waypoints carry the journey. Built from the approved prototype in `design_handoff_experience_flight/`.
 
 ---
 
@@ -117,9 +117,17 @@ The tagline **"I turn complex workflows into journeys that feel effortless."** f
 - **Telemetry** (`<CinematicFlightHud>`, throttled ~90ms, `tabular-nums`): **ALT** `round(point.y·600 + 8200)` ft; **HDG** `atan2(tan.x, −tan.z)` → 0–360°, also rotating the compass needle (red `#E11D2A`); **G/S** cruise ~430 kt modulated by scroll velocity; **V/S** smoothed Δaltitude → fpm, signed. A bottom-left **perf readout** (`FPS · CALLS · TRIS · DPR · DRACO 808KB`) reads `renderer.info.render.*`.
 - **Waypoints + rail** — four `<CinematicFlightWaypoints>` cards at flightT ≈ `0.18 / 0.43 / 0.68 / 0.9` (`FLIGHT_WAYPOINTS`), fading in when `|flightT − w.t| < 0.13` (only one active; the 4th is the centred contact variant). `<CinematicFlightRail>` is the right-edge progress rail — cool fill at `flightT·100%`, four labelled stops, active dot lit cool. Card content binds to `data/index.ts`; the spline `t`s + rail labels live in `FLIGHT_WAYPOINTS`.
 
-### After the flight — editorial body
+### Atmosphere
 
-Past the runway, `.experience-body` (opaque bg) scrolls up over the fixed canvas: About, Education timeline, horizontal Experience + Projects tracks, Contact. An `IntersectionObserver` on `.experience-body` calls `flightScene.setActive(false)` and hides the flight chrome (`flightChromeVisible`) once the body covers the canvas, and restores both on scroll-back.
+- **Sun** — a low warm sun (`SUN_DIR` in `useFlightScene`) the aircraft heads toward: a directional glow baked into the skydome shader (broad halo + tight core) plus a sun disc/halo sprite that follows the camera so it reads as infinitely distant. The warm key light is aligned to it; it's the 80/15/5 warm 5% against the cool twilight.
+- **Clouds** — two layers (`useFlightPath.buildClouds`): a low/mid cumulus field (a third warm-edged) drifting along the route, plus a high faint cirrus layer for sky depth.
+- **Stars** — a camera-following `THREE.Points` dome whose opacity is driven by altitude in `update()`; stars emerge at cruise and recede on the descent.
+
+### Arrival finale
+
+The route climbs through the career to a cruise peak around the Fiuu waypoint, then **descends** into the final "On approach" waypoint — so the telemetry reads a genuine descent (ALT dropping, V/S negative) over the finale. As `flightT → 1` the chase camera **settles**: it levels behind the aircraft, pulls its side-offset toward centre, shortens its look-ahead and slows its lerp, like rolling up to a gate. The fourth waypoint is the centred contact close (signoff + large email CTA + links). Nothing follows — the page ends at the runway's bottom.
+
+There is no editorial body and no `setActive(false)` hand-off anymore; the scene runs the whole runway (only `visibilitychange` pauses it). The flight chrome is always mounted (no `flightChromeVisible` gate).
 
 ---
 
@@ -135,11 +143,11 @@ The HUD **compass needle** therefore reads heading from the **spline tangent**, 
 
 ### 5.1 Back to Reality link
 
-Top-left, fixed, mono uppercase, hairline-bordered translucent panel. Always rendered (no `v-if`) so the viewer can leave at any moment — including during the splash, welcome, and flight — without waiting for the cinematic flow to clear. Points to `/` via `<NuxtLink>`. (Lives outside the `flightChromeVisible` group so it stays available over the editorial body too.)
+Top-left, fixed, mono uppercase, hairline-bordered translucent panel. Always rendered (no `v-if`) so the viewer can leave at any moment — during the splash, welcome, or flight — without waiting for the cinematic flow to clear. Points to `/` via `<NuxtLink>`.
 
 ### 5.2 Telemetry HUD
 
-`<CinematicFlightHud>` is the live telemetry cluster rendered during the flight (top-right gauges + compass, bottom-left perf readout) — see §3. It is gated by `flightChromeVisible` so it hides once the editorial body covers the canvas.
+`<CinematicFlightHud>` is the live telemetry cluster rendered during the flight (top-right gauges + compass, bottom-left perf readout) — see §3. Always mounted (the whole page is the flight).
 
 The legacy `<CinematicHUD>` (`HUD.vue`, page-corner spec-sheet + phase-jump dots) and `usePhaseState` remain in the repo from the torn-out 9-phase bio flow but are **not** mounted. They reference `.phase--takeoff` / `.phase--cruise` triggers that no longer exist; don't render as-is. Kept only as reference — safe to delete if no future surface needs them.
 
@@ -148,7 +156,7 @@ The legacy `<CinematicHUD>` (`HUD.vue`, page-corner spec-sheet + phase-jump dots
 ## 6. File layout
 
 ```
-pages/experience/index.vue              # entrypoint — flight runway + chrome + editorial body + orchestration
+pages/experience/index.vue              # entrypoint — flight runway + chrome + orchestration
 layouts/cinematic.vue                   # dark shell + html[data-layout=cinematic] + Lenis init
 
 components/cinematic/
@@ -157,8 +165,7 @@ components/cinematic/
 ├── FlightIntro.vue                     # welcome greeting + word-highlight tagline (introT-driven)     [RENDERED]
 ├── FlightHud.vue                       # telemetry gauges + compass needle + perf readout              [RENDERED]
 ├── FlightRail.vue                      # right-edge progress rail + 4 stops                            [RENDERED]
-├── FlightWaypoints.vue                 # 4 in-flight waypoint cards (final = contact)                  [RENDERED]
-├── EditorialSection.vue                # editorial-body section shell (label/headline/subline/pin)     [RENDERED]
+├── FlightWaypoints.vue                 # 4 in-flight waypoint cards (final = contact finale)           [RENDERED]
 ├── HUD.vue                             # legacy page-corner spec sheet + phase nav                     [unused, kept — see §5.2]
 └── PhaseSection.vue                    # legacy lower-third phase layout                               [unused, kept]
 
@@ -191,10 +198,10 @@ These are non-negotiable. If a rule gets in the way, update this file in the sam
 4. **`<UiSectionHeading>`, `.btn`, `.card`, `.skill-tag`** and other primitives from `/` do not exist on `/experience`. Use cinematic equivalents. New cinematic primitives go in `components/cinematic/`, not `components/ui/`.
 5. **Geist must be served from `/public/fonts/geist/`**, not from `node_modules`. The `geist` npm package is a next/font helper and ships no plain CSS; we copy the variable woff2 into `/public` at install time.
 6. **No backdrop-filter on any cinematic panel.** Editorial print register, not frosted-glass dashboard.
-7. **The flight uses no ScrollTrigger pin — it's a tall `.flight-runway` spacer + a fixed canvas.** Progress is read from the runway's scroll position each frame (`useFlightPath`'s `progress` source), so the fixed flight chrome is never a pin descendant. The editorial body below *does* pin its Experience/Projects tracks via ScrollTrigger, but those pins are inside `.experience-body`, never an ancestor of the fixed flight chrome.
-8. **Pause the render loop on `visibilitychange`** when the page is hidden, and via `setActive(false)` once the editorial body covers the canvas. Cap `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`. All live in `useFlightScene.ts`.
+7. **The flight uses no ScrollTrigger pin — it's a tall `.flight-runway` spacer + a fixed canvas.** Progress is read from the runway's scroll position each frame (`useFlightPath`'s `progress` source), so the fixed flight chrome is never a pin descendant. There is no longer any pinned editorial content on this surface at all.
+8. **Pause the render loop on `visibilitychange`** when the page is hidden. Cap `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`. Both live in `useFlightScene.ts`. (`setActive()` still exists for future use but isn't wired now — the whole runway is flight, so the scene runs throughout.)
 9. **No OrbitControls / Pilot Mode.** The camera is fully scripted by the chase rig in `useFlightPath` (see §4). Don't reintroduce OrbitControls, autoRotate, or a free-orbit mode without a design conversation — the continuous flight has no stationary aircraft to orbit.
-10. **`.cinematic-page` has `pointer-events: none`** so the transparent `.flight-runway` spacer doesn't intercept events. The flight chrome's own interactive elements (final waypoint CTA + links) and the editorial body (`pointer-events: auto`) opt back in on their own selectors.
+10. **`.experience-root` flight chrome is mostly `pointer-events: none`** (the runway spacer + decorative overlays). Only the final waypoint's CTA + links opt back in with `pointer-events: auto`.
 11. **`.experience-root` has `overflow-x: clip`** to suppress phantom horizontal scrollbars from descendant transforms (full-viewport track breakouts, fixed chrome with `translateX(-50%)`, etc.) — `clip` rather than `hidden` so descendant `position: sticky` (the pinned editorial tracks) keeps working.
 12. **No emoji** in copy. Aviation editorial register, not chat register. Typographic glyphs (`→`, `↓`, `↑`, `·`) are fine; the welcome `.` accent and the final waypoint's `→` arrow are intentional. (The previous "Welcome aboard / to my journey!" exclamation is gone with the prototype's period-terminated "Welcome aboard." — the surface now keeps the no-exclamation voice throughout.)
 
@@ -213,13 +220,13 @@ Per AoT §12 (verbatim):
 
 ## 9. The journey (wired)
 
-The journey is no longer a "View my journey" CTA into separate content — **the scroll-driven flight _is_ the journey** (§3). The four waypoints (Faztech → Universiti Malaya → Fiuu → On approach) tell the career as a single continuous flight; the editorial body below adds depth (full About / Education / Projects / Contact).
+The journey is no longer a "View my journey" CTA into separate content — **the scroll-driven flight _is_ the journey** (§3). The four waypoints (Faztech → Universiti Malaya → Fiuu → On approach) tell the career as a single continuous flight; the fourth is the contact finale. About / Education / Projects / Contact deliberately live only on `/` — repeating them on the cinematic surface was redundant, so the editorial body that briefly lived here was removed (2026-06).
 
 This replaced the previous intro-splash → welcome → iris-reveal → autoRotate-+-CTAs flow (and the earlier 9-phase bio flow before it). Decisions baked in here, so future redesigns don't relitigate them:
 
 - **Keep the splash + welcome + reveal** as the dramatic opener (Qie wants them preserved). They're now scroll-driven (one `progress`), not auto-timeline'd.
 - **The aircraft is the real `a350.glb`** flown along the spline — never a procedural placeholder.
-- **One continuous fixed-canvas flight**, then a register switch to the scrolling editorial body — not 8 stacked phase sections (disliked) and not sticky two-column scrollytelling (reverted).
+- **One continuous fixed-canvas flight** is the whole surface — not 8 stacked phase sections (disliked), not sticky two-column scrollytelling (reverted), and not the flight-plus-editorial-body hybrid (built, then cut as redundant with `/`).
 
 Legacy components kept but **not** mounted (`HUD.vue`, `PhaseSection.vue`, `usePhaseState.ts`) are safe to delete whenever a cleanup PR wants to; nothing renders them.
 
@@ -231,6 +238,9 @@ Legacy components kept but **not** mounted (`HUD.vue`, `PhaseSection.vue`, `useP
 |---|---|---|
 | Sky brightness | `useFlightScene.ts` `toneMappingExposure` | `0.92` |
 | Sky gradient colours | `useFlightScene.ts` `buildSky()` (`uTop` / `uHorizon` / `uGlow`) | `#06070b` / `#1b2433` / `#2c3a4f` |
+| Sun direction + colour | `useFlightScene.ts` `SUN_DIR` / `SUN_COLOR` | `(1, 0.1, -0.15)` norm., `#ffb27a` |
+| Sun glow / disc | `useFlightScene.ts` sky fragment (`pow` terms) + `buildSun()` sprite scales | halo 300 / core 95, glow 0.45 + 0.7 |
+| Star field | `useFlightPath.ts` `buildStars()` + altitude fade in `update()` | 600 pts, opacity `(y−8)/44 · 0.9` |
 | Fog range | `useFlightScene.ts` `scene.fog` | `0x11151f`, near 120 / far 620 |
 | Camera lens / far plane | `useFlightScene.ts` `PerspectiveCamera` | FOV 48°, far 2000 |
 | Cloud density | `useFlightPath.ts` `buildClouds()` count + `opacity` | 18 clouds, `0.1 + 0.22` random opacity |
@@ -241,6 +251,8 @@ Legacy components kept but **not** mounted (`HUD.vue`, `PhaseSection.vue`, `useP
 | Aircraft nose axis | `useFlightAircraft.ts` `NOSE_ALIGN_Y` | `0` (GLB noses +Z; flip if it flies sideways/backwards) |
 | Splash duration | `Intro.vue` GSAP `duration: 3` | 3s linear |
 | Camera chase rig | `useFlightPath.ts` `update()` (`back`/`up`/`side`, lerp `0.06`) | back 34, up 12, side 16; lerp 0.06 |
+| Waypoint linger | `useFlightPath.ts` `update()` `focus` (closer + slower near a waypoint) | `1 − smoothstep(0, 0.09, dist)` |
+| Arrival settle | `useFlightPath.ts` `update()` `arrival` (level + slow over final approach) | `smoothstep(0.9, 1.0, flightT)` |
 | Banking amount | `useFlightPath.ts` `pivot.rotateZ(clamp(-dh*9, ±0.6))` | gain 9, clamp ±0.6 rad |
 | Contrail look | `useFlightPath.ts` `Contrail` (width, colour, history) | width 0.55, `#cfe6ff`, 56 points, opacity 0.5 |
 | Telemetry tuning | `useFlightPath.ts` `update()` (G/S base, V/S gain, throttle) | G/S 430+scrollV, V/S ×0.12, HUD 90ms |

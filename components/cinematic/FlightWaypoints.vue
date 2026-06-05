@@ -23,9 +23,11 @@ interface WaypointCard {
   org: string
   role?: string
   desc: string
+  highlights?: string[]
   stats?: WaypointStat[]
   meta?: string[]
   final?: boolean
+  signoff?: string
   cta?: { label: string; href: string }
   links?: { label: string; href: string }[]
 }
@@ -55,6 +57,10 @@ defineProps<{
       <p v-if="card.role" class="wp__role">{{ card.role }}</p>
       <p class="wp__desc">{{ card.desc }}</p>
 
+      <ul v-if="card.highlights?.length" class="wp__highlights">
+        <li v-for="(h, k) in card.highlights" :key="k">{{ h }}</li>
+      </ul>
+
       <div v-if="card.stats?.length" class="wp__stats">
         <div v-for="(stat, j) in card.stats" :key="j" class="wp__stat">
           <div class="wp__stat-value">
@@ -67,6 +73,8 @@ defineProps<{
       <div v-if="card.meta?.length" class="wp__meta">
         <span v-for="tag in card.meta" :key="tag">{{ tag }}</span>
       </div>
+
+      <p v-if="card.signoff" class="wp__signoff">{{ card.signoff }}</p>
 
       <a v-if="card.cta" :href="card.cta.href" class="wp__cta">{{ card.cta.label }}</a>
 
@@ -167,6 +175,32 @@ defineProps<{
   color: var(--color-ink-muted);
 }
 
+.wp__highlights {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.wp__highlights li {
+  position: relative;
+  padding-left: var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--font-body-small);
+  line-height: 1.5;
+  color: var(--color-ink-secondary);
+}
+
+.wp__highlights li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-mono);
+  color: var(--color-cool-soft);
+}
+
 .wp__stats {
   display: flex;
   gap: var(--space-8);
@@ -228,8 +262,25 @@ defineProps<{
   transform: translate(-50%, -50%);
 }
 
+.wp--final {
+  padding: var(--space-8) var(--space-10);
+}
+
 .wp--final .wp__head {
   justify-content: center;
+}
+
+.wp--final .wp__org {
+  font-size: var(--font-display-large);
+}
+
+.wp__signoff {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--font-display-medium);
+  line-height: 1.2;
+  color: var(--color-ink-primary);
 }
 
 .wp__cta {
@@ -249,6 +300,12 @@ defineProps<{
   text-decoration: none;
   pointer-events: auto;
   transition: background 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+}
+
+.wp--final .wp__cta {
+  margin-top: var(--space-8);
+  padding: 16px 32px;
+  font-size: var(--font-ui);
 }
 
 .wp__cta:hover,

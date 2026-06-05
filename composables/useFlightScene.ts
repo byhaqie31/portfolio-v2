@@ -20,7 +20,16 @@ let renderer: THREE.WebGLRenderer | null = null
 let scene: THREE.Scene | null = null
 let camera: THREE.PerspectiveCamera | null = null
 let skyMesh: THREE.Mesh | null = null
+let sunGroup: THREE.Group | null = null
+let sunTexture: THREE.CanvasTexture | null = null
 let host: HTMLElement | null = null
+
+/* A low sun the aircraft flies toward — the warm 5% accent against the
+ * cool twilight (80/15/5, §2.1). Direction is mostly along the travel
+ * axis (+X), low on the horizon, so the route heads "into the light".
+ * Shared by the skydome glow and the sun sprite so they line up. */
+const SUN_DIR = new THREE.Vector3(1.0, 0.1, -0.15).normalize()
+const SUN_COLOR = new THREE.Color(0xffb27a)
 let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
 let visibilityHandler: (() => void) | null = null
@@ -68,6 +77,8 @@ function buildSky(): THREE.Mesh {
       uTop: { value: new THREE.Color(0x06070b) },
       uHorizon: { value: new THREE.Color(0x1b2433) },
       uGlow: { value: new THREE.Color(0x2c3a4f) },
+      uSunDir: { value: SUN_DIR.clone() },
+      uSunColor: { value: SUN_COLOR.clone() },
     },
     vertexShader: /* glsl */ `
       varying vec3 vP;
@@ -77,17 +88,83 @@ function buildSky(): THREE.Mesh {
       }`,
     fragmentShader: /* glsl */ `
       varying vec3 vP;
-      uniform vec3 uTop, uHorizon, uGlow;
+      uniform vec3 uTop, uHorizon, uGlow, uSunColor, uSunDir;
       void main() {
-        float h = normalize(vP).y;
+        vec3 dir = normalize(vP);
+        float h = dir.y;
         float t = smoothstep(-0.05, 0.55, h);
         vec3 col = mix(uHorizon, uTop, t);
         float band = smoothstep(0.16, -0.12, h) * smoothstep(-0.3, 0.05, h);
         col = mix(col, uGlow, band * 0.5);
+        // Directional sun glow — a broad warm halo plus a tighter core,
+        // warming the sky where the aircraft is heading (cheap god-rays
+        // feel without a postprocessing pass).
+        float sd = max(dot(dir, normalize(uSunDir)), 0.0);
+        col += uSunColor * pow(sd, 5.0) * 0.45;
+        col += uSunColor * pow(sd, 48.0) * 0.7;
         gl_FragColor = vec4(col, 1.0);
       }`,
   })
   return new THREE.Mesh(geo, mat)
+}
+
+function makeSunTexture(): THREE.CanvasTexture {
+  const s = 256
+  const c = document.createElement('canvas')
+  c.width = c.height = s
+  const x = c.getContext('2d')!
+  const g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2)
+  g.addColorStop(0, 'rgba(255,244,228,1)')
+  g.addColorStop(0.22, 'rgba(255,205,158,0.55)')
+  g.addColorStop(0.6, 'rgba(255,176,122,0.14)')
+  g.addColorStop(1, 'rgba(255,170,120,0)')
+  x.fillStyle = g
+  x.fillRect(0, 0, s, s)
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  return t
+}
+
+/* A soft sun disc + halo, placed far along SUN_DIR (inside the skydome).
+ * Additive, fog-immune, so it reads as a bright distant sun the aircraft
+ * flies toward. Static world position → near-zero parallax = distant. */
+function buildSun(): THREE.Group {
+  if (!sunTexture) sunTexture = makeSunTexture()
+  const grp = new THREE.Group()
+  grp.name = 'sun'
+  const pos = SUN_DIR.clone().multiplyScalar(760)
+
+  const halo = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: sunTexture,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.32,
+      fog: false,
+      color: 0xffb27a,
+    }),
+  )
+  halo.position.copy(pos)
+  halo.scale.set(300, 300, 1)
+
+  const core = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: sunTexture,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.85,
+      fog: false,
+      color: 0xffe6c8,
+    }),
+  )
+  core.position.copy(pos)
+  core.scale.set(95, 95, 1)
+
+  grp.add(halo)
+  grp.add(core)
+  return grp
 }
 
 function animate() {
@@ -99,6 +176,11 @@ function animate() {
   lastFrame = now
 
   frameHook?.({ dt, now })
+
+  // Keep the sun a fixed direction + distance from the camera so it reads
+  // as an infinitely distant sun rather than a nearby light the aircraft
+  // flies past. (Sprite positions are local to the group along SUN_DIR.)
+  if (sunGroup) sunGroup.position.copy(camera.position)
 
   renderer.render(scene, camera)
 
@@ -161,14 +243,18 @@ export function useFlightScene() {
     skyMesh = buildSky()
     scene.add(skyMesh)
 
-    // Lighting — cool hemisphere fill, warm key, cool rim. Mirrors the
-    // flight prototype so the GLB reads as 3D form against the dim sky.
+    sunGroup = buildSun()
+    scene.add(sunGroup)
+
+    // Lighting — cool hemisphere fill, plus a warm key aligned with the
+    // sun so the fuselage catches a warm highlight on the sun-facing side,
+    // and a cool rim opposite. Mirrors the flight prototype.
     scene.add(new THREE.HemisphereLight(0x9fb6d4, 0x0a0b0f, 0.55))
-    const key = new THREE.DirectionalLight(0xfff0e0, 1.5)
-    key.position.set(-80, 120, 60)
+    const key = new THREE.DirectionalLight(0xffe0c0, 1.6)
+    key.position.copy(SUN_DIR.clone().multiplyScalar(120))
     scene.add(key)
     const rim = new THREE.DirectionalLight(0x4fc3f7, 0.5)
-    rim.position.set(120, 30, -80)
+    rim.position.set(-120, 30, 80)
     scene.add(rim)
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -208,6 +294,19 @@ export function useFlightScene() {
       skyMesh.geometry.dispose()
       ;(skyMesh.material as THREE.Material).dispose()
       skyMesh = null
+    }
+
+    if (sunGroup) {
+      sunGroup.traverse((c) => {
+        if ((c as THREE.Sprite).isSprite) {
+          ;((c as THREE.Sprite).material as THREE.SpriteMaterial).dispose()
+        }
+      })
+      sunGroup = null
+    }
+    if (sunTexture) {
+      sunTexture.dispose()
+      sunTexture = null
     }
 
     if (renderer) {
