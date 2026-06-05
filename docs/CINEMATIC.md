@@ -6,7 +6,7 @@ The design and engineering contract for the second surface at `baihaqie.com/expe
 
 > **Two surfaces, one author.** `/` is the fast, professional handshake. `/experience` is the cinematic frame for the work the handshake hints at. They share *nothing* visually — different tokens, different fonts, different motion register — and that contrast is the point. Do not bleed cinematic patterns onto `/` or restrained patterns into `/experience`.
 
-> **Current state.** This file documents what `/experience` actually is **today**: an intro splash → welcome card → iris reveal → autoRotating A350 + two CTAs (Play with Aircraft → Pilot Mode; View my journey → unwired, TBD). A 9-phase biographical flow was built and deliberately torn back out in favour of designing the journey content fresh on top of this minimum. See §9 for what's currently unwired.
+> **Current state.** `/experience` is a single **scroll-driven cinematic flight**: a silhouette splash → a "Welcome aboard." greeting that highlights a tagline word-by-word and zooms out → a dark-overlay reveal of the **A350 already aloft** → the aircraft flying a scroll-driven 3D spline past **four career waypoints** while a **live telemetry HUD** reads its altitude, heading and speed. After the flight runway, an **editorial body** (About, Education, Experience, Projects, Contact) continues below for depth. The camera is fully scripted by a chase rig — there is **no OrbitControls / Pilot Mode** anymore (replaced 2026-06; see §4). Built from the approved prototype in `design_handoff_experience_flight/`.
 
 ---
 
@@ -84,105 +84,50 @@ Font scale tokens (`--font-display-hero`, `--font-display-large`, `--font-body-l
 
 ## 3. The flight runtime
 
-`/experience` plays in three auto-played movements (intro → welcome → iris reveal) followed by two user-driven modes (post-reveal CTAs + Pilot Mode).
+`/experience` plays one continuous scroll-driven flight. A single smoothed `progress` (0 → 1), read from how far the user has scrolled through the **`.flight-runway`** spacer (~820vh), drives everything via `useFlightPath`:
 
-### Movement 1 — Intro splash (~3.7s, auto-play)
+```
+introT  = clamp(progress / INTRO_END, 0, 1)            // INTRO_END = 0.14
+flightT = clamp((progress - INTRO_END) / (1 - INTRO_END), 0, 1)
+```
 
-Fires on page mount before the user can interact.
+The first `INTRO_END` of scroll is the intro; the rest flies the spline.
 
-| Component | Role |
-|---|---|
-| `<CinematicIntro>` | Black overlay with white-inverted A350 silhouette (`/images/A350_summary.png`) rising from `y: 100vh` to `y: -100vh` over 3s linear. Overlay then fades to reveal the scene behind. Emits `complete`. |
+### Movement 0 — Silhouette splash (~3.7s, auto-play)
 
-Lenis is paused throughout Movement 1 so a stray scroll input can't interrupt the reveal.
+`<CinematicIntro>` still fires on mount: a white-inverted A350 silhouette rises through a black overlay, which then fades. Lenis is paused throughout so a stray scroll can't interrupt it; on `complete` Lenis resumes and the scroll-driven flight takes over. The flight is already at `progress = 0` behind the splash (welcome card composed, reveal overlay dark), so the handoff is a seamless dark cross-fade.
 
-### Movement 2 — Welcome card (~2.3s, then holds)
+### Movement 1 — Welcome (introT 0 → ~0.42)
 
-Mounts only after `<CinematicIntro>` emits `complete`.
+`<CinematicFlightIntro>` (driven by `introT`): centre eyebrow `Pre-flight · 2020 — Present`, Playfair **"Welcome aboard."** (period cool `#4FC3F7`), subline. As scroll begins the card **fades + scales up** (`1 → 1.6`, opacity `1 → 0`) — a zoom *through* the greeting. The bottom **"Scroll to fly"** hint fades over the first ~22% of introT.
 
-| Component | Role |
-|---|---|
-| `<CinematicWelcome>` | "Welcome aboard / to my journey!" in Playfair, fades in over 0.8s, holds. After 1.0s, a **"SCROLL TO EXPLORE MORE"** mono cue fades in below with a perpetual chevron bounce. Emits `complete` at the end of the hold; **does not auto fade out** — the user dismisses it by scrolling. |
+### Movement 2 — Word highlight (introT ~0.22 → ~0.8)
 
-Lenis stays paused through Movement 2's fade-in + hold. On `complete`, Lenis resumes and Movement 3 arms.
+The tagline **"I turn complex workflows into journeys that feel effortless."** fades in and lights **word-by-word** muted → warm white (`litCount = round(smoothstep(0.3, 0.8, introT) · 9)`); the final word **"effortless."** lights cool. The line scales gently (`0.86 → 1.36`), sharing the zoom gesture.
 
-### Movement 3 — Iris reveal (scroll-driven)
+### Movement 3 — Reveal → flight (introT ~0.8 → 1, then flightT)
 
-User scrolls. ScrollTrigger pins `.phase--hero` (an empty placeholder section, 100vh tall) for `+=150%` of scroll distance. During the pin, a single `gsap.timeline({ scrub: 1 })` scrubs four reveals from the centre of the welcome text outward:
+`.flight-reveal-overlay` (a dark radial layer over the canvas) clears its **opacity** `~1 → ~0.06` via `smoothstep(0.12, 0.92, introT)` — the world (skydome + clouds + A350) is revealed as if zooming out of the text. The whole intro layer fades by introT 1. Aircraft materials fade `0 → 1` across introT `0 → 0.4`. From here `flightT` flies the spline.
 
-| Tween | Duration (timeline fraction) | What |
-|---|---|---|
-| `.cinematic-overlay { --hole-r: 0 → 150vw }` | 0.0 → 1.0 | Radial-mask hole grows from the centre, dissolving the black overlay outward. Sky + clouds + aircraft pop out from the wording. |
-| `.welcome__text { scale: 1 → 0.5, opacity: 1 → 0 }` | 0.0 → 0.6 | Welcome text shrinks and fades as the world appears. |
-| `.welcome__hint { opacity: 1 → 0 }` | 0.90 → 0.98 | Scroll hint stays visible for almost the entire reveal so the viewer knows to keep scrolling, then fades out just before the post-reveal CTAs slide in at progress 0.98. |
-| Aircraft materials `opacity: 0 → 1` | 0.0 → 0.4 | The 3D A350 becomes visible during the iris reveal. |
+### The flight (Movement 3 continued)
 
-`useFlightScroll.init` accepts an **`onScrollProgress`** callback so the page can read the masterTl's authoritative scrub progress — sibling ScrollTriggers on a pinned trigger calculate against a stationary element and stay at 0, so this callback is the only reliable read of where in the reveal the user is. The page flips `revealComplete = true` when progress crosses `0.98`, which gates the post-reveal CTAs.
+- **Spline + aircraft** — `CatmullRomCurve3` through 7 climbing/weaving control points. `getPointAt(flightT)` positions the GLB pivot; `getTangentAt(flightT)` orients it (`pivot.lookAt(point + tangent)`, nose along the pivot's +Z). **Banking:** heading delta over a `+0.012` lookahead, rolled about the nose axis (`pivot.rotateZ`), clamped ±0.6 rad.
+- **Camera chase rig** — `eye = point − tangent·back + up·12 + side·16`, `lookAt = point + tangent·20`; position lerped at `0.06` (snapped under reduced motion). An `introBias` (`max(0, 1 − flightT/0.06)`) adds distance/height while flightT is near 0, easing a wide establishing frame into the chase.
+- **GLSL contrails** — two wingtip ribbons (`useFlightPath`'s `Contrail` class): additive, `depthWrite:false`, cool-white `#cfe6ff`, per-vertex life fading head→tail. Emit points are the GLB's measured wingtip offsets, transformed to world via the pivot. Disabled under reduced motion.
+- **Telemetry** (`<CinematicFlightHud>`, throttled ~90ms, `tabular-nums`): **ALT** `round(point.y·600 + 8200)` ft; **HDG** `atan2(tan.x, −tan.z)` → 0–360°, also rotating the compass needle (red `#E11D2A`); **G/S** cruise ~430 kt modulated by scroll velocity; **V/S** smoothed Δaltitude → fpm, signed. A bottom-left **perf readout** (`FPS · CALLS · TRIS · DPR · DRACO 808KB`) reads `renderer.info.render.*`.
+- **Waypoints + rail** — four `<CinematicFlightWaypoints>` cards at flightT ≈ `0.18 / 0.43 / 0.68 / 0.9` (`FLIGHT_WAYPOINTS`), fading in when `|flightT − w.t| < 0.13` (only one active; the 4th is the centred contact variant). `<CinematicFlightRail>` is the right-edge progress rail — cool fill at `flightT·100%`, four labelled stops, active dot lit cool. Card content binds to `data/index.ts`; the spline `t`s + rail labels live in `FLIGHT_WAYPOINTS`.
 
-### Movement 4 — Post-reveal CTAs (idle, user-driven)
+### After the flight — editorial body
 
-Once `revealComplete` is true, two CTAs slide up from bottom-centre via a `<Transition name="ctas-fade">`:
-
-| CTA | Style | Behaviour |
-|---|---|---|
-| **Play with Aircraft** | `.cta--ghost` — hairline border, `rgba(10,11,15,0.55)` panel | Calls `flightScene.setInspectMode(true)` + pauses Lenis. Enters Pilot Mode (§4). |
-| **View my journey** | `.cta--solid` — warm-white panel, near-black text | **Currently unwired** (`onViewJourney` is a no-op). This is where the journey content flow will eventually attach. See §9. |
-
-The two CTAs disappear in Pilot Mode (`v-if="revealComplete && !inspectMode"`) so they don't compete with the inspect UI.
-
-### Camera by default
-
-Outside Pilot Mode, `OrbitControls` runs a continuous **autoRotate** orbit around the aircraft target — `autoRotateSpeed = 0.6`, matching the jet-engine-infographic Scene 0 / finale pattern. **`enableRotate` and `enableZoom` both start `false`**, so the plane is untouchable until the user explicitly enters Pilot Mode. Mouse-wheel reaches Lenis (page scroll); drag does nothing. This is intentional: the post-reveal idle state is a film shot, not a free orbit.
+Past the runway, `.experience-body` (opaque bg) scrolls up over the fixed canvas: About, Education timeline, horizontal Experience + Projects tracks, Contact. An `IntersectionObserver` on `.experience-body` calls `flightScene.setActive(false)` and hides the flight chrome (`flightChromeVisible`) once the body covers the canvas, and restores both on scroll-back.
 
 ---
 
-## 4. Pilot Mode
+## 4. Camera (no Pilot Mode)
 
-The "Play with Aircraft" affordance. While in Pilot Mode the camera is fully the user's. The page swaps the CTA strip for an inspection UI (compass + controls hint + exit).
+The camera is **fully scripted** by the chase rig in `useFlightPath` — it follows the aircraft down the spline every frame. There is **no `OrbitControls`, no autoRotate, and no Pilot Mode** (the "Play with Aircraft" / inspect flow was removed 2026-06 when the parked-plane idle state was replaced by the continuous flight — there is no longer a stationary aircraft to orbit).
 
-### 4.1 Lifecycle
-
-Enter (page calls `flightScene.setInspectMode(true)`):
-- Snapshot `camera.position` + `controls.target` into `inspectEntryPose` so we can animate back to this exact pose on exit.
-- `controls.autoRotate = false`
-- `controls.enableRotate = true`
-- `controls.enableZoom = true`
-- Page calls `lenis.instance?.stop()` so mouse-wheel reaches OrbitControls (zooms the camera) instead of scrolling the page back into the iris reveal.
-
-Exit (page calls `flightScene.setInspectMode(false)`):
-- `controls.enableRotate = false` immediately (user can't keep dragging once they've chosen to leave)
-- `controls.enableZoom = false`
-- GSAP timeline tweens `camera.position` + `controls.target` back to `inspectEntryPose` over **0.7s `power2.inOut`**, calling `controls.update()` on every tween frame so OrbitControls re-derives its internal spherical state and keeps the camera oriented as it slides back.
-- On tween `onComplete`: `controls.autoRotate = true`. Plane resumes its idle orbit from the restored pose.
-- Page calls `lenis.instance?.start()` to resume page scroll.
-- If the user re-enters Pilot Mode mid-tween, the in-flight tween is `.kill()`-ed before the new entry snapshot is taken — otherwise it would keep writing to `camera.position` on top of fresh drag input.
-
-### 4.2 Inspect UI
-
-Three fixed-position chrome elements, all gated by `v-if="inspectMode"` inside a single `<Transition name="inspect-fade">` so they fade in/out together:
-
-| Element | Position | Content |
-|---|---|---|
-| `.inspect-ui__indicator` | top-centre | Two mono chips: **Drag to rotate** + **Scroll to zoom**, hairline-separated. |
-| `.compass` | top-right | 90px ring with N/E/S/W marks (N emphasised warm-white). Red `#E11D2A` needle pointing in the camera's heading direction. Two readouts below: `HDG 087° E` (`tabular-nums`) and `PITCH +05°` with sign prefix. See §4.3. |
-| `.inspect-ui__exit` | bottom-centre | `Exit Pilot Mode` button (same `.cta--ghost` style as Play with Aircraft). |
-
-Mobile (`< 640px`) collapses the indicator chips to a vertical stack below the back-link, shrinks the compass to 56px, and stretches the exit button to full width.
-
-### 4.3 Compass — heading + pitch
-
-`useFlightScene` exposes two reactive refs that update on every `OrbitControls` `change` event:
-
-- **`cameraHeading`** — the camera's forward azimuth in degrees. **Intentionally NOT wrapped to `[0, 360)`**. Wrapping would make the CSS `rotate()` transition take the long way around at the 0°/360° boundary (e.g. `359° → 1°` would animate `-358°`, snapping the needle counter-clockwise across the whole dial). Instead, the ref tracks a continuous accumulated value — every update computes the shortest-path delta and adds it. The needle's CSS rotation stays monotonic. The page wraps to `[0, 360)` via a `headingWrapped` computed for the textual readout.
-- **`cameraPitch`** — `asin(dir.y)` in degrees. Positive = looking up, negative = looking down. Range is naturally `[-90°, +90°]`; no wrapping issue.
-
-Cardinal convention:
-- **N (0°)** = looking toward `-Z`
-- **E (90°)** = looking toward `+X` (the direction the parked plane is pointing — `rotation.y = π/2` puts its nose along `+X`)
-- **S (180°)** = looking toward `+Z`
-- **W (270°)** = looking toward `-X`
-
-The cardinal label cycles N → NE → E → SE → S → SW → W → NW with 45°-wide buckets centred on each direction.
+The HUD **compass needle** therefore reads heading from the **spline tangent**, not from camera orientation: `heading = atan2(tan.x, −tan.z)` wrapped to `[0, 360)`, written to the needle's CSS `rotate()` each frame. The needle is the one allowed off-palette colour (`#E11D2A`, §2.1). There is no pitch readout.
 
 ---
 
@@ -190,41 +135,45 @@ The cardinal label cycles N → NE → E → SE → S → SW → W → NW with 4
 
 ### 5.1 Back to Reality link
 
-Top-left, fixed, mono uppercase, hairline-bordered translucent panel. Always rendered (no `v-if`) so the viewer can leave at any moment — including during the intro splash, welcome card, and iris reveal — without waiting for the cinematic flow to clear. Points to `/` via `<NuxtLink>`.
+Top-left, fixed, mono uppercase, hairline-bordered translucent panel. Always rendered (no `v-if`) so the viewer can leave at any moment — including during the splash, welcome, and flight — without waiting for the cinematic flow to clear. Points to `/` via `<NuxtLink>`. (Lives outside the `flightChromeVisible` group so it stays available over the editorial body too.)
 
-### 5.2 HUD (currently NOT rendered)
+### 5.2 Telemetry HUD
 
-`<CinematicHUD>` exists in the repo but is not mounted on the page. It was a page-corner spec-sheet readout (PHASE / ALT / STAGE + phase-jump dots) tied to the 9-phase bio flow that was torn back out. The component is kept for future re-use if the View my journey design wants a similar HUD pattern. Don't render it as-is — `usePhaseState`'s per-phase ScrollTriggers reference `.phase--takeoff`, `.phase--cruise` etc. that no longer exist.
+`<CinematicFlightHud>` is the live telemetry cluster rendered during the flight (top-right gauges + compass, bottom-left perf readout) — see §3. It is gated by `flightChromeVisible` so it hides once the editorial body covers the canvas.
+
+The legacy `<CinematicHUD>` (`HUD.vue`, page-corner spec-sheet + phase-jump dots) and `usePhaseState` remain in the repo from the torn-out 9-phase bio flow but are **not** mounted. They reference `.phase--takeoff` / `.phase--cruise` triggers that no longer exist; don't render as-is. Kept only as reference — safe to delete if no future surface needs them.
 
 ---
 
 ## 6. File layout
 
 ```
-pages/experience/index.vue              # entrypoint — composes the four movements + Pilot Mode wiring
+pages/experience/index.vue              # entrypoint — flight runway + chrome + editorial body + orchestration
 layouts/cinematic.vue                   # dark shell + html[data-layout=cinematic] + Lenis init
 
 components/cinematic/
-├── Intro.vue                           # Movement 1 — plane silhouette rises through black              [RENDERED]
-├── Welcome.vue                         # Movement 2 — welcome card + scroll hint                        [RENDERED]
-├── Overlay.vue                         # persistent black with radial-mask iris (--hole-r)              [RENDERED]
+├── Intro.vue                           # Movement 0 — plane silhouette rises through black              [RENDERED]
 ├── FlightScene.vue                     # Three.js canvas mount (host + lifecycle)                      [RENDERED]
-├── Aircraft.vue                        # trigger for the GLB A350 (no DOM output)                      [RENDERED]
-├── HUD.vue                             # page-corner spec sheet + phase nav                            [unused, kept for §5.2]
-└── PhaseSection.vue                    # generic lower-third phase layout                              [unused, kept for §9]
+├── FlightIntro.vue                     # welcome greeting + word-highlight tagline (introT-driven)     [RENDERED]
+├── FlightHud.vue                       # telemetry gauges + compass needle + perf readout              [RENDERED]
+├── FlightRail.vue                      # right-edge progress rail + 4 stops                            [RENDERED]
+├── FlightWaypoints.vue                 # 4 in-flight waypoint cards (final = contact)                  [RENDERED]
+├── EditorialSection.vue                # editorial-body section shell (label/headline/subline/pin)     [RENDERED]
+├── HUD.vue                             # legacy page-corner spec sheet + phase nav                     [unused, kept — see §5.2]
+└── PhaseSection.vue                    # legacy lower-third phase layout                               [unused, kept]
 
 composables/
 ├── useLenis.ts                         # smooth-scroll lifecycle + ScrollTrigger.update binding         [USED]
-├── useFlightScene.ts                   # renderer + camera + sky shader + clouds + OrbitControls       [USED]
-│                                       # + cameraHeading/cameraPitch refs + setInspectMode lifecycle
-├── useFlightAircraft.ts                # GLB load + normalize + cruise pose                            [USED]
-├── useFlightScroll.ts                  # iris reveal masterTl (+ unused aircraftModel/flightStart      [USED — only iris reveal]
-│                                       # pose choreography params still in the interface)
-└── usePhaseState.ts                    # active phase tracking + click-to-jump (PHASES manifest)        [unused, kept for §9]
+├── useFlightScene.ts                   # renderer + gradient skydome + fog + lighting + RAF loop        [USED]
+│                                       # + per-frame hook + perf refs (no OrbitControls)
+├── useFlightAircraft.ts                # GLB load + normalize + pivot flight rig + wingtip offsets      [USED]
+├── useFlightPath.ts                    # spline + clouds + contrails + chase camera + telemetry         [USED]
+│                                       # (registers useFlightScene's frame hook; exposes introT/flightT…)
+└── usePhaseState.ts                    # legacy active-phase tracking + click-to-jump                   [unused, kept]
 
 assets/css/cinematic.css                # the token sheet (this contract)
 public/fonts/geist/Geist-Variable.woff2 # self-hosted Geist
-public/images/A350_summary.png          # intro silhouette (top-down)
+public/images/A350_summary.png          # splash silhouette (top-down)
 public/models/a350.glb                  # 3D aircraft (DRACO-compressed, ~808KB)
 ```
 
@@ -238,16 +187,16 @@ These are non-negotiable. If a rule gets in the way, update this file in the sam
 
 1. **The cinematic stylesheet must never be imported into `/`.** It is loaded by `layouts/cinematic.vue` via `import '~/assets/css/cinematic.css'` and nowhere else. Do not add it to `nuxt.config.ts`'s global `css:` array.
 2. **`/experience` is `ssr: false`** — Lenis, GSAP ScrollTrigger, Three.js, and the DRACO CDN all need `window` / `document`. The route rule is in `nuxt.config.ts` and must stay.
-3. **Three.js sub-imports must be pre-bundled** in `vite.optimizeDeps.include`: `Sky.js`, `GLTFLoader.js`, `DRACOLoader.js`, `OrbitControls.js`. Without this, dev triggers a page reload the first time the scene mounts.
+3. **Three.js sub-imports must be pre-bundled** in `vite.optimizeDeps.include`: `GLTFLoader.js`, `DRACOLoader.js`. Without this, dev triggers a page reload the first time the scene mounts. (The flight uses a hand-written gradient skydome + a scripted chase camera, so `Sky.js` and `OrbitControls.js` are no longer imported — don't re-add them to optimizeDeps unless something imports them again.)
 4. **`<UiSectionHeading>`, `.btn`, `.card`, `.skill-tag`** and other primitives from `/` do not exist on `/experience`. Use cinematic equivalents. New cinematic primitives go in `components/cinematic/`, not `components/ui/`.
 5. **Geist must be served from `/public/fonts/geist/`**, not from `node_modules`. The `geist` npm package is a next/font helper and ships no plain CSS; we copy the variable woff2 into `/public` at install time.
 6. **No backdrop-filter on any cinematic panel.** Editorial print register, not frosted-glass dashboard.
-7. **Pin trigger must not be an ancestor of position:fixed overlays.** ScrollTrigger's pin can convert the pinned element into a containing block for fixed descendants, which makes them follow the pin instead of the viewport. We pin `.phase--hero` (a sibling of the fixed overlays), never `.experience-root`.
-8. **Pause the render loop on `visibilitychange`** when the page is hidden. Cap `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`. Both live in `useFlightScene.ts`.
-9. **OrbitControls stays disabled until `welcomeDone`.** Page calls `flightScene.setControlsEnabled(true)` after welcome clears. Even then, `enableRotate` and `enableZoom` start `false` — only Pilot Mode (`setInspectMode(true)`) flips them on. The plane is untouchable in idle. There is no `start`-event listener that disables autoRotate on first user drag (the previous "drag anytime" pattern is gone — autoRotate-on/off is now strictly a Pilot Mode concern).
-10. **`.cinematic-page` has `pointer-events: none`** so the empty `.phase--hero` placeholder doesn't intercept pointer events that should reach OrbitControls on the canvas behind. When the View my journey flow adds interactive children inside `.cinematic-page`, they must opt back in with `pointer-events: auto` on their own selectors.
-11. **`.experience-root` has `overflow-x: hidden`** to suppress phantom horizontal scrollbars from descendant transforms (fixed-positioned chrome with `translateX(-50%)`, Vue Transitions mid-animation, etc.).
-12. **No emoji** in copy. Aviation editorial register, not chat register. The one exception is the welcome card's `!` exclamation (the single moment of warmth in an otherwise restrained voice — don't extend it).
+7. **The flight uses no ScrollTrigger pin — it's a tall `.flight-runway` spacer + a fixed canvas.** Progress is read from the runway's scroll position each frame (`useFlightPath`'s `progress` source), so the fixed flight chrome is never a pin descendant. The editorial body below *does* pin its Experience/Projects tracks via ScrollTrigger, but those pins are inside `.experience-body`, never an ancestor of the fixed flight chrome.
+8. **Pause the render loop on `visibilitychange`** when the page is hidden, and via `setActive(false)` once the editorial body covers the canvas. Cap `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`. All live in `useFlightScene.ts`.
+9. **No OrbitControls / Pilot Mode.** The camera is fully scripted by the chase rig in `useFlightPath` (see §4). Don't reintroduce OrbitControls, autoRotate, or a free-orbit mode without a design conversation — the continuous flight has no stationary aircraft to orbit.
+10. **`.cinematic-page` has `pointer-events: none`** so the transparent `.flight-runway` spacer doesn't intercept events. The flight chrome's own interactive elements (final waypoint CTA + links) and the editorial body (`pointer-events: auto`) opt back in on their own selectors.
+11. **`.experience-root` has `overflow-x: clip`** to suppress phantom horizontal scrollbars from descendant transforms (full-viewport track breakouts, fixed chrome with `translateX(-50%)`, etc.) — `clip` rather than `hidden` so descendant `position: sticky` (the pinned editorial tracks) keeps working.
+12. **No emoji** in copy. Aviation editorial register, not chat register. Typographic glyphs (`→`, `↓`, `↑`, `·`) are fine; the welcome `.` accent and the final waypoint's `→` arrow are intentional. (The previous "Welcome aboard / to my journey!" exclamation is gone with the prototype's period-terminated "Welcome aboard." — the surface now keeps the no-exclamation voice throughout.)
 
 ---
 
@@ -257,29 +206,22 @@ Per AoT §12 (verbatim):
 
 - **Precise, not chatty.** "Twin-spool architecture" beats "the engine has two parts."
 - **Active, not passive.** "Cool the blades" beats "the blades are cooled."
-- **No exclamation marks.** Headlines and meta lines are period-terminated. *(Note: the welcome card "Welcome aboard / to my journey!" intentionally breaks this rule — see Hard rule 12.)*
+- **No exclamation marks.** Headlines and meta lines are period-terminated — including the welcome card's "Welcome aboard." (the cool period *is* the warmth).
 - Headlines lean poetic; data leans technical. The contrast is the voice.
 
 ---
 
-## 9. Currently unwired: View my journey
+## 9. The journey (wired)
 
-The **View my journey** CTA (`.cta--solid` in `pages/experience/index.vue`) is rendered and clickable but its handler `onViewJourney` is a `TODO` no-op. This is intentional — the bio flow that previously lived behind it (9 phase sections, masthead cards, telemetry-led editorial layout) was deliberately stripped because the layout iterations couldn't land cleanly without breaking the cinematic register.
+The journey is no longer a "View my journey" CTA into separate content — **the scroll-driven flight _is_ the journey** (§3). The four waypoints (Faztech → Universiti Malaya → Fiuu → On approach) tell the career as a single continuous flight; the editorial body below adds depth (full About / Education / Projects / Contact).
 
-Components and composables kept in the repo for the eventual re-design:
+This replaced the previous intro-splash → welcome → iris-reveal → autoRotate-+-CTAs flow (and the earlier 9-phase bio flow before it). Decisions baked in here, so future redesigns don't relitigate them:
 
-- `<CinematicPhaseSection>` — generic flight-strip card (warm-white panel, mono telemetry header, hairline rule, Playfair headline, optional subline/meta, slotted body)
-- `<CinematicHUD>` — page-corner spec-sheet readout + clickable phase dots
-- `usePhaseState` — per-phase ScrollTrigger setup + jump-to-phase via Lenis
-- `useFlightScroll`'s `aircraftModel` / `flightStart` / `flightEnd` params on the init interface — drove per-phase pitch/landing pose during the bio flow
+- **Keep the splash + welcome + reveal** as the dramatic opener (Qie wants them preserved). They're now scroll-driven (one `progress`), not auto-timeline'd.
+- **The aircraft is the real `a350.glb`** flown along the spline — never a procedural placeholder.
+- **One continuous fixed-canvas flight**, then a register switch to the scrolling editorial body — not 8 stacked phase sections (disliked) and not sticky two-column scrollytelling (reverted).
 
-When you re-wire View my journey, **don't** rebuild the same 8-stacked-sections pattern (Qie disliked it visually), **don't** try the sticky two-column scrollytelling pattern (was attempted + reverted), and **don't** strip the intro/welcome/iris reveal (Qie wants them preserved as the dramatic opener). Open question: where does the journey content live spatially — continued scroll past the iris reveal? a separate route? a modal/overlay? Needs design conversation, not just implementation.
-
-When (and only when) a journey design is ready:
-1. Wire `onViewJourney` to navigate into / scroll into / open the chosen container.
-2. Re-render `<CinematicHUD>` if it fits the new design, OR delete `HUD.vue` + `usePhaseState.ts` from the repo.
-3. Same for `<CinematicPhaseSection>` — re-render if its flight-strip layout still serves the new design, or delete.
-4. Update this §9 to describe the actual journey behaviour.
+Legacy components kept but **not** mounted (`HUD.vue`, `PhaseSection.vue`, `usePhaseState.ts`) are safe to delete whenever a cleanup PR wants to; nothing renders them.
 
 ---
 
@@ -287,20 +229,23 @@ When (and only when) a journey design is ready:
 
 | What | Where | Default |
 |---|---|---|
-| Sky brightness | `useFlightScene.ts` `toneMappingExposure` | `0.18` |
-| Sky atmosphere | `useFlightScene.ts` `buildSky()` (turbidity, rayleigh, sun phi/theta) | turbidity 8, rayleigh 1.2, sun 12° low / 200° behind |
-| Cloud density | `useFlightScene.ts` `buildClouds(16)` count + `baseOpacity` range | 16 clouds, `0.25 + 0.25` random opacity |
+| Sky brightness | `useFlightScene.ts` `toneMappingExposure` | `0.92` |
+| Sky gradient colours | `useFlightScene.ts` `buildSky()` (`uTop` / `uHorizon` / `uGlow`) | `#06070b` / `#1b2433` / `#2c3a4f` |
+| Fog range | `useFlightScene.ts` `scene.fog` | `0x11151f`, near 120 / far 620 |
+| Camera lens / far plane | `useFlightScene.ts` `PerspectiveCamera` | FOV 48°, far 2000 |
+| Cloud density | `useFlightPath.ts` `buildClouds()` count + `opacity` | 18 clouds, `0.1 + 0.22` random opacity |
+| Scroll runway length | `pages/experience/index.vue` `.flight-runway { height }` | `820vh` |
+| Intro fraction | `useFlightPath.ts` `INTRO_END` | `0.14` of total progress |
+| Waypoint positions | `useFlightPath.ts` `FLIGHT_WAYPOINTS[].t` | `0.18 / 0.43 / 0.68 / 0.9` |
 | Aircraft size | `useFlightAircraft.ts` `TARGET_FUSELAGE_LENGTH` | `30` scene units |
-| Aircraft initial pose | `useFlightAircraft.ts` `startCruise()` rotation/position | rotation.y=π/2 (nose +X = East), position (0, 2, -45) |
-| Intro plane duration | `Intro.vue` GSAP `duration: 3` | 3s linear |
-| Welcome timings | `Welcome.vue` timeline (fade-in `0.8`, hint fade-in `1.0`, hold `1.5`) | — |
-| Iris reveal pin distance | `pages/experience/index.vue` `flightScroll.init({ end: '+=150%' })` | 150% of viewport |
-| Scroll hint fade window | `useFlightScroll.ts` `.welcome__hint` tween position + duration | `0.90 → 0.98` of masterTl progress |
-| Post-reveal CTA threshold | `pages/experience/index.vue` `onScrollProgress` callback | `revealComplete = p >= 0.98` |
-| Camera autoRotate speed | `useFlightScene.ts` `controls.autoRotateSpeed` | `0.6` (matches jet-engine-infographic) |
-| Pilot Mode exit tween | `useFlightScene.ts` `setInspectMode(false)` GSAP timeline | `0.7s` `power2.inOut` on camera.position + controls.target |
-| Compass needle colour | `pages/experience/index.vue` `.compass__needle { background }` | `#E11D2A` (intentionally outside palette — see §2.1) |
-| Compass ring size | `pages/experience/index.vue` `.compass__ring { width, height }` | `90px` desktop, `56px` mobile |
+| Aircraft nose axis | `useFlightAircraft.ts` `NOSE_ALIGN_Y` | `0` (GLB noses +Z; flip if it flies sideways/backwards) |
+| Splash duration | `Intro.vue` GSAP `duration: 3` | 3s linear |
+| Camera chase rig | `useFlightPath.ts` `update()` (`back`/`up`/`side`, lerp `0.06`) | back 34, up 12, side 16; lerp 0.06 |
+| Banking amount | `useFlightPath.ts` `pivot.rotateZ(clamp(-dh*9, ±0.6))` | gain 9, clamp ±0.6 rad |
+| Contrail look | `useFlightPath.ts` `Contrail` (width, colour, history) | width 0.55, `#cfe6ff`, 56 points, opacity 0.5 |
+| Telemetry tuning | `useFlightPath.ts` `update()` (G/S base, V/S gain, throttle) | G/S 430+scrollV, V/S ×0.12, HUD 90ms |
+| Compass needle colour | `FlightHud.vue` `.flight-hud__needle` | `#E11D2A` (intentionally outside palette — see §2.1) |
+| Perf readout | `pages/experience/index.vue` `<CinematicFlightHud show-perf>` | shown |
 
 ---
 
