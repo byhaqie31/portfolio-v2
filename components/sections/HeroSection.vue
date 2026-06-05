@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { personal as staticPersonal, heroBadge } from '~/data/index'
+import { personal as staticPersonal, heroBadge, heroTaglines } from '~/data/index'
 
 const { data: personalData } = await usePersonal()
 
@@ -24,6 +24,19 @@ const nameParts = computed(() => {
 
 const heroRoot = ref<HTMLElement | null>(null)
 const photo = ref<HTMLImageElement | null>(null)
+const subInner = ref<HTMLElement | null>(null)
+
+// Rotating subtitle: parse a `**bold**`-marked line into styled segments.
+const taglineIndex = ref(0)
+const segments = computed(() =>
+  (heroTaglines[taglineIndex.value] ?? '')
+    .split(/(\*\*[^*]+\*\*)/)
+    .filter(Boolean)
+    .map((part) => {
+      const m = part.match(/^\*\*([^*]+)\*\*$/)
+      return m ? { text: m[1], em: true } : { text: part, em: false }
+    }),
+)
 
 let mm: ReturnType<typeof gsap.matchMedia> | null = null
 
@@ -39,6 +52,8 @@ onMounted(() => {
   mm = gsap.matchMedia()
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
+    let rotTimer: ReturnType<typeof gsap.delayedCall> | null = null
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
       tl.fromTo('.hero-photo-wrap', { opacity: 0, scale: 0.92, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1.6 }, 0)
@@ -47,7 +62,23 @@ onMounted(() => {
         .fromTo('.scroll-cue', { opacity: 0 }, { opacity: 1, duration: 0.8 }, 1.2)
     }, heroRoot.value!)
 
-    return () => ctx.revert()
+    // Cross-fade the subtitle between taglines, looping while mounted.
+    function cycle() {
+      if (heroTaglines.length < 2 || !subInner.value) return
+      gsap
+        .timeline({ onComplete: () => { rotTimer = gsap.delayedCall(2.8, cycle) } })
+        .to(subInner.value, { opacity: 0, y: -8, duration: 0.4, ease: 'power2.in' })
+        .add(() => { taglineIndex.value = (taglineIndex.value + 1) % heroTaglines.length })
+        .fromTo(subInner.value, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, '+=0.06')
+    }
+    rotTimer = gsap.delayedCall(3.8, cycle)
+
+    return () => {
+      rotTimer?.kill()
+      if (subInner.value) gsap.killTweensOf(subInner.value)
+      taglineIndex.value = 0
+      ctx.revert()
+    }
   })
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
@@ -69,7 +100,7 @@ onUnmounted(() => mm?.revert())
   <section
     id="top"
     ref="heroRoot"
-    class="relative min-h-[100svh] flex items-center px-6 pt-20"
+    class="relative min-h-svh flex items-center px-6 pt-20"
   >
     <div class="max-w-6xl mx-auto w-full grid lg:grid-cols-[1.15fr_0.85fr] gap-11 lg:gap-16 items-center">
       <!-- Left: copy -->
@@ -87,10 +118,13 @@ onUnmounted(() => mm?.revert())
           <span data-hero-stagger class="block">{{ nameParts.rest }}<span class="text-accent">.</span></span>
         </h1>
 
-        <p data-hero-stagger class="mt-7 text-[clamp(1.125rem,2.2vw,1.5rem)] text-text-secondary leading-snug max-w-[34ch]">
-          Software Engineer <span class="text-text-primary font-medium">(UI/UX)</span>
-          shaping clean, scalable interfaces for
-          <span class="text-text-primary font-medium">{{ personal.focus }}</span>.
+        <p data-hero-stagger class="mt-7 text-[clamp(1.125rem,2.2vw,1.5rem)] text-text-secondary leading-snug min-h-[2.9em] sm:min-h-[2.8em]">
+          <span ref="subInner" class="inline-block max-w-[34ch]">
+            <template v-for="(seg, i) in segments" :key="i"><span
+              v-if="seg.em"
+              class="text-text-primary font-medium"
+            >{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template>
+          </span>
         </p>
 
         <div data-hero-stagger class="mt-10 flex flex-wrap items-center gap-5">

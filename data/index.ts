@@ -31,6 +31,14 @@ export const heroBadge = {
   label: 'Front-end at Fiuu (Razer MS)',
 }
 
+// ── HERO TAGLINES (rotating subtitle) ────────────────────────
+// The hero sub cross-fades between these. Wrap a phrase in **double
+// asterisks** to emphasise it (rendered with text-primary + medium weight).
+export const heroTaglines = [
+  'Software Engineer **(UI/UX)** shaping clean, scalable interfaces for **fintech & SaaS**.',
+  'Designer-minded front-end engineer building **fintech products** with a **human lens**.',
+]
+
 // ── STATEMENT (pinned scale/zoom interstitial) ───────────────
 // Words light up one-by-one as the phrase scales up on scroll.
 // `accent` is the final, accent-colored word.
