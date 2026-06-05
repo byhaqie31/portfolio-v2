@@ -24,11 +24,18 @@ export const personal = {
   ],
 }
 
-// ── HERO CREDENTIAL BADGE ────────────────────────────────────
-// Floating glass badge over the hero portrait.
+// ── HERO CREDENTIAL BADGES ───────────────────────────────────
+// Two floating glass badges over the hero portrait: `heroBadge` (the
+// stack/role, bottom-left) and `heroBadgeExp` (the where, top-right —
+// desktop only). They drift apart as the portrait zooms on hover.
 export const heroBadge = {
   key: 'Vue · Nuxt',
   label: 'Software Engineer - UI/UX',
+}
+
+export const heroBadgeExp = {
+  key: '3+ years',
+  label: 'Design & Developing',
 }
 
 // ── HERO TAGLINES (rotating subtitle) ────────────────────────

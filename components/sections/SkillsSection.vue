@@ -149,9 +149,20 @@ onUnmounted(() => {
   font-variant-numeric: tabular-nums;
 }
 
+/* Accent chips — blue tint for contrast in both light + dark. */
 .skill-card .skill-tag {
   transform-origin: center;
   will-change: transform;
   cursor: default;
+  background: rgb(var(--color-accent-raw) / 0.1);
+  border: 1px solid rgb(var(--color-accent-raw) / 0.18);
+  color: var(--color-accent);
+  font-weight: 500;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skill-card .skill-tag:hover {
+  background: rgb(var(--color-accent-raw) / 0.16);
+  border-color: rgb(var(--color-accent-raw) / 0.32);
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { personal as staticPersonal, heroBadge, heroTaglines } from '~/data/index'
+import { personal as staticPersonal, heroBadge, heroBadgeExp, heroTaglines } from '~/data/index'
 
 const { data: personalData } = await usePersonal()
 
@@ -23,7 +23,10 @@ const nameParts = computed(() => {
 })
 
 const heroRoot = ref<HTMLElement | null>(null)
+const photoWrap = ref<HTMLElement | null>(null)
 const photo = ref<HTMLImageElement | null>(null)
+const badgeStack = ref<HTMLElement | null>(null)
+const badgeExp = ref<HTMLElement | null>(null)
 const subInner = ref<HTMLElement | null>(null)
 
 // Rotating subtitle: parse a `**bold**`-marked line into styled segments.
@@ -58,7 +61,7 @@ onMounted(() => {
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
       tl.fromTo('.hero-photo-wrap', { opacity: 0, scale: 0.92, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1.6 }, 0)
         .fromTo('[data-hero-stagger]', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.09 }, 0.15)
-        .fromTo('.hero-photo-badge', { opacity: 0, y: 14, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.9 }, 0.9)
+        .fromTo('.hero-badge', { opacity: 0, y: 14, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, stagger: 0.08 }, 0.9)
         .fromTo('.scroll-cue', { opacity: 0 }, { opacity: 1, duration: 0.8 }, 1.2)
     }, heroRoot.value!)
 
@@ -82,11 +85,39 @@ onMounted(() => {
   })
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
-    gsap.set('[data-hero-stagger], .hero-photo-wrap, .hero-photo-badge, .scroll-cue', {
+    gsap.set('[data-hero-stagger], .hero-photo-wrap, .hero-badge, .scroll-cue', {
       opacity: 1,
       y: 0,
       scale: 1,
     })
+  })
+
+  // Hover (desktop, motion-on): portrait zooms in, badges drift apart for depth.
+  mm.add('(prefers-reduced-motion: no-preference) and (hover: hover)', () => {
+    const wrap = photoWrap.value
+    const img = photo.value
+    const bStack = badgeStack.value
+    const bExp = badgeExp.value
+    if (!wrap || !img || !bStack || !bExp) return
+
+    const ease = 'power3.out'
+    const onEnter = () => {
+      gsap.to(img, { scale: 1.06, duration: 0.6, ease })
+      gsap.to(bStack, { x: -10, y: 10, scale: 1.05, duration: 0.6, ease })
+      gsap.to(bExp, { x: 10, y: -10, scale: 1.05, duration: 0.6, ease })
+    }
+    const onLeave = () => {
+      gsap.to([img, bStack, bExp], { x: 0, y: 0, scale: 1, duration: 0.7, ease })
+    }
+
+    wrap.addEventListener('mouseenter', onEnter)
+    wrap.addEventListener('mouseleave', onLeave)
+
+    return () => {
+      wrap.removeEventListener('mouseenter', onEnter)
+      wrap.removeEventListener('mouseleave', onLeave)
+      gsap.set([img, bStack, bExp], { clearProps: 'transform' })
+    }
   })
 
   // Image may already be cached (complete) on mount.
@@ -138,8 +169,8 @@ onUnmounted(() => mm?.revert())
         </div>
       </div>
 
-      <!-- Right: portrait + floating credential badge -->
-      <div class="hero-photo-wrap order-1 lg:order-2 relative justify-self-center lg:justify-self-end">
+      <!-- Right: portrait + floating credential badges -->
+      <div ref="photoWrap" class="hero-photo-wrap order-1 lg:order-2 relative justify-self-center lg:justify-self-end">
         <div class="hero-photo relative overflow-hidden rounded-[28px] border border-border-subtle">
           <img
             ref="photo"
@@ -149,9 +180,17 @@ onUnmounted(() => mm?.revert())
             @load="refreshTriggers"
           />
         </div>
-        <div class="hero-photo-badge">
+
+        <!-- Stack / role badge — bottom-left -->
+        <div ref="badgeStack" class="hero-badge hero-badge-stack">
           <div class="text-2xl font-semibold tracking-tight text-text-primary">{{ heroBadge.key }}</div>
           <div class="text-xs text-text-muted mt-0.5">{{ heroBadge.label }}</div>
+        </div>
+
+        <!-- Experience / company badge — top-right, desktop only -->
+        <div ref="badgeExp" class="hero-badge hero-badge-exp hidden lg:block">
+          <div class="text-2xl font-semibold tracking-tight text-text-primary">{{ heroBadgeExp.key }}</div>
+          <div class="text-xs text-text-muted mt-0.5">{{ heroBadgeExp.label }}</div>
         </div>
       </div>
     </div>
@@ -170,11 +209,12 @@ onUnmounted(() => mm?.revert())
   aspect-ratio: 4 / 5;
   box-shadow: 0 40px 80px -40px rgb(var(--color-accent-raw) / 0.45);
 }
+.hero-photo img {
+  will-change: transform;
+}
 
-.hero-photo-badge {
+.hero-badge {
   position: absolute;
-  left: -20px;
-  bottom: 28px;
   padding: 14px 18px;
   border-radius: 16px;
   background: rgb(var(--color-surface-raw) / 0.82);
@@ -182,6 +222,15 @@ onUnmounted(() => mm?.revert())
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 20px 50px -24px rgb(var(--color-text-primary-raw) / 0.4);
+  will-change: transform;
+}
+.hero-badge-stack {
+  left: -20px;
+  bottom: 28px;
+}
+.hero-badge-exp {
+  right: -20px;
+  top: 28px;
 }
 
 .scroll-cue {
@@ -223,7 +272,8 @@ onUnmounted(() => mm?.revert())
 }
 
 @media (max-width: 1023px) {
-  .hero-photo-badge { left: auto; right: -8px; }
+  /* Single badge on tablet/mobile — keep it inside the narrower portrait. */
+  .hero-badge-stack { left: auto; right: -8px; }
 }
 
 /* FOUC guard — only when JS can run the entrance. SSR/no-JS shows content. */
