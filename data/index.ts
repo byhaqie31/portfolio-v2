@@ -28,7 +28,7 @@ export const personal = {
 // Floating glass badge over the hero portrait.
 export const heroBadge = {
   key: 'Vue · Nuxt',
-  label: 'Front-end at Fiuu (Razer MS)',
+  label: 'Software Engineer - UI/UX',
 }
 
 // ── HERO TAGLINES (rotating subtitle) ────────────────────────

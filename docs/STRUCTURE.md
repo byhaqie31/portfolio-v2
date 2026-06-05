@@ -214,9 +214,8 @@ assets/css/
 └── cinematic.css                 # AoT token sheet — /experience only, scoped under [data-layout='cinematic']
 
 public/
-├── favicon/                      # Favicon set
+├── favicon/                      # Favicon set (.ico/.svg/.png + site.webmanifest) — linked in nuxt.config head
 ├── images/
-│   ├── ABIcon.svg                # Site icon
 │   ├── ProfilePicture.png        # Restrained hero photo
 │   └── A350_summary.png          # Cinematic intro plane silhouette (top-down)
 ├── fonts/

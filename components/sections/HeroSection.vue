@@ -100,7 +100,7 @@ onUnmounted(() => mm?.revert())
   <section
     id="top"
     ref="heroRoot"
-    class="relative min-h-svh flex items-center px-6 pt-20"
+    class="relative min-h-svh flex items-center px-6 pt-20 pb-32 lg:pb-0"
   >
     <div class="max-w-6xl mx-auto w-full grid lg:grid-cols-[1.15fr_0.85fr] gap-11 lg:gap-16 items-center">
       <!-- Left: copy -->
