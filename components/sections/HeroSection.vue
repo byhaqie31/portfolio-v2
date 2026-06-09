@@ -635,11 +635,12 @@ onUnmounted(() => {
             <div class="deck-card-inner">
               <!-- Front: the photo -->
               <div class="deck-face deck-face--front">
-                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" draggable="false" @load="refreshTriggers" />
+                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" draggable="false" decoding="async" @load="refreshTriggers" />
                 <div v-else class="deck-ph"><span>{{ media?.label }}</span></div>
               </div>
-              <!-- Back: a short story (flip to reveal) -->
-              <div class="deck-face deck-face--back">
+              <!-- Back: a short story (flip to reveal). Only the lead flips,
+                   so only it carries a back face — keeps the peek cards cheap. -->
+              <div v-if="i === leadIdx" class="deck-face deck-face--back">
                 <div v-if="media?.story" class="deck-story">
                   <span class="deck-story-kicker">{{ media.story.kicker }}</span>
                   <h3 class="deck-story-title">{{ media.story.title }}</h3>
@@ -826,8 +827,13 @@ onUnmounted(() => {
 .deck-card-inner {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
   will-change: transform;
+}
+/* Only the lead flips, so only it needs the 3D context + a back face. Keeping
+   the 5 peek cards flat (no preserve-3d / no backface layer) is much cheaper to
+   composite — the difference between smooth and stuttering on Safari / mobile. */
+.deck-card--lead .deck-card-inner {
+  transform-style: preserve-3d;
 }
 .deck-face {
   position: absolute;
@@ -836,9 +842,11 @@ onUnmounted(() => {
   overflow: hidden;
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border-subtle);
+  /* Tighter blur — big-radius shadows on many animating cards are a top GPU
+     cost on weaker devices. */
   box-shadow:
     0 2px 6px rgb(var(--color-text-primary-raw) / 0.06),
-    0 30px 70px -34px rgb(var(--color-text-primary-raw) / 0.40);
+    0 14px 30px -20px rgb(var(--color-text-primary-raw) / 0.36);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -862,8 +870,8 @@ onUnmounted(() => {
    faces so it reads whether showing the photo or the flipped story. */
 .deck-card--lead .deck-face {
   box-shadow:
-    0 4px 14px rgb(var(--color-text-primary-raw) / 0.10),
-    0 44px 90px -40px rgb(var(--color-accent-raw) / 0.55);
+    0 6px 18px rgb(var(--color-text-primary-raw) / 0.10),
+    0 24px 50px -30px rgb(var(--color-accent-raw) / 0.5);
 }
 
 /* ── Card-back story ────────────────────────────────────────── */

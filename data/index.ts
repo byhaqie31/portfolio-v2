@@ -82,7 +82,7 @@ export interface HeroPhoto {
 // it to your own words. One photo, one story.
 export const heroPhotos: HeroPhoto[] = [
   {
-    img: '/images/baihaqie3.png',
+    img: '/images/baihaqie3.jpg',
     alt: 'Ahmad Baihaqie at the Marina Bay waterfront, Singapore',
     story: {
       kicker: 'Goal',
@@ -91,7 +91,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie2.png',
+    img: '/images/baihaqie2.jpg',
     alt: 'Ahmad Baihaqie in front of Big Ben and the Houses of Parliament, London',
     story: {
       kicker: 'Dream',
@@ -100,7 +100,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie5.png',
+    img: '/images/baihaqie5.jpg',
     alt: 'Ahmad Baihaqie in front of an Eiffel Tower replica',
     story: {
       kicker: 'Philosophy',
@@ -109,7 +109,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie.png',
+    img: '/images/baihaqie.jpg',
     alt: 'Ahmad Baihaqie in a yellow jacket exploring a snow-dusted desert canyon',
     story: {
       kicker: 'Hobby',
@@ -118,7 +118,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie4.png',
+    img: '/images/baihaqie4.jpg',
     alt: 'Ahmad Baihaqie looking out over a lake toward snow-capped mountains',
     story: {
       kicker: 'Always learning',
