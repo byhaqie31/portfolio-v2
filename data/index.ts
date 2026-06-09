@@ -46,6 +46,34 @@ export const heroTaglines = [
   'Designer-minded front-end engineer building **fintech products** with a **human lens**.',
 ]
 
+// ── HERO PHOTO DECK ──────────────────────────────────────────
+// The cinematic hero opens with a fanned "hand" of photo cards that
+// collapse into an interactive deck (prev/next · swipe · ← →). The
+// LAST entry is the lead card — the portrait, always featured on top
+// first. The others are peek cards that cycle through the carousel.
+//
+// To add a real photo: drop the file in `public/images/`, then give an
+// entry `img` + `alt` instead of `label`. Order is the carousel order;
+// keep the portrait last so it stays the opening hero face. The deck
+// geometry (fan/rest layout) is computed from the count, so any number
+// of cards works — 3 to 6 reads best.
+export interface HeroPhoto {
+  /** Path under /public, e.g. '/images/work-1.png'. Omit for a placeholder. */
+  img?: string
+  /** Alt text — required whenever `img` is set. */
+  alt?: string
+  /** Striped-placeholder label, shown only until a real `img` is supplied. */
+  label?: string
+}
+export const heroPhotos: HeroPhoto[] = [
+  { img: '/images/baihaqie3.png', alt: 'Ahmad Baihaqie at the Marina Bay waterfront, Singapore' },
+  { img: '/images/baihaqie2.png', alt: 'Ahmad Baihaqie in front of Big Ben and the Houses of Parliament, London' },
+  { img: '/images/baihaqie5.png', alt: 'Ahmad Baihaqie in front of an Eiffel Tower replica' },
+  { img: '/images/baihaqie.png', alt: 'Ahmad Baihaqie in a yellow jacket exploring a snow-dusted desert canyon' },
+  { img: '/images/baihaqie4.png', alt: 'Ahmad Baihaqie looking out over a lake toward snow-capped mountains' },
+  { img: '/images/ProfilePicture.png', alt: 'Portrait of Ahmad Baihaqie' },
+]
+
 // ── STATEMENT (pinned scale/zoom interstitial) ───────────────
 // Words light up one-by-one as the phrase scales up on scroll.
 // `accent` is the final, accent-colored word.
