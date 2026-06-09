@@ -53,10 +53,8 @@ const N = photos.length
 const leadIdx = N - 1 // the portrait card sits last / on top
 const cur = ref(leadIdx) // index into `photos` shown on the lead card
 const interactiveOn = ref(false)
-// Fanned pre-scroll state: while the hand is spread (reveal progress ~0) the
-// user can click a card to pop it forward for a look. Scrolling resets it.
-const fannedActive = ref(false)
-const featured = ref<number | null>(null)
+// Whether the lead card is currently flipped to show its story.
+const flipped = ref(false)
 
 // Lead shows photos[cur]; each peek card shows the following photos in order,
 // so the deck always looks full as you browse.
@@ -128,57 +126,51 @@ function centreDy() {
 /* ── Carousel ───────────────────────────────────────────────── */
 function enableInteractive(on: boolean) {
   interactiveOn.value = on
-}
-
-/* ── Fanned-state "pop a card forward" toggle ───────────────────
-   Only `scale` / `zIndex` / `yPercent` are touched here — the scroll-reveal
-   owns x/y/rotate, so featuring never fights the scrub and a scroll cleanly
-   collapses everything back. */
-function featureCard(i: number) {
-  if (!cards[i]) return
-  gsap.set(cards[i], { zIndex: 200 })
-  gsap.to(cards[i], { scale: 1.09, yPercent: -6, duration: 0.45, ease: 'power3.out', overwrite: 'auto' })
-}
-function unfeatureCard(i: number) {
-  if (!cards[i]) return
-  gsap.to(cards[i], {
-    scale: 1,
-    yPercent: 0,
-    duration: 0.4,
-    ease: 'power3.out',
-    overwrite: 'auto',
-    onComplete: () => { if (cards[i]) gsap.set(cards[i], { zIndex: zOf(i) }) },
-  })
-}
-function onCardClick(i: number) {
-  if (!fannedActive.value || !cards[i]) return
-  if (featured.value === i) {
-    unfeatureCard(i)
-    featured.value = null
-  } else {
-    if (featured.value != null) unfeatureCard(featured.value)
-    featureCard(i)
-    featured.value = i
-  }
-}
-// Toggle whether the fanned hand accepts clicks. Leaving the fanned state
-// (the user has started scrolling) drops any popped card back into place.
-function setFanned(on: boolean) {
-  if (fannedActive.value === on) return
-  fannedActive.value = on
-  if (!on && featured.value != null) {
-    unfeatureCard(featured.value)
-    featured.value = null
+  // Scrolling back out of the composed state drops any open story.
+  if (!on && flipped.value) {
+    flipCard(leadIdx, false)
+    flipped.value = false
   }
 }
 
+// Flip the lead card's inner (front photo ↔ back story) in 3D.
+function flipCard(i: number, on: boolean) {
+  const inner = cards[i]?.querySelector('.deck-card-inner')
+  if (inner) gsap.to(inner, { rotateY: on ? 180 : 0, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' })
+}
+// Tap the lead photo to flip its story (and back). Swipe/arrows/keys browse.
+function onCardClick(_i: number) {
+  if (!interactiveOn.value) return
+  // Ignore the click that a swipe/drag spawns.
+  if (didSwipe) { didSwipe = false; return }
+  flipped.value = !flipped.value
+  flipCard(leadIdx, flipped.value)
+}
+
+function leadInner(): HTMLElement | null {
+  return (cards[leadIdx]?.querySelector('.deck-card-inner') as HTMLElement | null) ?? null
+}
+
+// Advance the carousel CONTENT by `dir` (wraps), snapping any open flip shut so
+// the new photo shows front-facing and can be flipped again.
+function advance(dir: number) {
+  if (!N) return
+  if (flipped.value) {
+    const inner = leadInner()
+    // duration:0 + overwrite kills any in-flight flip tween and snaps to front.
+    if (inner) gsap.to(inner, { rotateY: 0, duration: 0, overwrite: true })
+    flipped.value = false
+  }
+  cur.value = (cur.value + dir + N) % N
+}
+
+// Arrow / keyboard browse: advance, then swipe the new photo in.
 function go(dir: number) {
   if (!interactiveOn.value || !N) return
-  cur.value = (cur.value + dir + N) % N
-  // Animate the IMG inside the lead card (never the card transform the scroll
-  // timeline owns). nextTick so the swapped media is in the DOM first.
+  advance(dir)
   nextTick(() => {
-    const child = leadEl?.firstElementChild as HTMLElement | null
+    // Swipe the new lead PHOTO in (the front face's img), not the card itself.
+    const child = leadEl?.querySelector('.deck-face--front img') as HTMLElement | null
     if (child) {
       gsap.fromTo(
         child,
@@ -186,8 +178,26 @@ function go(dir: number) {
         { xPercent: 0, opacity: 1, duration: 0.46, ease: 'power3.out', overwrite: 'auto' },
       )
     }
-    // Tiny settle on the top peek card so the deck feels alive.
     if (cards[0]) gsap.fromTo(cards[0], { scale: 0.97 }, { scale: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto' })
+  })
+}
+
+// Tinder fling: send the dragged lead card off-screen, then advance content and
+// bring the fresh card in from slightly behind. `sign` is the fling direction.
+function flingAndAdvance(dir: number, sign: number, inner: HTMLElement | null) {
+  if (!inner) { advance(dir); return }
+  gsap.to(inner, {
+    x: window.innerWidth * 1.1 * sign,
+    rotate: sign * 16,
+    opacity: 0,
+    duration: 0.32,
+    ease: 'power2.in',
+    overwrite: true,
+    onComplete: () => {
+      advance(dir)
+      gsap.set(inner, { x: 0, rotate: 0, opacity: 0, scale: 0.96 })
+      gsap.to(inner, { opacity: 1, scale: 1, duration: 0.34, ease: 'power3.out' })
+    },
   })
 }
 
@@ -195,19 +205,54 @@ function go(dir: number) {
 // the deck is composed.
 let downX: number | null = null
 let downY: number | null = null
+// True when the last pointer gesture was a drag/swipe, so the click it spawns
+// is ignored (otherwise a swipe would also toggle the flip).
+let didSwipe = false
+// Mobile "Tinder" drag: the lead card follows the finger and flings on release.
+let dragging = false
+const DRAG_THRESHOLD = 60
+
 function onPointerDown(e: PointerEvent) {
+  didSwipe = false
   if (!interactiveOn.value) return
   downX = e.clientX
   downY = e.clientY
+  // Drag-to-fling only on touch-sized screens, and only on the photo side.
+  dragging = isMobile && !flipped.value
+}
+function onPointerMove(e: PointerEvent) {
+  if (!dragging || downX == null || downY == null) return
+  const dx = e.clientX - downX
+  const dy = e.clientY - downY
+  if (Math.abs(dx) < Math.abs(dy)) return // vertical → let the page scroll
+  const inner = leadInner()
+  if (inner) gsap.set(inner, { x: dx, rotate: dx * 0.05 })
 }
 function onPointerUp(e: PointerEvent) {
   if (!interactiveOn.value || downX == null || downY == null) return
   const dx = e.clientX - downX
   const dy = e.clientY - downY
-  if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1)
+  if (Math.max(Math.abs(dx), Math.abs(dy)) > 10) didSwipe = true // moved → not a tap
+  const horizontal = Math.abs(dx) > Math.abs(dy)
+  if (dragging && horizontal) {
+    const inner = leadInner()
+    if (Math.abs(dx) > DRAG_THRESHOLD) {
+      flingAndAdvance(dx < 0 ? 1 : -1, dx < 0 ? -1 : 1, inner)
+    } else if (inner) {
+      gsap.to(inner, { x: 0, rotate: 0, duration: 0.4, ease: 'power3.out', overwrite: true })
+    }
+  } else if (horizontal && Math.abs(dx) > 42) {
+    go(dx < 0 ? 1 : -1) // non-touch fallback: simple swipe
+  }
+  dragging = false
   downX = downY = null
 }
 function onPointerCancel() {
+  if (dragging) {
+    const inner = leadInner()
+    if (inner) gsap.to(inner, { x: 0, rotate: 0, duration: 0.3, ease: 'power3.out', overwrite: true })
+  }
+  dragging = false
   downX = downY = null
 }
 function onKey(e: KeyboardEvent) {
@@ -234,8 +279,6 @@ function settleComposed() {
 
 /* ── Act 2 — scroll-driven reveal (pinned, scrubbed) ────────── */
 let revealTl: gsap.core.Timeline | null = null
-const REVEAL_DONE = 0.55 // past this scroll progress the hero is composed
-const FANNED_MAX = 0.03 // below this the hand is still fanned & click-to-feature
 
 function killReveal() {
   if (!revealTl) return
@@ -266,26 +309,14 @@ function buildReveal() {
       // recompute their start/end — otherwise they cache offsets that ignore
       // the pinned scroll band and scrub at the wrong position.
       refreshPriority: 1,
-      onUpdate: (self) => {
-        enableInteractive(self.progress > REVEAL_DONE)
-        setFanned(self.progress < FANNED_MAX)
-      },
     },
   })
-  // The hand starts fanned (progress 0) → clickable straight away.
-  featured.value = null
-  fannedActive.value = true
 
-  // Stage sweeps from screen-centre (scaled up, and vertically centred on
-  // mobile) to its resting spot, making room for the name to rise below it.
+  // The deck is already a centred Tinder stack (collapsed at the end of the
+  // autoplay). Scrolling just slides that whole stack from screen-centre to its
+  // resting spot (right on desktop, top on mobile) and unscales it — the cards
+  // ride along inside, no re-fanning. The name rises into the freed space.
   revealTl.fromTo(stageEl.value, { x: () => centreDx(), y: () => centreDy(), scale: baseScale() }, { x: 0, y: 0, scale: 1, duration: 1 }, 0)
-
-  // Each photo travels from the fanned hand to the resting cascade.
-  cards.forEach((c, i) => {
-    const f = fanOf(i)
-    const r = restOf(i)
-    revealTl!.fromTo(c, { x: f.x, y: f.y, rotate: f.rotate }, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.82 }, i * 0.025)
-  })
 
   if (scrollCueEl.value) revealTl.fromTo(scrollCueEl.value, { opacity: 1 }, { opacity: 0, duration: 0.3 }, 0)
   revealTl.fromTo(stagger, { opacity: 0, y: 96 }, { opacity: 1, y: 0, duration: 0.62, stagger: 0.07, ease: 'power3.out' }, 0.34)
@@ -298,9 +329,9 @@ function buildReveal() {
   ScrollTrigger.refresh()
 }
 
-/* ── Act 1 — autoplay entrance: rise → shuffle → fan out ────── */
-// Ends exactly at the reveal's start state (fanned hand, name hidden) so the
-// hand-off is seamless.
+/* ── Act 1 — autoplay entrance: rise → shuffle → fan → collapse ── */
+// Ends as a centred, collapsed Tinder stack (name still hidden); the hand-off
+// then makes it interactive, and the reveal slides it into its resting spot.
 let introTl: gsap.core.Timeline | null = null
 
 function buildAutoplay() {
@@ -357,6 +388,13 @@ function buildAutoplay() {
     introTl!.to(c, { rotate: f.rotate, duration: 0.95, ease: 'elastic.out(1, 0.45)' }, 1.98 + i * 0.03)
   })
 
+  // 4. COLLAPSE — the fanned hand deals into a centred Tinder stack, so the
+  // hero lands swipe/flip-ready without needing a scroll first.
+  cards.forEach((c, i) => {
+    const r = restOf(i)
+    introTl!.to(c, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.55, ease: 'power3.inOut' }, 3.0 + i * 0.02)
+  })
+
   // Greeting beside (desktop) / below (mobile) the deck while it performs:
   // fades up as the cards rise, with a one-shot wave, holds, then lifts away.
   // The outer element carries the mobile vertical offset so it tracks the
@@ -388,7 +426,7 @@ function buildAutoplay() {
     introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 2.0)
   }
 
-  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 2.55)
+  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 3.3)
 }
 
 /* ── Hand-off control ───────────────────────────────────────── */
@@ -423,13 +461,18 @@ function handoff() {
   handedOff = true
   blockScroll(false)
   window.scrollTo(0, 0)
-  buildReveal() // pin created now, at the fanned end state — seamless
+  buildReveal() // pin built now, at the centred-stack end state — seamless
+  enableInteractive(true) // the collapsed stack is immediately swipeable + flippable
 }
 
 function startSequence() {
   handedOff = false
-  fannedActive.value = false
-  featured.value = null
+  flipped.value = false
+  enableInteractive(false)
+  cards.forEach((c) => {
+    const inner = c.querySelector('.deck-card-inner')
+    if (inner) gsap.set(inner, { rotateY: 0 })
+  })
   killReveal()
   window.scrollTo(0, 0)
   buildAutoplay()
@@ -477,10 +520,12 @@ onMounted(() => {
   stagger = Array.from(heroRoot.value.querySelectorAll<HTMLElement>('[data-hero-stagger]'))
   isMobile = window.matchMedia('(max-width: 880px)').matches
 
-  // Browsing listeners — live in both motion modes.
+  // Browsing listeners — live in both motion modes. Move/up/cancel sit on
+  // window so a drag keeps tracking even if the finger leaves the card.
   deckEl.value.addEventListener('pointerdown', onPointerDown)
-  deckEl.value.addEventListener('pointerup', onPointerUp)
-  deckEl.value.addEventListener('pointercancel', onPointerCancel)
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+  window.addEventListener('pointercancel', onPointerCancel)
   window.addEventListener('keydown', onKey)
   enableInteractive(false)
 
@@ -505,12 +550,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   blockScroll(false)
-  const d = deckEl.value
-  if (d) {
-    d.removeEventListener('pointerdown', onPointerDown)
-    d.removeEventListener('pointerup', onPointerUp)
-    d.removeEventListener('pointercancel', onPointerCancel)
-  }
+  deckEl.value?.removeEventListener('pointerdown', onPointerDown)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerCancel)
   window.removeEventListener('keydown', onKey)
   mm?.revert()
 })
@@ -541,7 +584,7 @@ onUnmounted(() => {
           class="hero-eyebrow inline-flex items-center gap-2.5 rounded-full border border-border-subtle bg-bg-secondary px-3 py-1.5 text-sm font-medium text-text-secondary mb-7"
         >
           <span class="dot-available" />
-          Available for {{ personal.availableFor }} · {{ personal.location }}
+          Available for {{ personal.availableFor }}
         </span>
 
         <h1 class="hero-headline font-semibold text-text-primary">
@@ -581,18 +624,36 @@ onUnmounted(() => {
           ref="deckEl"
           class="hero-deck"
           :data-interactive="interactiveOn ? '1' : '0'"
-          :data-fanned="fannedActive ? '1' : '0'"
         >
           <figure
             v-for="(media, i) in slotMedia"
             :key="i"
             class="deck-card"
-            :class="{ 'deck-card--lead': i === leadIdx, 'is-featured': featured === i }"
+            :class="{ 'deck-card--lead': i === leadIdx, 'is-flipped': i === leadIdx && flipped }"
             @click="onCardClick(i)"
           >
-            <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" @load="refreshTriggers" />
-            <div v-else class="deck-ph"><span>{{ media?.label }}</span></div>
+            <div class="deck-card-inner">
+              <!-- Front: the photo -->
+              <div class="deck-face deck-face--front">
+                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" @load="refreshTriggers" />
+                <div v-else class="deck-ph"><span>{{ media?.label }}</span></div>
+              </div>
+              <!-- Back: a short story (flip to reveal) -->
+              <div class="deck-face deck-face--back">
+                <div v-if="media?.story" class="deck-story">
+                  <span class="deck-story-kicker">{{ media.story.kicker }}</span>
+                  <h3 class="deck-story-title">{{ media.story.title }}</h3>
+                  <p class="deck-story-body">{{ media.story.body }}</p>
+                </div>
+              </div>
+            </div>
           </figure>
+        </div>
+
+        <!-- Mobile-only hint above the deck, shown only once composed (the
+             fanned cards arc upward, so a hint there would collide). -->
+        <div class="deck-hint-top" :style="{ opacity: interactiveOn ? 1 : 0 }">
+          Tap to flip · swipe to browse
         </div>
 
         <!-- Floating credential badge -->
@@ -608,7 +669,7 @@ onUnmounted(() => {
           <button class="deck-arrow" aria-label="Next photo" @click.stop="go(1)">→</button>
         </div>
         <div class="deck-hint" :style="{ opacity: interactiveOn ? 1 : 0 }">
-          Swipe or use ← → to browse
+          Tap a photo to flip · swipe or ← → to browse
         </div>
       </div>
     </div>
@@ -743,18 +804,27 @@ onUnmounted(() => {
 .hero-deck .deck-card {
   cursor: inherit;
 }
-/* Fanned hand: cards are individually clickable to pop forward. */
-.hero-deck[data-fanned="1"] {
-  pointer-events: auto;
-}
-.hero-deck[data-fanned="1"] .deck-card {
-  cursor: pointer;
-}
 
+/* The card is a 3D container; the visual surfaces live on the two faces so the
+   inner can flip between them. No overflow/backface here — that would flatten
+   the 3D context. */
 .deck-card {
   position: absolute;
   inset: 0;
   margin: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+.deck-card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.deck-face {
+  position: absolute;
+  inset: 0;
   border-radius: 26px;
   overflow: hidden;
   background: var(--color-surface-raised);
@@ -762,30 +832,52 @@ onUnmounted(() => {
   box-shadow:
     0 2px 6px rgb(var(--color-text-primary-raw) / 0.06),
     0 30px 70px -34px rgb(var(--color-text-primary-raw) / 0.40);
-  will-change: transform, opacity, filter;
   backface-visibility: hidden;
-  transform-origin: 50% 100%;
+  -webkit-backface-visibility: hidden;
 }
-.deck-card img {
+.deck-face--front img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
 }
+.deck-face--back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: clamp(20px, 7%, 34px);
+  background: var(--color-surface);
+}
 
-/* Lead card = the real portrait; gets the accent-lit glow. */
-.deck-card--lead {
+/* Lead card (the active photo on top of the stack) — accent-lit glow on both
+   faces so it reads whether showing the photo or the flipped story. */
+.deck-card--lead .deck-face {
   box-shadow:
-    0 2px 8px rgb(var(--color-text-primary-raw) / 0.08),
+    0 4px 14px rgb(var(--color-text-primary-raw) / 0.10),
     0 44px 90px -40px rgb(var(--color-accent-raw) / 0.55);
 }
 
-/* A card popped forward in the fanned hand — stronger accent halo so it
-   reads as lifted out of the deck. */
-.deck-card.is-featured {
-  box-shadow:
-    0 4px 14px rgb(var(--color-text-primary-raw) / 0.12),
-    0 40px 90px -30px rgb(var(--color-accent-raw) / 0.6);
+/* ── Card-back story ────────────────────────────────────────── */
+.deck-story-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.deck-story-title {
+  font-size: clamp(1.05rem, 2.4vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+.deck-story-body {
+  font-size: clamp(0.8rem, 1.5vw, 0.98rem);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
 }
 
 /* Placeholder cards — striped, monospace label. Swap each for a real photo
@@ -908,6 +1000,23 @@ onUnmounted(() => {
   transition: opacity 0.45s var(--ease-apple);
   pointer-events: none;
 }
+/* Mobile-only hint above the deck (desktop uses the bottom hint instead).
+   Centered single line so it never wraps down into the photo. */
+.deck-hint-top {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  transition: opacity 0.45s var(--ease-apple);
+  pointer-events: none;
+  display: none;
+}
 
 /* ── Scroll cue ─────────────────────────────────────────────── */
 .scroll-cue {
@@ -953,6 +1062,13 @@ onUnmounted(() => {
   /* Single column: drop the floating credential badge — on the centred,
      shrunken deck it overlaps the photo. Desktop keeps it. */
   .hero-photo-badge {
+    display: none;
+  }
+  /* Move the interaction hint above the deck (and out from under the copy). */
+  .deck-hint-top {
+    display: block;
+  }
+  .deck-hint {
     display: none;
   }
   /* Single-column layout: the greeting sits centred just below the deck
