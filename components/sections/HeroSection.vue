@@ -347,11 +347,17 @@ function buildAutoplay() {
     gsap.set(c, { opacity: 0, x: 0, y: 132, yPercent: 0, rotate: 0, rotateY: 0, scale: 0.92, transformPerspective: 1400, zIndex: zOf(i) })
   })
 
-  // 1. RISE — lifts in as one photo, with a settling wiggle.
-  introTl.to(cards, { opacity: 1, duration: 0.5, stagger: 0.04 }, 0.1)
-  introTl.to(cards, { y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)', stagger: 0.04 }, 0.1)
+  const lead = cards[leadIdx]
+  const nonLead = cards.filter((_, i) => i !== leadIdx)
+  if (!lead) return
+
+  // 1. RISE — a SINGLE photo (the portrait) lifts in with a settling wiggle.
+  // The other cards stay hidden behind it, so the entrance reads as one clean
+  // image — not a flash of overlapping photos (which janks badly on Safari).
+  introTl.to(lead, { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)' }, 0.1)
+  introTl.to(nonLead, { y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)' }, 0.1) // move into place, still invisible
   introTl.to(
-    cards,
+    lead,
     {
       keyframes: [
         { rotate: -4, duration: 0.16, ease: 'sine.inOut' },
@@ -364,35 +370,21 @@ function buildAutoplay() {
   )
   introTl.to(veil, { v: 1, duration: 1.2, ease: 'sine.out', onUpdate: () => heroRoot.value?.style.setProperty('--veil', String(veil.v)) }, 0)
 
-  // 2. SHUFFLE — riffle in place.
-  cards.forEach((c, i) => {
-    introTl!.to(
-      c,
-      {
-        keyframes: [
-          { y: '-=42', duration: 0.16, ease: 'power2.out' },
-          { y: '+=42', duration: 0.2, ease: 'power2.in' },
-        ],
-        rotateY: i % 2 ? 20 : -20,
-      },
-      1.2 + i * 0.05,
-    )
-    introTl!.to(c, { rotateY: 0, duration: 0.3, ease: 'power2.out' }, 1.4 + i * 0.05)
-  })
-
-  // 3. FAN OUT — spreads into the hand, each card wiggling into place via an
-  // elastic settle on its rotation.
+  // 2. FAN OUT — the hidden cards FADE IN as they spread out from behind the
+  // portrait, so each only ever appears in its clean, separated position. The
+  // portrait fans out alongside them.
+  const FAN_AT = 1.45
   cards.forEach((c, i) => {
     const f = fanOf(i)
-    introTl!.to(c, { x: f.x, y: f.y, scale: 1, rotateY: 0, duration: 0.72, ease: 'expo.out' }, 1.98 + i * 0.03)
-    introTl!.to(c, { rotate: f.rotate, duration: 0.95, ease: 'elastic.out(1, 0.45)' }, 1.98 + i * 0.03)
+    introTl!.to(c, { x: f.x, y: f.y, scale: 1, opacity: 1, duration: 0.72, ease: 'expo.out' }, FAN_AT + i * 0.03)
+    introTl!.to(c, { rotate: f.rotate, duration: 0.9, ease: 'elastic.out(1, 0.45)' }, FAN_AT + i * 0.03)
   })
 
   // 4. COLLAPSE — the fanned hand deals into a centred Tinder stack, so the
   // hero lands swipe/flip-ready without needing a scroll first.
   cards.forEach((c, i) => {
     const r = restOf(i)
-    introTl!.to(c, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.55, ease: 'power3.inOut' }, 3.0 + i * 0.02)
+    introTl!.to(c, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.55, ease: 'power3.inOut' }, 2.5 + i * 0.02)
   })
 
   // Greeting beside (desktop) / below (mobile) the deck while it performs:
@@ -423,10 +415,10 @@ function buildAutoplay() {
     }
     // A one-time greeting: it lifts away as the photos fan out, so the intro
     // ends on the composed deck alone — no lingering "Hi" waiting for a scroll.
-    introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 2.0)
+    introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 1.5)
   }
 
-  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 3.3)
+  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 2.8)
 }
 
 /* ── Hand-off control ───────────────────────────────────────── */
@@ -1101,7 +1093,9 @@ onUnmounted(() => {
   .hero-sub {
     margin-inline: auto;
   }
+  /* Stack the CTAs: "Get in touch" drops below "Experience my journey". */
   .hero-cta {
+    flex-direction: column;
     justify-content: center;
   }
   /* Clear the carousel nav + hint that hang below the deck (bottom: -54/-88px)
