@@ -50,18 +50,23 @@ const segments = computed(() =>
    cycling content can never fight the scrubbed transforms. */
 const photos = heroPhotos
 const N = photos.length
-const leadIdx = N - 1 // the portrait card sits last / on top
+const leadIdx = 0 // the portrait is the first card AND the lead (on top)
 const cur = ref(leadIdx) // index into `photos` shown on the lead card
 const interactiveOn = ref(false)
 // Whether the lead card is currently flipped to show its story.
 const flipped = ref(false)
+// Desktop "expand" → full-screen photo gallery lightbox.
+const expanded = ref(false)
 
-// Lead shows photos[cur]; each peek card shows the following photos in order,
-// so the deck always looks full as you browse.
+// Lead slot shows photos[cur]; the other (peek) slots show the following photos
+// in order. `k` is the peek's position among non-lead slots, so this works for
+// any leadIdx (here the lead is slot 0).
 const slotMedia = computed(() =>
-  Array.from({ length: N }, (_, s) =>
-    s === leadIdx ? photos[cur.value] : photos[(cur.value + 1 + s) % N],
-  ),
+  Array.from({ length: N }, (_, s) => {
+    if (s === leadIdx) return photos[cur.value]
+    const k = s < leadIdx ? s : s - 1
+    return photos[(cur.value + 1 + k) % N]
+  }),
 )
 const counter = computed(
   () => `${String(((cur.value % N) + N) % N + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}`,
@@ -87,14 +92,17 @@ let isMobile = false
 const baseScale = () => (isMobile ? 1.04 : 1.1)
 const MID = () => (N - 1) / 2
 
-// Resting layout: lead flat on top, the others peek symmetrically behind it.
+// Cards fan out left → right in array order. The lead (index 0, the portrait)
+// sits at the front-left and on top; each following card tucks behind it to the
+// right — so the z-cascade DECREASES with index (otherwise the far-right card
+// would pop forward and the fan looks lopsided).
 function restOf(i: number) {
   if (i === leadIdx) return { x: 0, y: 0, rotate: 0 }
   const d = i - MID()
   return { x: d * 11, y: Math.abs(d) * 7 + 3, rotate: d * 5 }
 }
 function zOf(i: number) {
-  return i === leadIdx ? 60 : 10 + i
+  return i === leadIdx ? 60 : 10 + (N - 1 - i)
 }
 // Fanned "hand" layout the autoplay ends on / the reveal starts from.
 function fanOf(i: number) {
@@ -347,11 +355,17 @@ function buildAutoplay() {
     gsap.set(c, { opacity: 0, x: 0, y: 132, yPercent: 0, rotate: 0, rotateY: 0, scale: 0.92, transformPerspective: 1400, zIndex: zOf(i) })
   })
 
-  // 1. RISE — lifts in as one photo, with a settling wiggle.
-  introTl.to(cards, { opacity: 1, duration: 0.5, stagger: 0.04 }, 0.1)
-  introTl.to(cards, { y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)', stagger: 0.04 }, 0.1)
+  const lead = cards[leadIdx]
+  const nonLead = cards.filter((_, i) => i !== leadIdx)
+  if (!lead) return
+
+  // 1. RISE — a SINGLE photo (the portrait) lifts in with a settling wiggle.
+  // The other cards stay hidden behind it, so the entrance reads as one clean
+  // image — not a flash of overlapping photos (which janks badly on Safari).
+  introTl.to(lead, { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)' }, 0.1)
+  introTl.to(nonLead, { y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.5)' }, 0.1) // move into place, still invisible
   introTl.to(
-    cards,
+    lead,
     {
       keyframes: [
         { rotate: -4, duration: 0.16, ease: 'sine.inOut' },
@@ -364,35 +378,21 @@ function buildAutoplay() {
   )
   introTl.to(veil, { v: 1, duration: 1.2, ease: 'sine.out', onUpdate: () => heroRoot.value?.style.setProperty('--veil', String(veil.v)) }, 0)
 
-  // 2. SHUFFLE — riffle in place.
-  cards.forEach((c, i) => {
-    introTl!.to(
-      c,
-      {
-        keyframes: [
-          { y: '-=42', duration: 0.16, ease: 'power2.out' },
-          { y: '+=42', duration: 0.2, ease: 'power2.in' },
-        ],
-        rotateY: i % 2 ? 20 : -20,
-      },
-      1.2 + i * 0.05,
-    )
-    introTl!.to(c, { rotateY: 0, duration: 0.3, ease: 'power2.out' }, 1.4 + i * 0.05)
-  })
-
-  // 3. FAN OUT — spreads into the hand, each card wiggling into place via an
-  // elastic settle on its rotation.
+  // 2. FAN OUT — the hidden cards FADE IN as they spread out from behind the
+  // portrait, so each only ever appears in its clean, separated position. The
+  // portrait fans out alongside them.
+  const FAN_AT = 1.45
   cards.forEach((c, i) => {
     const f = fanOf(i)
-    introTl!.to(c, { x: f.x, y: f.y, scale: 1, rotateY: 0, duration: 0.72, ease: 'expo.out' }, 1.98 + i * 0.03)
-    introTl!.to(c, { rotate: f.rotate, duration: 0.95, ease: 'elastic.out(1, 0.45)' }, 1.98 + i * 0.03)
+    introTl!.to(c, { x: f.x, y: f.y, scale: 1, opacity: 1, duration: 0.72, ease: 'expo.out' }, FAN_AT + i * 0.03)
+    introTl!.to(c, { rotate: f.rotate, duration: 0.9, ease: 'elastic.out(1, 0.45)' }, FAN_AT + i * 0.03)
   })
 
   // 4. COLLAPSE — the fanned hand deals into a centred Tinder stack, so the
   // hero lands swipe/flip-ready without needing a scroll first.
   cards.forEach((c, i) => {
     const r = restOf(i)
-    introTl!.to(c, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.55, ease: 'power3.inOut' }, 3.0 + i * 0.02)
+    introTl!.to(c, { x: r.x, y: r.y, rotate: r.rotate, duration: 0.55, ease: 'power3.inOut' }, 2.5 + i * 0.02)
   })
 
   // Greeting beside (desktop) / below (mobile) the deck while it performs:
@@ -423,10 +423,10 @@ function buildAutoplay() {
     }
     // A one-time greeting: it lifts away as the photos fan out, so the intro
     // ends on the composed deck alone — no lingering "Hi" waiting for a scroll.
-    introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 2.0)
+    introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 1.5)
   }
 
-  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 3.3)
+  if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 2.8)
 }
 
 /* ── Hand-off control ───────────────────────────────────────── */
@@ -635,11 +635,12 @@ onUnmounted(() => {
             <div class="deck-card-inner">
               <!-- Front: the photo -->
               <div class="deck-face deck-face--front">
-                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" draggable="false" @load="refreshTriggers" />
+                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" draggable="false" decoding="async" @load="refreshTriggers" />
                 <div v-else class="deck-ph"><span>{{ media?.label }}</span></div>
               </div>
-              <!-- Back: a short story (flip to reveal) -->
-              <div class="deck-face deck-face--back">
+              <!-- Back: a short story (flip to reveal). Only the lead flips,
+                   so only it carries a back face — keeps the peek cards cheap. -->
+              <div v-if="i === leadIdx" class="deck-face deck-face--back">
                 <div v-if="media?.story" class="deck-story">
                   <span class="deck-story-kicker">{{ media.story.kicker }}</span>
                   <h3 class="deck-story-title">{{ media.story.title }}</h3>
@@ -655,6 +656,16 @@ onUnmounted(() => {
         <div class="deck-hint-top" :style="{ opacity: interactiveOn ? 1 : 0 }">
           Tap to flip · swipe to browse
         </div>
+
+        <!-- Desktop-only: expand into a full-screen photo gallery. -->
+        <button
+          class="deck-expand"
+          aria-label="Expand photo gallery"
+          :style="{ opacity: interactiveOn ? 1 : 0, pointerEvents: interactiveOn ? 'auto' : 'none' }"
+          @click.stop="expanded = true"
+        >
+          <Icon name="fluent:arrow-expand-16-filled" size="15" />
+        </button>
 
         <!-- Floating credential badge -->
         <div ref="badgeEl" class="hero-photo-badge">
@@ -679,6 +690,9 @@ onUnmounted(() => {
       <span class="mouse" />
       Scroll
     </div>
+
+    <!-- Expanded photo gallery (teleports to body) -->
+    <UiPhotoLightbox v-model:open="expanded" :photos="photos" :start-index="cur" />
   </section>
 </template>
 
@@ -826,8 +840,13 @@ onUnmounted(() => {
 .deck-card-inner {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
   will-change: transform;
+}
+/* Only the lead flips, so only it needs the 3D context + a back face. Keeping
+   the 5 peek cards flat (no preserve-3d / no backface layer) is much cheaper to
+   composite — the difference between smooth and stuttering on Safari / mobile. */
+.deck-card--lead .deck-card-inner {
+  transform-style: preserve-3d;
 }
 .deck-face {
   position: absolute;
@@ -836,9 +855,11 @@ onUnmounted(() => {
   overflow: hidden;
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border-subtle);
+  /* Tighter blur — big-radius shadows on many animating cards are a top GPU
+     cost on weaker devices. */
   box-shadow:
     0 2px 6px rgb(var(--color-text-primary-raw) / 0.06),
-    0 30px 70px -34px rgb(var(--color-text-primary-raw) / 0.40);
+    0 14px 30px -20px rgb(var(--color-text-primary-raw) / 0.36);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -862,8 +883,8 @@ onUnmounted(() => {
    faces so it reads whether showing the photo or the flipped story. */
 .deck-card--lead .deck-face {
   box-shadow:
-    0 4px 14px rgb(var(--color-text-primary-raw) / 0.10),
-    0 44px 90px -40px rgb(var(--color-accent-raw) / 0.55);
+    0 6px 18px rgb(var(--color-text-primary-raw) / 0.10),
+    0 24px 50px -30px rgb(var(--color-accent-raw) / 0.5);
 }
 
 /* ── Card-back story ────────────────────────────────────────── */
@@ -1025,6 +1046,42 @@ onUnmounted(() => {
   display: none;
 }
 
+/* Desktop-only "expand to gallery" affordance, top-right of the deck. */
+.deck-expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 7;
+  width: 38px;
+  height: 38px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  background: rgb(var(--color-surface-raw) / 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 10px 26px -14px rgb(var(--color-text-primary-raw) / 0.4);
+  transition: opacity 0.45s var(--ease-apple), transform 0.18s var(--ease-apple), color 0.18s, border-color 0.18s;
+}
+.deck-expand:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+.deck-expand:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .deck-expand {
+    display: inline-flex;
+  }
+}
+
 /* ── Scroll cue ─────────────────────────────────────────────── */
 .scroll-cue {
   position: absolute;
@@ -1093,7 +1150,9 @@ onUnmounted(() => {
   .hero-sub {
     margin-inline: auto;
   }
+  /* Stack the CTAs: "Get in touch" drops below "Experience my journey". */
   .hero-cta {
+    flex-direction: column;
     justify-content: center;
   }
   /* Clear the carousel nav + hint that hang below the deck (bottom: -54/-88px)

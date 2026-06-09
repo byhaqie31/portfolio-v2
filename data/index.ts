@@ -49,12 +49,13 @@ export const heroTaglines = [
 // ── HERO PHOTO DECK ──────────────────────────────────────────
 // The cinematic hero opens with a fanned "hand" of photo cards that
 // collapse into an interactive deck (prev/next · swipe · ← →). The
-// LAST entry is the lead card — the portrait, always featured on top
-// first. The others are peek cards that cycle through the carousel.
+// FIRST entry is the lead card — the portrait, always featured on top
+// first and shown as 01 in the gallery. The rest are peek cards that
+// cycle through the carousel.
 //
 // To add a real photo: drop the file in `public/images/`, then give an
-// entry `img` + `alt` instead of `label`. Order is the carousel order;
-// keep the portrait last so it stays the opening hero face. The deck
+// entry `img` + `alt` instead of `label`. Order is the gallery/carousel
+// order; keep the portrait first so it leads the hero + gallery. The deck
 // geometry (fan/rest layout) is computed from the count, so any number
 // of cards works — 3 to 6 reads best.
 // Each card can carry a short STORY on its back: in the fanned intro, click a
@@ -82,7 +83,16 @@ export interface HeroPhoto {
 // it to your own words. One photo, one story.
 export const heroPhotos: HeroPhoto[] = [
   {
-    img: '/images/baihaqie3.png',
+    img: '/images/ProfilePicture.png',
+    alt: 'Portrait of Ahmad Baihaqie',
+    story: {
+      kicker: 'Hello',
+      title: 'Nice to meet you',
+      body: 'I am Qie — a UI/UX engineer from Malaysia who designs with empathy and builds with care. Flip the rest to know me better.',
+    },
+  },
+  {
+    img: '/images/baihaqie3.jpg',
     alt: 'Ahmad Baihaqie at the Marina Bay waterfront, Singapore',
     story: {
       kicker: 'Goal',
@@ -91,7 +101,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie2.png',
+    img: '/images/baihaqie2.jpg',
     alt: 'Ahmad Baihaqie in front of Big Ben and the Houses of Parliament, London',
     story: {
       kicker: 'Dream',
@@ -100,7 +110,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie5.png',
+    img: '/images/baihaqie5.jpg',
     alt: 'Ahmad Baihaqie in front of an Eiffel Tower replica',
     story: {
       kicker: 'Philosophy',
@@ -109,7 +119,7 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie.png',
+    img: '/images/baihaqie.jpg',
     alt: 'Ahmad Baihaqie in a yellow jacket exploring a snow-dusted desert canyon',
     story: {
       kicker: 'Hobby',
@@ -118,21 +128,12 @@ export const heroPhotos: HeroPhoto[] = [
     },
   },
   {
-    img: '/images/baihaqie4.png',
+    img: '/images/baihaqie4.jpg',
     alt: 'Ahmad Baihaqie looking out over a lake toward snow-capped mountains',
     story: {
       kicker: 'Always learning',
       title: 'Forever a student',
       body: 'Alongside engineering I am pursuing a Master’s exploring AI adoption — how people and technology grow up together.',
-    },
-  },
-  {
-    img: '/images/ProfilePicture.png',
-    alt: 'Portrait of Ahmad Baihaqie',
-    story: {
-      kicker: 'Hello',
-      title: 'Nice to meet you',
-      body: 'I am Qie — a UI/UX engineer from Malaysia who designs with empathy and builds with care. Flip the rest to know me better.',
     },
   },
 ]
