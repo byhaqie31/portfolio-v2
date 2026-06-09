@@ -46,6 +46,97 @@ export const heroTaglines = [
   'Designer-minded front-end engineer building **fintech products** with a **human lens**.',
 ]
 
+// ── HERO PHOTO DECK ──────────────────────────────────────────
+// The cinematic hero opens with a fanned "hand" of photo cards that
+// collapse into an interactive deck (prev/next · swipe · ← →). The
+// LAST entry is the lead card — the portrait, always featured on top
+// first. The others are peek cards that cycle through the carousel.
+//
+// To add a real photo: drop the file in `public/images/`, then give an
+// entry `img` + `alt` instead of `label`. Order is the carousel order;
+// keep the portrait last so it stays the opening hero face. The deck
+// geometry (fan/rest layout) is computed from the count, so any number
+// of cards works — 3 to 6 reads best.
+// Each card can carry a short STORY on its back: in the fanned intro, click a
+// card to highlight it, then click again to flip it and read the story. Front
+// photo + back story come from the same entry, so they stay paired.
+export interface HeroPhotoStory {
+  /** Small category label, e.g. 'Philosophy', 'Dream', 'Hobby', 'Goal'. */
+  kicker: string
+  /** Short headline. */
+  title: string
+  /** One or two sentences — keep it tight so it fits the card back on mobile. */
+  body: string
+}
+export interface HeroPhoto {
+  /** Path under /public, e.g. '/images/work-1.png'. Omit for a placeholder. */
+  img?: string
+  /** Alt text — required whenever `img` is set. */
+  alt?: string
+  /** Striped-placeholder label, shown only until a real `img` is supplied. */
+  label?: string
+  /** Story shown on the card back when flipped. Omit for no back content. */
+  story?: HeroPhotoStory
+}
+// NOTE: the `story` text below is a DRAFT grounded in the existing bio — edit
+// it to your own words. One photo, one story.
+export const heroPhotos: HeroPhoto[] = [
+  {
+    img: '/images/baihaqie3.png',
+    alt: 'Ahmad Baihaqie at the Marina Bay waterfront, Singapore',
+    story: {
+      kicker: 'Goal',
+      title: 'Build for scale',
+      body: 'I want to craft fintech and SaaS products that stay clean and effortless even as they grow — interfaces people trust without thinking.',
+    },
+  },
+  {
+    img: '/images/baihaqie2.png',
+    alt: 'Ahmad Baihaqie in front of Big Ben and the Houses of Parliament, London',
+    story: {
+      kicker: 'Dream',
+      title: 'See more of the world',
+      body: 'Every city I visit reshapes how I think about people and design. The plan is simple: keep collecting perspectives, one trip at a time.',
+    },
+  },
+  {
+    img: '/images/baihaqie5.png',
+    alt: 'Ahmad Baihaqie in front of an Eiffel Tower replica',
+    story: {
+      kicker: 'Philosophy',
+      title: 'Let complexity disappear',
+      body: 'The best interface is one you never notice. I sweat the hard details so the experience feels quietly, obviously simple.',
+    },
+  },
+  {
+    img: '/images/baihaqie.png',
+    alt: 'Ahmad Baihaqie in a yellow jacket exploring a snow-dusted desert canyon',
+    story: {
+      kicker: 'Hobby',
+      title: 'Chase the outdoors',
+      body: 'Off-screen you will find me somewhere cold and remote with a camera — canyons, snow, and big quiet skies that reset my head.',
+    },
+  },
+  {
+    img: '/images/baihaqie4.png',
+    alt: 'Ahmad Baihaqie looking out over a lake toward snow-capped mountains',
+    story: {
+      kicker: 'Always learning',
+      title: 'Forever a student',
+      body: 'Alongside engineering I am pursuing a Master’s exploring AI adoption — how people and technology grow up together.',
+    },
+  },
+  {
+    img: '/images/ProfilePicture.png',
+    alt: 'Portrait of Ahmad Baihaqie',
+    story: {
+      kicker: 'Hello',
+      title: 'Nice to meet you',
+      body: 'I am Qie — a UI/UX engineer from Malaysia who designs with empathy and builds with care. Flip the rest to know me better.',
+    },
+  },
+]
+
 // ── STATEMENT (pinned scale/zoom interstitial) ───────────────
 // Words light up one-by-one as the phrase scales up on scroll.
 // `accent` is the final, accent-colored word.
