@@ -92,14 +92,17 @@ let isMobile = false
 const baseScale = () => (isMobile ? 1.04 : 1.1)
 const MID = () => (N - 1) / 2
 
-// Resting layout: lead flat on top, the others peek symmetrically behind it.
+// Cards fan out left → right in array order. The lead (index 0, the portrait)
+// sits at the front-left and on top; each following card tucks behind it to the
+// right — so the z-cascade DECREASES with index (otherwise the far-right card
+// would pop forward and the fan looks lopsided).
 function restOf(i: number) {
   if (i === leadIdx) return { x: 0, y: 0, rotate: 0 }
   const d = i - MID()
   return { x: d * 11, y: Math.abs(d) * 7 + 3, rotate: d * 5 }
 }
 function zOf(i: number) {
-  return i === leadIdx ? 60 : 10 + i
+  return i === leadIdx ? 60 : 10 + (N - 1 - i)
 }
 // Fanned "hand" layout the autoplay ends on / the reveal starts from.
 function fanOf(i: number) {
