@@ -50,18 +50,23 @@ const segments = computed(() =>
    cycling content can never fight the scrubbed transforms. */
 const photos = heroPhotos
 const N = photos.length
-const leadIdx = N - 1 // the portrait card sits last / on top
+const leadIdx = 0 // the portrait is the first card AND the lead (on top)
 const cur = ref(leadIdx) // index into `photos` shown on the lead card
 const interactiveOn = ref(false)
 // Whether the lead card is currently flipped to show its story.
 const flipped = ref(false)
+// Desktop "expand" → full-screen photo gallery lightbox.
+const expanded = ref(false)
 
-// Lead shows photos[cur]; each peek card shows the following photos in order,
-// so the deck always looks full as you browse.
+// Lead slot shows photos[cur]; the other (peek) slots show the following photos
+// in order. `k` is the peek's position among non-lead slots, so this works for
+// any leadIdx (here the lead is slot 0).
 const slotMedia = computed(() =>
-  Array.from({ length: N }, (_, s) =>
-    s === leadIdx ? photos[cur.value] : photos[(cur.value + 1 + s) % N],
-  ),
+  Array.from({ length: N }, (_, s) => {
+    if (s === leadIdx) return photos[cur.value]
+    const k = s < leadIdx ? s : s - 1
+    return photos[(cur.value + 1 + k) % N]
+  }),
 )
 const counter = computed(
   () => `${String(((cur.value % N) + N) % N + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}`,
@@ -649,6 +654,16 @@ onUnmounted(() => {
           Tap to flip · swipe to browse
         </div>
 
+        <!-- Desktop-only: expand into a full-screen photo gallery. -->
+        <button
+          class="deck-expand"
+          aria-label="Expand photo gallery"
+          :style="{ opacity: interactiveOn ? 1 : 0, pointerEvents: interactiveOn ? 'auto' : 'none' }"
+          @click.stop="expanded = true"
+        >
+          <Icon name="fluent:arrow-expand-16-filled" size="15" />
+        </button>
+
         <!-- Floating credential badge -->
         <div ref="badgeEl" class="hero-photo-badge">
           <div class="k">{{ heroBadge.key }}</div>
@@ -672,6 +687,9 @@ onUnmounted(() => {
       <span class="mouse" />
       Scroll
     </div>
+
+    <!-- Expanded photo gallery (teleports to body) -->
+    <UiPhotoLightbox v-model:open="expanded" :photos="photos" :start-index="cur" />
   </section>
 </template>
 
@@ -1023,6 +1041,42 @@ onUnmounted(() => {
   transition: opacity 0.45s var(--ease-apple);
   pointer-events: none;
   display: none;
+}
+
+/* Desktop-only "expand to gallery" affordance, top-right of the deck. */
+.deck-expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 7;
+  width: 38px;
+  height: 38px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  background: rgb(var(--color-surface-raw) / 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 10px 26px -14px rgb(var(--color-text-primary-raw) / 0.4);
+  transition: opacity 0.45s var(--ease-apple), transform 0.18s var(--ease-apple), color 0.18s, border-color 0.18s;
+}
+.deck-expand:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+.deck-expand:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .deck-expand {
+    display: inline-flex;
+  }
 }
 
 /* ── Scroll cue ─────────────────────────────────────────────── */
