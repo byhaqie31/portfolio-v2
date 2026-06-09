@@ -217,8 +217,8 @@ function onPointerDown(e: PointerEvent) {
   if (!interactiveOn.value) return
   downX = e.clientX
   downY = e.clientY
-  // Drag-to-fling only on touch-sized screens, and only on the photo side.
-  dragging = isMobile && !flipped.value
+  // Drag-to-fling on any device (mouse or touch), only on the photo side.
+  dragging = !flipped.value
 }
 function onPointerMove(e: PointerEvent) {
   if (!dragging || downX == null || downY == null) return
@@ -635,7 +635,7 @@ onUnmounted(() => {
             <div class="deck-card-inner">
               <!-- Front: the photo -->
               <div class="deck-face deck-face--front">
-                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" @load="refreshTriggers" />
+                <img v-if="media?.img" :src="media.img" :alt="media.alt || ''" draggable="false" @load="refreshTriggers" />
                 <div v-else class="deck-ph"><span>{{ media?.label }}</span></div>
               </div>
               <!-- Back: a short story (flip to reveal) -->
@@ -792,6 +792,13 @@ onUnmounted(() => {
   perspective: 1400px;
   will-change: transform, opacity;
   pointer-events: none;
+  /* Mouse-drag the cards without selecting text or starting a native
+     image-drag (which would hijack the swipe gesture on desktop). */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.deck-face--front img {
+  -webkit-user-drag: none;
 }
 .hero-deck[data-interactive="1"] {
   pointer-events: auto;
