@@ -77,6 +77,7 @@ const badgeEl = ref<HTMLElement | null>(null)
 const scrollCueEl = ref<HTMLElement | null>(null)
 const subInner = ref<HTMLElement | null>(null)
 const greetingEl = ref<HTMLElement | null>(null)
+const greetingInner = ref<HTMLElement | null>(null)
 
 // Resolved on mount (DOM order is the source of truth for geometry).
 let cards: HTMLElement[] = []
@@ -112,6 +113,16 @@ function centreDx() {
   const r = stageEl.value.getBoundingClientRect()
   stageEl.value.style.transform = prev
   return window.innerWidth / 2 - (r.left + r.width / 2)
+}
+// Single column (mobile/tablet): how far to shift the stage DOWN so the deck
+// sits vertically centred during the intro. Desktop keeps its grid row (0).
+function centreDy() {
+  if (!stageEl.value || window.innerWidth >= 1024) return 0
+  const prev = stageEl.value.style.transform
+  stageEl.value.style.transform = 'none'
+  const r = stageEl.value.getBoundingClientRect()
+  stageEl.value.style.transform = prev
+  return window.innerHeight / 2 - (r.top + r.height / 2)
 }
 
 /* ── Carousel ───────────────────────────────────────────────── */
@@ -208,7 +219,7 @@ function onKey(e: KeyboardEvent) {
 /* ── Composed (resting) state — used by reduced-motion ──────── */
 function settleComposed() {
   heroRoot.value?.style.setProperty('--veil', '1')
-  if (stageEl.value) gsap.set(stageEl.value, { x: 0, scale: 1 })
+  if (stageEl.value) gsap.set(stageEl.value, { x: 0, y: 0, scale: 1 })
   if (deckEl.value) gsap.set(deckEl.value, { opacity: 1 })
   cards.forEach((c, i) => {
     const r = restOf(i)
@@ -265,8 +276,9 @@ function buildReveal() {
   featured.value = null
   fannedActive.value = true
 
-  // Stage sweeps from screen-centre (scaled up) to its resting spot.
-  revealTl.fromTo(stageEl.value, { x: () => centreDx(), scale: baseScale() }, { x: 0, scale: 1, duration: 1 }, 0)
+  // Stage sweeps from screen-centre (scaled up, and vertically centred on
+  // mobile) to its resting spot, making room for the name to rise below it.
+  revealTl.fromTo(stageEl.value, { x: () => centreDx(), y: () => centreDy(), scale: baseScale() }, { x: 0, y: 0, scale: 1, duration: 1 }, 0)
 
   // Each photo travels from the fanned hand to the resting cascade.
   cards.forEach((c, i) => {
@@ -295,10 +307,11 @@ function buildAutoplay() {
   if (!heroRoot.value || !stageEl.value || !deckEl.value) return
   introTl = gsap.timeline({ defaults: { ease: 'expo.out' } })
   const dx = centreDx()
+  const dy = centreDy()
   const veil = { v: 0 }
 
   gsap.set(deckEl.value, { opacity: 1 })
-  gsap.set(stageEl.value, { x: dx, scale: baseScale() })
+  gsap.set(stageEl.value, { x: dx, y: dy, scale: baseScale() })
   cards.forEach((c, i) => {
     gsap.set(c, { opacity: 0, x: 0, y: 132, yPercent: 0, rotate: 0, rotateY: 0, scale: 0.92, transformPerspective: 1400, zIndex: zOf(i) })
   })
@@ -344,12 +357,17 @@ function buildAutoplay() {
     introTl!.to(c, { rotate: f.rotate, duration: 0.95, ease: 'elastic.out(1, 0.45)' }, 1.98 + i * 0.03)
   })
 
-  // Greeting on the (otherwise empty) left while the deck performs: fades up
-  // as the cards rise, with a one-shot wave, and holds until the reveal.
-  if (greetingEl.value) {
-    gsap.set(greetingEl.value, { opacity: 0, y: 20 })
-    introTl.to(greetingEl.value, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' }, 0.35)
-    const wave = greetingEl.value.querySelector('.wave')
+  // Greeting beside (desktop) / below (mobile) the deck while it performs:
+  // fades up as the cards rise, with a one-shot wave, holds, then lifts away.
+  // The outer element carries the mobile vertical offset so it tracks the
+  // centred deck; the inner element runs the fade/wave.
+  if (greetingEl.value && greetingInner.value) {
+    // Outer is made visible (clears the FOUC guard) + carries the mobile
+    // vertical offset; the inner does the actual fade-in.
+    gsap.set(greetingEl.value, { opacity: 1, y: dy })
+    gsap.set(greetingInner.value, { opacity: 0, y: 20 })
+    introTl.to(greetingInner.value, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' }, 0.35)
+    const wave = greetingInner.value.querySelector('.wave')
     if (wave) {
       introTl.to(
         wave,
@@ -367,7 +385,7 @@ function buildAutoplay() {
     }
     // A one-time greeting: it lifts away as the photos fan out, so the intro
     // ends on the composed deck alone — no lingering "Hi" waiting for a scroll.
-    introTl.to(greetingEl.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 2.0)
+    introTl.to(greetingInner.value, { opacity: 0, y: -24, duration: 0.45, ease: 'power2.in' }, 2.0)
   }
 
   if (scrollCueEl.value) introTl.fromTo(scrollCueEl.value, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 2.55)
@@ -512,8 +530,10 @@ onUnmounted(() => {
              centred). Mobile: centred just below the deck. Decorative: the real
              name follows, so it's hidden from assistive tech. -->
         <div ref="greetingEl" class="hero-greeting" aria-hidden="true">
-          <span class="hi-text">Hi</span>
-          <span class="wave">👋🏻</span>
+          <span ref="greetingInner" class="hero-greeting-inner">
+            <span class="hi-text">Hi</span>
+            <span class="wave">👋🏻</span>
+          </span>
         </div>
 
         <span
@@ -655,7 +675,6 @@ onUnmounted(() => {
   inset: 0;
   display: flex;
   align-items: center;
-  gap: 0.22em;
   font-size: clamp(3.2rem, 9vw, 8rem);
   font-weight: 600;
   letter-spacing: -0.04em;
@@ -663,6 +682,13 @@ onUnmounted(() => {
   color: var(--color-text-primary);
   pointer-events: none;
   z-index: 2;
+}
+/* Inner row carries the fade/wave animation; the outer carries placement
+   (and, on mobile, the vertical offset that keeps it under the centred deck). */
+.hero-greeting-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22em;
 }
 /* "Hi" in the AxelNova brand gradient (blue → violet, from the logo mark). */
 .hero-greeting .hi-text {
@@ -924,9 +950,10 @@ onUnmounted(() => {
 
 /* ── Mobile / tablet ────────────────────────────────────────── */
 @media (max-width: 1023px) {
+  /* Single column: drop the floating credential badge — on the centred,
+     shrunken deck it overlaps the photo. Desktop keeps it. */
   .hero-photo-badge {
-    left: auto;
-    right: -6px;
+    display: none;
   }
   /* Single-column layout: the greeting sits centred just below the deck
      (top of the copy column) rather than beside it. */
