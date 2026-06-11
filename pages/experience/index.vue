@@ -200,7 +200,7 @@ const waypointCards = computed<WaypointCard[]>(() => {
       year: 'Now',
       final: true,
       org: 'On approach.',
-      desc: 'Open to full-time and contract roles in fintech and SaaS. Also reading a Master of Science at UPM — researching how AI adoption and generational change are reshaping the modern workplace.',
+      desc: 'Open to full-time and contract roles in fintech and SaaS. Also currently pursuing a Master of Science at UPM — researching how AI adoption and generational change are reshaping the modern workplace.',
       signoff: 'Thanks for flying along.',
       cta: { label: 'Begin descent → say hello', href: `mailto:${personal.email}` },
       links: [
